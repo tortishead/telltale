@@ -11,7 +11,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   parseWindowDump, parseSurfaceFlingerDump, parsePackageDump, parseAnrDump,
-  indentOf, deriveFrame, shortType, sfFlagNames, anrLock, TYPE_INTS,
+  parseCarServiceDump,
+  indentOf, deriveFrame, shortType, sfFlagNames, anrLock,
+  carHeadName, carPairs, carFields, carRuns, carEntries, carPropNames, TYPE_INTS,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -291,4 +293,244 @@ test('an ART process genuinely missing main is still reported', () => {
   assert.deepEqual(app.analysis.findings.map((f) => f.title),
     ['No main thread in this process'],
     'suppressing the finding for native processes must not suppress it here');
+});
+
+/* ---------------- car_service ---------------- */
+
+test('carHeadName reads every shape a car_service heading comes in', () => {
+  // the plain one, and the one with spaces inside the stars
+  assert.deepEqual(carHeadName('CarFeatureController*'), { name: 'CarFeatureController', trail: '' });
+  assert.deepEqual(carHeadName('CarBluetoothService *'), { name: 'CarBluetoothService', trail: '' });
+  // the service dumper's own heading, which names the service and says `dump`
+  assert.deepEqual(carHeadName('CarOemProxyService dump***'),
+    { name: 'CarOemProxyService', trail: '' });
+  // a heading that never closes its stars
+  assert.deepEqual(carHeadName('Display:1'), { name: 'Display:1', trail: '' });
+  // and one the service went on printing after
+  assert.deepEqual(carHeadName('CarUserNoticeService* mUserId:10'),
+    { name: 'CarUserNoticeService', trail: 'mUserId:10' });
+});
+
+test('carPairs takes the key/value lines and leaves everything else', () => {
+  assert.deepEqual(carPairs([
+    '  mCurrentPowerPolicyId: system_power_policy_all_on',
+    '  mIsPowerPolicyLocked=false',
+    '  03-21 16:50:36 CarDrivingStateService Boot: changed from -1 to 0',
+    '  \tat com.android.car.ICarImpl.dump(ICarImpl.java:744)',
+    '',
+  ]), [
+    ['mCurrentPowerPolicyId', 'system_power_policy_all_on'],
+    ['mIsPowerPolicyLocked', 'false'],
+  ]);
+});
+
+test('a section nests under the heading above it, by stars before indent', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const at = (title) => s.nodes.find((n) => n.title === title);
+  const parentOf = (title) => {
+    const n = at(title);
+    const up = s.nodes.find((x) => x.hash === n.parentHash);
+    return up ? up.title : null;
+  };
+
+  // the three headings that are the document's shape are not sections in it
+  assert.deepEqual(s.nodes.filter((n) => /^Dump (car service|versions|all services)$/.test(n.title)), []);
+
+  // a service prints at indent 2 with one star; the service dumper's heading
+  // for CarOemProxyService prints at indent 0 with three, and both are services
+  assert.equal(parentOf('CarOemProxyService'), null);
+  assert.equal(parentOf('CarFeatureController'), null);
+
+  // OccupantZoneService keeps the indent and adds a star
+  assert.equal(parentOf('mDisplayConfigs'), 'OccupantZoneService');
+  // Input Service adds a star per level, all at the same indent
+  assert.equal(parentOf('Display:1'), 'InputCaptureClientController');
+  assert.equal(parentOf('All clients:'), 'Display:1');
+  // CarAudioService keeps one star and indents instead
+  assert.equal(parentOf('CarZonesAudioFocus'), 'CarAudioService');
+  assert.equal(parentOf('CarAudioFocus'), 'CarZonesAudioFocus');
+});
+
+test('a service that threw on its way out is badged, not silently short', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const oem = s.nodes.find((n) => n.title === 'CarOemProxyService');
+
+  assert.equal(oem.failed, true);
+  assert.equal(oem.family, 'car-failed');
+  assert.deepEqual(oem.badges, [['failed to dump', 'badge-exit']]);
+  assert.deepEqual(s.globals.failed, [oem.hash],
+    'and the group pane names it, because it is a hole in everything read below');
+});
+
+test('the filter reaches what a section printed, not just its name', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const hit = s.nodes.filter((n) => n.search.includes('mcurrentdrivingstate')
+    || n.search.includes('current driving state'));
+  assert.deepEqual(hit.map((n) => n.title), ['CarDrivingStateService']);
+});
+
+test('versions come off the dump rather than out of a section', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const versions = new Map(s.globals.versions);
+  assert.equal(versions.get('Android SDK_INT'), '34');
+  assert.match(versions.get('Car Version'), /^CarVersion\[/);
+});
+
+test('carFields splits on the commas between fields, not the ones inside them', () => {
+  const f = carFields('event count:1, lastEvent: Property:0x11410a00, int32Values: [0, 0], string: ');
+  assert.deepEqual(f, [
+    ['event count', '1', ':'],
+    ['lastEvent', 'Property:0x11410a00', ':'],
+    ['int32Values', '[0, 0]', ':'],
+    ['string', '', ':'],
+  ], 'each field comes back with the separator it was written with');
+
+  // prose is not a record, and neither is a line only part of which is one
+  assert.equal(carFields('There are 8 clients using CarPropertyService.'), null);
+  assert.equal(carFields('mCurrentState: CpmsState, and then some prose'), null);
+
+  // a line whose fields disagree about the separator is still fields here;
+  // whether that means several attributes is carEntries' question, below
+  assert.deepEqual(carFields('mCurrentState: CpmsState canPostpone=false, CpmsState=ON(1)'),
+    [['mCurrentState', 'CpmsState canPostpone=false', ':'], ['CpmsState', 'ON(1)', '=']]);
+});
+
+test('a run of lines printed to one shape becomes a table, a short run does not', () => {
+  const prop = (id) => `Property:${id}, Property name:INFO_VIN, access:0x1`;
+  const runs = carRuns([
+    'There are 8 clients using CarPropertyService.',
+    prop('0x1'), prop('0x2'), prop('0x3'),
+    'Properties changed: ',
+  ]);
+
+  assert.deepEqual(runs.map((r) => r.kind), ['text', 'table', 'text']);
+  assert.deepEqual(runs[1].keys, ['Property', 'Property name', 'access']);
+  assert.equal(runs[1].rows.length, 3);
+  assert.deepEqual(runs[1].rows[0].cells, ['0x1', 'INFO_VIN', '0x1']);
+
+  // two of a shape is not a table, and a one-field run is a list, not a column
+  assert.deepEqual(carRuns([prop('0x1'), prop('0x2')]).map((r) => r.kind), ['text']);
+  assert.deepEqual(carRuns([
+    'propId: 0x11200402 is registered by 1 client(s).',
+    'propId: 0x11200407 is registered by 1 client(s).',
+    'propId: 0x11400400 is registered by 2 client(s).',
+  ]).map((r) => r.kind), ['text']);
+});
+
+test('property ids are named from the two tables the dump names them in', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const names = s.globals.propNames;
+
+  // *All properties* prints `Property:0x…, Property name:NAME`
+  assert.equal(names['0x11100100'], 'INFO_VIN');
+  // *Property handlers* prints `// 0x… name: NAME`
+  assert.equal(names['0x11200308'], 'FUEL_DOOR_OPEN');
+  // and nothing invents a name for an id the dump never named
+  assert.equal(names['0xdeadbeef'], undefined);
+});
+
+test('a section carries the lines it printed, for the pane that reads them', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const props = s.nodes.find((n) => n.title === 'All properties');
+  const runs = carRuns(props.body);
+
+  assert.equal(runs.length, 1);
+  assert.equal(runs[0].kind, 'table');
+  assert.deepEqual(runs[0].keys.slice(0, 2), ['Property', 'Property name']);
+});
+
+test('a line printed under a row stays with that row instead of ending the table', () => {
+  const runs = carRuns([
+    '  Property:0x1, Property name:A, access:0x1',
+    '  Property:0x2, Property name:B, access:0x1',
+    '        areaId:0x0, f min:0.000000, i max:3',
+    '  Property:0x3, Property name:C, access:0x1',
+  ]);
+
+  assert.deepEqual(runs.map((r) => r.kind), ['table'], 'the deeper line did not split it in two');
+  assert.equal(runs[0].rows.length, 3);
+  assert.deepEqual(runs[0].rows[1].under, ['areaId:0x0, f min:0.000000, i max:3']);
+  assert.deepEqual(runs[0].rows[0].under, []);
+});
+
+test('carEntries reads a section as the tree its indenting says it is', () => {
+  const entries = carEntries([
+    '  mCurrentPowerPolicyId: system_power_policy_all_on',
+    '  mIsPowerPolicyLocked=false',
+    '  Power components state:',
+    '    AUDIO: on',
+    '    WIFI: on',
+    '  Power policy groups: none',
+  ]);
+
+  assert.deepEqual(entries.map((e) => e.key), [
+    'mCurrentPowerPolicyId', 'mIsPowerPolicyLocked', 'Power components state', 'Power policy groups',
+  ]);
+  assert.equal(entries[0].value, 'system_power_policy_all_on');
+  assert.equal(entries[1].value, 'false', 'a name given its value with = splits too');
+  assert.deepEqual(entries[2].children.map((c) => [c.key, c.value]), [['AUDIO', 'on'], ['WIFI', 'on']]);
+  assert.deepEqual(entries[3].children, [], 'the deeper lines went to the label above them, not to this');
+});
+
+test('a line that is not a name and a value is an entry with no value', () => {
+  const entries = carEntries([
+    '  Registered power policies:',
+    '    system_power_policy_all_on(enabledComponents: AUDIO, CPU | disabledComponents: )',
+    '  03-21 16:50:36 CarDrivingStateService Boot: changed from -1 to 0',
+  ]);
+
+  // the policy's own colon is inside its brackets, so it is not a name/value line
+  assert.equal(entries[0].children.length, 1);
+  assert.equal(entries[0].children[0].value, null);
+  // and a log line is a line, not a name called `03-21 16`
+  assert.equal(entries[1].value, null);
+  assert.match(entries[1].key, /^03-21 16:50:36 /);
+});
+
+test('an entry knows the line it was printed on', () => {
+  const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
+  const power = s.nodes.find((n) => n.title === 'CarPropertyService');
+  const entries = carEntries(power.body);
+  const first = entries[0];
+
+  assert.equal(power.body[first.at], power.body[0], 'at indexes into the body it came from');
+  assert.equal(
+    read('fixtures/car-service-sample.txt').split('\n')[power.bodyAt + first.at - 1].trim(),
+    first.line,
+    'and bodyAt turns that into the line of the file it is on');
+});
+
+test('several names and values on one line are several attributes', () => {
+  // *Power HAL* prints all three of its answers on one line
+  const entries = carEntries(['  isPowerStateSupported:true, isDeepSleepAllowed:false, isHibernationAllowed:false']);
+
+  assert.deepEqual(entries.map((e) => [e.key, e.value]), [
+    ['isPowerStateSupported', 'true'],
+    ['isDeepSleepAllowed', 'false'],
+    ['isHibernationAllowed', 'false'],
+  ]);
+  assert.deepEqual(entries.map((e) => e.field), [0, 1, 2], 'each is addressable on its own');
+});
+
+test('a name followed by something with fields of its own stays one attribute', () => {
+  // the first separator is a colon and the rest are equals: this is
+  // `mCurrentState: <a CpmsState>`, not four things printed side by side
+  const entries = carEntries([
+    '  mCurrentState: CpmsState canPostpone=false, carPowerStateListenerState=6, CpmsState=ON(1)',
+  ]);
+
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].key, 'mCurrentState');
+  assert.match(entries[0].value, /^CpmsState canPostpone=false,/);
+});
+
+test('what a split line printed under it belongs to the last of its fields', () => {
+  const entries = carEntries([
+    '  a:1, b:2',
+    '    under: here',
+  ]);
+
+  assert.deepEqual(entries.map((e) => e.key), ['a', 'b']);
+  assert.deepEqual(entries[0].children, []);
+  assert.deepEqual(entries[1].children.map((c) => c.key), ['under']);
 });

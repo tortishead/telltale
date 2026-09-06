@@ -91,7 +91,12 @@ export function digest(scene) {
   if (scene.globals && Object.keys(scene.globals).length) {
     out.push('globals:');
     for (const [k, v] of Object.entries(scene.globals)) {
-      if (v !== null && v !== undefined && v !== '') out.push(`  ${k}: ${v}`);
+      if (v === null || v === undefined || v === '') continue;
+      /* A lookup table — a car_service dump's property names — is hundreds of
+         entries and would bury the rest. Its size is what a diff can read, and
+         the tests next door say what is in it. */
+      const plain = typeof v === 'object' && !Array.isArray(v);
+      out.push(`  ${k}: ${plain ? `${Object.keys(v).length} entries` : v}`);
     }
     out.push('');
   }

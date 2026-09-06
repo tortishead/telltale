@@ -1,0 +1,52 @@
+tool: car
+displays: 1
+nodes: 38
+
+display 0  label=car service  size=0x0
+    meta: 16 services · 38 sections
+    1  car-failed      vis=y                                             failed to dump              CarOemProxyService
+    2  car-service     vis=y                                             -                           CarFeatureController
+    3  car-service     vis=y                                             -                           CarPropertyService
+    4  car-service     vis=y                                             -                           CarDrivingStateService
+    5  car-service     vis=y                                             -                           OccupantZoneService
+    6  car-section     vis=y         ^car:56                             -                           mOccupantsConfig
+    7  car-section     vis=y         ^car:56                             -                           mDisplayConfigs
+    8  car-section     vis=y         ^car:56                             -                           mAudioZoneIdToOccupantZoneIdMapping
+    9  car-section     vis=y         ^car:56                             -                           mActiveOccupantConfigs
+   10  car-service     vis=y                                             -                           CarUserNoticeService
+   11  car-service     vis=y                                             -                           CarBluetoothService
+   12  car-service     vis=y                                             -                           Input Service
+   13  car-section     vis=y         ^car:79                             -                           InputCaptureClientController
+   14  car-section     vis=y         ^car:82                             -                           Display:1
+   15  car-section     vis=y         ^car:83                             -                           All clients:
+   16  car-section     vis=y         ^car:83                             empty                       Full capture stack
+   17  car-section     vis=y         ^car:83                             -                           Per Input stack, input type:10
+   18  car-section     vis=y         ^car:83                             -                           Per Input stack, input type:100
+   19  car-section     vis=y         ^car:83                             -                           Per Input stack, input type:101
+   20  car-section     vis=y         ^car:83                             -                           Per Input stack, input type:102
+   21  car-section     vis=y         ^car:82                             -                           Display:2
+   22  car-section     vis=y         ^car:95                             -                           All clients:
+   23  car-section     vis=y         ^car:95                             -                           Full capture stack
+   24  car-service     vis=y                                             -                           CarAudioService
+   25  car-section     vis=y         ^car:101                            -                           CarZonesAudioFocus
+   26  car-section     vis=y         ^car:107                            -                           CarAudioFocus
+   27  car-section     vis=y         ^car:107                            empty                       CarAudioFocus
+   28  car-hal         vis=y                                             -                           Dump Vehicle HAL
+   29  car-hal         vis=y         ^car:124                            empty                       dump HAL services
+   30  car-hal         vis=y                                             -                           Power HAL
+   31  car-hal         vis=y                                             -                           Input HAL
+   32  car-hal         vis=y                                             empty                       Diagnostic HAL
+   33  car-hal         vis=y                                             -                           VMS HAL
+   34  car-hal         vis=y                                             -                           ExternalTime HAL
+   35  car-section     vis=y         ^car:140                            -                           All properties
+   36  car-section     vis=y         ^car:140                            -                           All Events, now ns:197686573386954
+   37  car-section     vis=y         ^car:140                            -                           Property handlers
+   38  car-service     vis=y                                             -                           Dump Car Service RROs
+
+globals:
+  versions: Android SDK_INT,34,Car Version,CarVersion[name=Car.CAR_VERSION, major=34, minor=0],Platform Version,PlatformVersion[name=Car.PLATFORM_VERSION, major=34, minor=0],CarBuiltin Platform minor,0,Car API major,34,Car API minor,0,Car Platform minor,0,VHAL and Car User Service Priority Init,true
+  propNames: 7 entries
+  services: 16
+  sections: 38
+  failed: car:12
+  lines: 171

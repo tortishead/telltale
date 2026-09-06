@@ -27,6 +27,7 @@ const CASES = [
   { name: 'package-sample', parse: 'parsePackageDump' },
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
+  { name: 'car-service-sample', parse: 'parseCarServiceDump' },
 ];
 
 /* Every fixture is `tests/fixtures/<name>.txt` and every golden is
