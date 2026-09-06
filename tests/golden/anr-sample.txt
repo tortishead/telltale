@@ -1,0 +1,31 @@
+tool: anr
+displays: 1
+nodes: 14
+
+display 0  label=pid 12345  name=com.example.shop  size=0x0
+    meta: 12 threads
+    wait edges: 2
+    cycles: none
+    chain to main: 1 <- 12 <- 7
+    main: main  idle=n
+    finding: Main thread blocked on monitor 0x0e2b8f8f
+    finding: Disk I/O in "DB-writer" (tid 7) — main is waiting behind it
+    1  anr-main        vis=y                                             main,blocked                main
+    2  anr-blocked     vis=y                                             blocks main,blocked,holds · 1 waiting,daemon  Worker-3
+    3  anr-native      vis=y                                             blocks main,holds · 1 waiting,daemon  DB-writer
+    4  anr-waiting     vis=n                                             daemon                      Signal Catcher
+    5  anr-waiting     vis=n                                             daemon                      HeapTaskDaemon
+    6  anr-pool        vis=y                                             -                           Binder pool · pid 12345
+    7  anr-native      vis=n         ^0:pool:Binder:12345                -                           Binder:12345_1
+    8  anr-native      vis=n         ^0:pool:Binder:12345                -                           Binder:12345_2
+    9  anr-native      vis=n         ^0:pool:Binder:12345                -                           Binder:12345_3
+   10  anr-native      vis=y         ^0:pool:Binder:12345                -                           Binder:12345_4
+   11  anr-pool        vis=n                                             -                           pool-5 workers
+   12  anr-waiting     vis=n         ^0:pool:pool-5                      daemon                      pool-5-thread-1
+   13  anr-waiting     vis=n         ^0:pool:pool-5                      daemon                      pool-5-thread-2
+   14  anr-waiting     vis=n         ^0:pool:pool-5                      daemon                      pool-5-thread-3
+
+globals:
+  processes: 1
+  threads: 12
+  fingerprint: google/panther/panther:15/AP4A.250105.002/12345678:user/release-keys

@@ -1,0 +1,154 @@
+----- pid 12345 at 2026-08-03 10:23:45.123456789+0200 -----
+Cmd line: com.example.shop
+Build fingerprint: 'google/panther/panther:15/AP4A.250105.002/12345678:user/release-keys'
+ABI: 'arm64'
+Build type: optimized
+suspend all histogram:  Sum: 3.211ms 99% C.I. 3us-1932us Avg: 401.375us Max: 1932us
+DALVIK THREADS (14):
+"main" prio=5 tid=1 Blocked
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x72b8b4a8 self=0xb4000078e2a10800
+  | sysTid=12345 nice=-10 cgrp=top-app sched=0/0 handle=0x7cf1e4b4f8
+  | state=S schedstat=( 1284739201 41938471 3921 ) utm=98 stm=30 core=3 HZ=100
+  | stack=0x7fe2c9a000-0x7fe2c9c000 stackSize=8188KB
+  | held mutexes=
+  at com.example.shop.cart.CartRepository.getItems(CartRepository.java:88)
+  - waiting to lock <0x0e2b8f8f> (a com.example.shop.cart.CartRepository) held by thread 12
+  at com.example.shop.cart.CartViewModel.refresh(CartViewModel.java:41)
+  at com.example.shop.ui.CartFragment.onResume(CartFragment.java:126)
+  at androidx.fragment.app.Fragment.performResume(Fragment.java:3061)
+  at android.app.Activity.performResume(Activity.java:8901)
+  at android.app.ActivityThread.performResumeActivity(ActivityThread.java:5312)
+  at android.app.ActivityThread.handleResumeActivity(ActivityThread.java:5377)
+  at android.os.Handler.dispatchMessage(Handler.java:106)
+  at android.os.Looper.loopOnce(Looper.java:205)
+  at android.os.Looper.loop(Looper.java:294)
+  at android.app.ActivityThread.main(ActivityThread.java:8177)
+  at java.lang.reflect.Method.invoke(Native method)
+  at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+  at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+
+"Worker-3" daemon prio=5 tid=12 Blocked
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13040d78 self=0xb4000078e2a3f000
+  | sysTid=12411 nice=0 cgrp=default sched=0/0 handle=0x7ba1c3d4f8
+  | state=S schedstat=( 22193847 8172635 981 ) utm=12 stm=9 core=1 HZ=100
+  | held mutexes=
+  at com.example.shop.sync.SyncEngine.flush(SyncEngine.java:203)
+  - waiting to lock <0x1a4f2201> (a com.example.shop.db.WriteQueue) held by thread 7
+  at com.example.shop.cart.CartRepository.reload(CartRepository.java:141)
+  - locked <0x0e2b8f8f> (a com.example.shop.cart.CartRepository)
+  at com.example.shop.sync.SyncEngine$1.run(SyncEngine.java:64)
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+  at java.lang.Thread.run(Thread.java:1012)
+
+"DB-writer" daemon prio=5 tid=7 Native
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13040e90 self=0xb4000078e2a55000
+  | sysTid=12388 nice=0 cgrp=default sched=0/0 handle=0x7ba0f114f8
+  | state=D schedstat=( 918273645 728192 4412 ) utm=61 stm=140 core=5 HZ=100
+  | held mutexes=
+  native: #00 pc 000000000008f1cc  /apex/com.android.runtime/lib64/bionic/libc.so (__fdatasync+8)
+  native: #01 pc 00000000000f21a4  /apex/com.android.runtime/lib64/libsqlite.so (unixSync+180)
+  at libcore.io.Linux.fdatasync(Native method)
+  at libcore.io.BlockGuardOs.fdatasync(BlockGuardOs.java:106)
+  at java.io.FileOutputStream.write(FileOutputStream.java:401)
+  at android.database.sqlite.SQLiteConnection.nativeExecute(Native method)
+  at android.database.sqlite.SQLiteSession.endTransaction(SQLiteSession.java:439)
+  at com.example.shop.db.WriteQueue.drain(WriteQueue.java:77)
+  - locked <0x1a4f2201> (a com.example.shop.db.WriteQueue)
+  at com.example.shop.db.WriteQueue$Pump.run(WriteQueue.java:31)
+  at java.lang.Thread.run(Thread.java:1012)
+
+"Binder:12345_2" prio=5 tid=15 Native
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041220 self=0xb4000078e2a71000
+  | sysTid=12420 nice=0 cgrp=default sched=0/0 handle=0x7b9f2244f8
+  | state=S schedstat=( 3918273 182736 221 ) utm=0 stm=0 core=2 HZ=100
+  | held mutexes=
+  native: #00 pc 00000000000a1f30  /apex/com.android.runtime/lib64/bionic/libc.so (__ioctl+8)
+  native: #01 pc 0000000000055aa8  /system/lib64/libbinder.so (android::IPCThreadState::joinThreadPool+128)
+  (no managed stack frames)
+
+"Binder:12345_1" prio=5 tid=13 Native
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041108 self=0xb4000078e2a68000
+  | sysTid=12415 nice=0 cgrp=default sched=0/0 handle=0x7b9f8884f8
+  | state=S schedstat=( 2918273 172736 201 ) utm=0 stm=0 core=4 HZ=100
+  | held mutexes=
+  native: #00 pc 00000000000a1f30  /apex/com.android.runtime/lib64/bionic/libc.so (__ioctl+8)
+  native: #01 pc 0000000000055aa8  /system/lib64/libbinder.so (android::IPCThreadState::joinThreadPool+128)
+  (no managed stack frames)
+
+"Binder:12345_3" prio=5 tid=16 Native
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041338 self=0xb4000078e2a7c000
+  | sysTid=12425 nice=0 cgrp=default sched=0/0 handle=0x7b9e6664f8
+  | state=S schedstat=( 1918273 152736 181 ) utm=0 stm=0 core=6 HZ=100
+  | held mutexes=
+  native: #00 pc 00000000000a1f30  /apex/com.android.runtime/lib64/bionic/libc.so (__ioctl+8)
+  native: #01 pc 0000000000055aa8  /system/lib64/libbinder.so (android::IPCThreadState::joinThreadPool+128)
+  (no managed stack frames)
+
+"Binder:12345_4" prio=5 tid=17 Native
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041450 self=0xb4000078e2a88000
+  | sysTid=12429 nice=0 cgrp=default sched=0/0 handle=0x7b9d5554f8
+  | state=S schedstat=( 5918273 252736 301 ) utm=2 stm=1 core=0 HZ=100
+  | held mutexes=
+  at android.os.BinderProxy.transactNative(Native method)
+  at android.os.BinderProxy.transact(BinderProxy.java:584)
+  at android.content.ContentProviderProxy.query(ContentProviderNative.java:483)
+  at com.example.shop.push.PushService.onHandle(PushService.java:58)
+  at android.os.Binder.execTransactInternal(Binder.java:1339)
+  at android.os.Binder.execTransact(Binder.java:1275)
+
+"pool-5-thread-1" daemon prio=5 tid=20 Waiting
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041568 self=0xb4000078e2a94000
+  | sysTid=12440 nice=0 cgrp=default sched=0/0 handle=0x7b9c4444f8
+  | state=S schedstat=( 918273 52736 101 ) utm=0 stm=0 core=2 HZ=100
+  | held mutexes=
+  at jdk.internal.misc.Unsafe.park(Native method)
+  at java.util.concurrent.locks.LockSupport.park(LockSupport.java:194)
+  at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:426)
+  at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1063)
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1123)
+  at java.lang.Thread.run(Thread.java:1012)
+
+"pool-5-thread-2" daemon prio=5 tid=21 Waiting
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041680 self=0xb4000078e2aa0000
+  | sysTid=12441 nice=0 cgrp=default sched=0/0 handle=0x7b9b3334f8
+  | state=S schedstat=( 818273 42736 91 ) utm=0 stm=0 core=3 HZ=100
+  | held mutexes=
+  at jdk.internal.misc.Unsafe.park(Native method)
+  at java.util.concurrent.locks.LockSupport.park(LockSupport.java:194)
+  at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:426)
+  at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1063)
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1123)
+  at java.lang.Thread.run(Thread.java:1012)
+
+"pool-5-thread-3" daemon prio=5 tid=22 Waiting
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x13041798 self=0xb4000078e2aac000
+  | sysTid=12442 nice=0 cgrp=default sched=0/0 handle=0x7b9a2224f8
+  | state=S schedstat=( 718273 32736 81 ) utm=0 stm=0 core=1 HZ=100
+  | held mutexes=
+  at jdk.internal.misc.Unsafe.park(Native method)
+  at java.util.concurrent.locks.LockSupport.park(LockSupport.java:194)
+  at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:426)
+  at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1063)
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1123)
+  at java.lang.Thread.run(Thread.java:1012)
+
+"Signal Catcher" daemon prio=10 tid=6 WaitingInMainSignalCatcherLoop
+  | group="system" sCount=1 dsCount=0 flags=1 obj=0x13040b48 self=0xb4000078e2a22000
+  | sysTid=12352 nice=0 cgrp=default sched=0/0 handle=0x7ba3e124f8
+  | state=S schedstat=( 812736 91827 12 ) utm=0 stm=0 core=0 HZ=100
+  | held mutexes=
+  native: #00 pc 00000000000a2b1c  /apex/com.android.runtime/lib64/bionic/libc.so (__rt_sigtimedwait+8)
+
+"HeapTaskDaemon" daemon prio=5 tid=9 Waiting
+  | group="system" sCount=1 dsCount=0 flags=1 obj=0x13040c60 self=0xb4000078e2a31000
+  | sysTid=12360 nice=4 cgrp=default sched=0/0 handle=0x7ba2d334f8
+  | state=S schedstat=( 41827364 8172635 411 ) utm=3 stm=1 core=7 HZ=100
+  | held mutexes=
+  at java.lang.Object.wait(Native method)
+  - waiting on <0x03ac1d55> (a java.lang.Daemons$HeapTaskDaemon)
+  at java.lang.Daemons$HeapTaskDaemon.runInternal(Daemons.java:531)
+  at java.lang.Daemons$Daemon.run(Daemons.java:145)
+  at java.lang.Thread.run(Thread.java:1012)
+
+----- end 12345 -----

@@ -1,0 +1,149 @@
+Packages:
+  Package [com.example.shop] (a1b2c3d):
+    userId=10233
+    pkg=Package{1f2e3d4 com.example.shop}
+    codePath=/data/app/~~AbCdEf==/com.example.shop-XyZ==
+    resourcePath=/data/app/~~AbCdEf==/com.example.shop-XyZ==
+    primaryCpuAbi=arm64-v8a
+    versionCode=4210 minSdk=26 targetSdk=35
+    versionName=7.3.1
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ]
+    dataDir=/data/user/0/com.example.shop
+    timeStamp=2026-08-01 09:12:44
+    firstInstallTime=2025-11-02 18:03:10
+    lastUpdateTime=2026-08-01 09:12:44
+    signatures=PackageSignatures{9a8b7c version:3, signatures:[8f2c1d09], past signatures:[]}
+    declared permissions:
+      com.example.shop.permission.SYNC: prot=signature, INSTALLED
+    requested permissions:
+      android.permission.INTERNET
+      android.permission.CAMERA
+      android.permission.ACCESS_FINE_LOCATION
+    install permissions:
+      android.permission.INTERNET: granted=true
+    User 0: ceDataInode=131074 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+      gids=[3003]
+      runtime permissions:
+        android.permission.CAMERA: granted=true, flags=[ USER_SET ]
+        android.permission.ACCESS_FINE_LOCATION: granted=false, flags=[ USER_SET|USER_FIXED ]
+    User 10: ceDataInode=262145 installed=true hidden=false suspended=false distractionFlags=0 stopped=true notLaunched=false enabled=3 instant=false virtual=false
+      gids=[3003]
+      runtime permissions:
+        android.permission.CAMERA: granted=false, flags=[ USER_SET ]
+      disabledComponents:
+        com.example.shop.push.PushReceiver
+
+  Package [com.example.old] (b2c3d4e):
+    userId=10244
+    codePath=/data/app/~~GhIjKl==/com.example.old-QrS==
+    versionCode=88 minSdk=24 targetSdk=31
+    versionName=1.4.0
+    flags=[ HAS_CODE ALLOW_BACKUP ]
+    privateFlags=[ ]
+    timeStamp=2024-02-11 07:41:02
+    firstInstallTime=2024-02-11 07:41:02
+    lastUpdateTime=2024-02-11 07:41:02
+    requested permissions:
+      android.permission.INTERNET
+    install permissions:
+      android.permission.INTERNET: granted=true
+    User 0: ceDataInode=131075 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+
+  Package [com.android.systemui] (c3d4e5f):
+    userId=10046
+    sharedUser=SharedUserSetting{7d8e9f android.uid.systemui/10046}
+    codePath=/system_ext/priv-app/SystemUI
+    resourcePath=/system_ext/priv-app/SystemUI
+    versionCode=35 minSdk=35 targetSdk=35
+    versionName=15
+    flags=[ SYSTEM HAS_CODE PERSISTENT ]
+    privateFlags=[ PRIVILEGED PRIVATE_FLAG_DIRECT_BOOT_AWARE ]
+    timeStamp=2009-01-01 00:00:00
+    firstInstallTime=2009-01-01 00:00:00
+    lastUpdateTime=2009-01-01 00:00:00
+    requested permissions:
+      android.permission.STATUS_BAR_SERVICE
+      android.permission.MANAGE_USERS
+    install permissions:
+      android.permission.STATUS_BAR_SERVICE: granted=true
+      android.permission.MANAGE_USERS: granted=true
+    User 0: ceDataInode=65538 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+    User 10: ceDataInode=196609 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+
+  Package [com.android.keyguard] (d4e5f6a):
+    userId=10046
+    sharedUser=SharedUserSetting{7d8e9f android.uid.systemui/10046}
+    codePath=/system_ext/priv-app/Keyguard
+    versionCode=35 minSdk=35 targetSdk=35
+    versionName=15
+    flags=[ SYSTEM HAS_CODE ]
+    privateFlags=[ PRIVILEGED ]
+    timeStamp=2009-01-01 00:00:00
+    User 0: ceDataInode=65539 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+
+com.android.oem.tokens overlay paths:
+    /product/overlay/OemTokens.apk
+
+  Package [com.android.settings] (e5f6a7b):
+    userId=1000
+    sharedUserId=android.uid.system
+    codePath=/system/priv-app/Settings
+    versionCode=35 minSdk=35 targetSdk=35
+    versionName=15
+    flags=[ SYSTEM HAS_CODE UPDATED_SYSTEM_APP ]
+    privateFlags=[ PRIVILEGED ]
+    timeStamp=2026-06-14 11:20:05
+    firstInstallTime=2009-01-01 00:00:00
+    lastUpdateTime=2026-06-14 11:20:05
+    requested permissions:
+      android.permission.WRITE_SECURE_SETTINGS
+    install permissions:
+      android.permission.WRITE_SECURE_SETTINGS: granted=true
+    User 0: ceDataInode=65540 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+    User 10: ceDataInode=196610 installed=false hidden=false suspended=false distractionFlags=0 stopped=true notLaunched=true enabled=0 instant=false virtual=false
+
+  Package [com.android.webview] (a8b9c0d):
+    userId=10047
+    codePath=/data/app/~~MnOpQr==/com.android.webview-TuV==
+    versionCode=125 minSdk=29 targetSdk=35
+    versionName=125.0.6422.165
+    flags=[ SYSTEM HAS_CODE UPDATED_SYSTEM_APP ]
+    privateFlags=[ ]
+    timeStamp=2026-07-19 04:55:31
+    firstInstallTime=2009-01-01 00:00:00
+    lastUpdateTime=2026-07-19 04:55:31
+    User 0: ceDataInode=131076 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+
+  Package [com.android.wallpaperbackup] (b9c0d1e):
+    userId=1000
+    sharedUserId=android.uid.system
+    codePath=/system/app/WallpaperBackup
+    versionCode=35 minSdk=35 targetSdk=35
+    versionName=15
+    flags=[ SYSTEM HAS_CODE ]
+    privateFlags=[ ]
+    timeStamp=2009-01-01 00:00:00
+    User 0: ceDataInode=65541 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+
+  Package [com.android.media.swcodec] (f6a7b8c):
+    userId=1046
+    codePath=/apex/com.android.media.swcodec
+    versionCode=350000000 minSdk=35 targetSdk=35
+    versionName=35
+    flags=[ SYSTEM ]
+    privateFlags=[ ]
+    timeStamp=2009-01-01 00:00:00
+    User 0: ceDataInode=0 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+
+Hidden system packages:
+  Package [com.android.settings] (a7b8c9d):
+    userId=1000
+    sharedUserId=android.uid.system
+    codePath=/system/priv-app/Settings
+    versionCode=34 minSdk=34 targetSdk=34
+    versionName=14
+    flags=[ SYSTEM HAS_CODE ]
+    privateFlags=[ PRIVILEGED ]
+    timeStamp=2009-01-01 00:00:00
+    User 0: ceDataInode=0 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false

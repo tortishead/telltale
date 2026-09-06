@@ -1,0 +1,27 @@
+tool: package
+displays: 2
+nodes: 14
+
+display 0  name=owner  size=0x0
+    meta: 9 packages · 2 third-party
+    1  pkg-shared      vis=y                                             -                           android.uid.system
+    2  pkg-shared      vis=y                                             -                           android.uid.systemui
+    3  pkg-priv        vis=y         ^0:shared:android.uid.systemui      -                           com.android.keyguard
+    4  pkg-apex        vis=y                                             -                           com.android.media.swcodec
+    5  pkg-priv        vis=y         ^0:shared:android.uid.system        -                           com.android.settings
+    6  pkg-priv        vis=y         ^0:shared:android.uid.system        shadowed                    com.android.settings
+    7  pkg-priv        vis=y         ^0:shared:android.uid.systemui      -                           com.android.systemui
+    8  pkg-system      vis=y         ^0:shared:android.uid.system        -                           com.android.wallpaperbackup
+    9  pkg-updated     vis=y                                             -                           com.android.webview
+   10  pkg-app         vis=y                                             -                           com.example.old
+   11  pkg-app         vis=y                                             -                           com.example.shop
+
+display 10  size=0x0
+    meta: 3 packages · 1 third-party
+    1  pkg-priv        vis=n                                             not installed,stopped       com.android.settings
+    2  pkg-priv        vis=y                                             -                           com.android.systemui
+    3  pkg-app         vis=n                                             disabled by user,stopped    com.example.shop
+
+globals:
+  packages: 9
+  shadowed: 1

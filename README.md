@@ -595,6 +595,46 @@ would mean a bundler and a build step to get back what the page has now.
 Sections in the file do the job instead: parse, state, render, events, in that
 order, with a comment at each boundary.
 
+## Tests
+
+```
+node --test 'tests/**/*.test.mjs'
+```
+
+Node 18 or newer, and nothing else — no install, no build, no dependencies.
+The page still ships as one file; the tests are a development tool the way
+`tools/flag-docs.py` is a maintenance one, and nothing under `tests/` or
+`tools/` is fetched by `index.html`.
+
+`tools/parse-layer.mjs` reads `index.html` itself, slices out everything above
+the `state and shared helpers` heading and evaluates it. That works because the
+parse layer touches no DOM and no state — text in, scene out — so it runs as-is
+under node. It also means the layering is checked rather than merely asserted:
+if a parser starts reaching forward into a later layer, the slice stops
+evaluating and the tests fail naming what it reached for.
+
+There are two kinds of test. `tests/parsers.test.mjs` states the behaviour a
+parser is supposed to have, one claim at a time, and covers the cases the
+source comments call out as ones a build has already broken — gravity that
+prints as one word, the column-zero line in the middle of `Packages:`, a flag
+from a build newer than the table. `tests/golden.test.mjs` runs every fixture
+through its parser and compares a digest of the scene to a file under
+`tests/golden`, which catches drift nobody thought to assert on. The digest is
+text rather than JSON so a diff is readable — and because an ANR scene holds a
+wait-for graph with cycles in it and does not serialise.
+
+When a golden changes on purpose, read the diff, satisfy yourself it is the
+change you made, then rewrite them:
+
+```
+UPDATE_GOLDEN=1 node --test 'tests/**/*.test.mjs'
+```
+
+The fixtures are `sample.txt`, `sf-sample.txt` and `window.txt` beside
+`index.html`, plus `tests/fixtures`. `window.txt` is a real dump off a device
+rather than a written one, so it is the one that keeps the window parser honest
+about what `dumpsys` actually prints.
+
 ## Limits
 
 Telltale reads the **text** dumps only. If you can get proto output

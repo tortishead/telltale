@@ -1,0 +1,17 @@
+tool: window
+displays: 1
+nodes: 7
+
+display 0  size=1080x2340  focus=Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}
+    1  bar             [0,2208][1080,2340]       frame       vis=y                                             -                           NavigationBar0
+    2  bar             [0,0][1080,130]           mFrame      vis=y                                             -                           StatusBar
+    3  ime             [0,1474][1080,2340]       mFrame      vis=n                                             -                           InputMethod
+    4  panel           [120,640][960,1160]       mFrame      vis=y                                             -                           PopupWindow:1a2b3c
+    5  app             [0,0][1080,2340]          frame       vis=y  focus                                      -                           com.example.player/com.example.player.MainActivity
+    6  app             [0,0][1080,2340]          mFrame      vis=n                                             exiting                     com.example.old/com.example.old.SplashActivity
+    7  wallpaper       [0,0][1080,2340]          mFrame      vis=y                                             -                           com.android.systemui.ImageWallpaper
+
+globals:
+  focus: Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}
+  focusedApp: ActivityRecord{7f3e2d u0 com.example.player/.MainActivity t42}
+  imeTarget: Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}
