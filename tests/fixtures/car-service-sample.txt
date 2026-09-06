@@ -1,0 +1,170 @@
+*Dump car service*
+*Dump versions*
+Android SDK_INT: 34
+Car Version: CarVersion[name=Car.CAR_VERSION, major=34, minor=0]
+Platform Version: PlatformVersion[name=Car.PLATFORM_VERSION, major=34, minor=0]
+CarBuiltin Platform minor: 0
+Legacy versions (might differ from above as they can't be emulated)
+  Car API major: 34
+  Car API minor: 0
+  Car Platform minor: 0
+  VHAL and Car User Service Priority Init: true
+*Dump all services*
+***CarOemProxyService dump***
+  mIsFeatureEnabled: false
+  mIsOemServiceBound: false
+  mIsOemServiceReady: false
+  mIsOemServiceConnected: false
+  mInitComplete: false
+  OEM_CAR_SERVICE_CONNECTED_TIMEOUT_MS: 5000
+  OEM_CAR_SERVICE_READY_TIMEOUT_MS: 5000
+  mComponentName: 
+  waitForOemServiceConnected completed in : 0 ms
+  Failed dumping: com.android.car.oem.CarOemProxyService
+  java.lang.NullPointerException: Attempt to invoke virtual method 'void com.android.car.oem.CarOemAudioFocusProxyService.dump(com.android.car.internal.util.IndentingPrintWriter)' on a null object reference
+  	at com.android.car.oem.CarOemProxyService.dump(CarOemProxyService.java:320)
+  	at com.android.car.ICarImpl.dumpService(ICarImpl.java:1001)
+  	at com.android.car.ICarImpl.dumpAllServices(ICarImpl.java:969)
+  *CarFeatureController*
+   mEnabledFeatures:[car_device_policy_service, hvac, storage_monitoring, cabin, car-service-test, cluster_home_service, vehicle_map_service, vehicle_map_subscriber_service, uxrestriction, com.android.car.user.CarUserNoticeService, car_navigation_service, drivingstate, property, audio, power, projection, diagnostic, car_occupant_zone_service, info, car_bugreport, car_media, app_focus, package, car_evs_service, car_watchdog, vendor_extension, car_bluetooth, car_performance, car_user_service, car_activity_service, android.car.input, car_telemetry_service, sensor]
+   mDefaultEnabledFeaturesFromConfig:[car_evs_service, car_navigation_service, car_telemetry_service, cluster_home_service, com.android.car.user.CarUserNoticeService, diagnostic, storage_monitoring, vehicle_map_service]
+   mDisabledFeaturesFromVhal:[]
+   mAvailableExperimentalFeatures:[]
+   mPendingEnabledFeatures:[]
+   mPendingDisabledFeatures:[]
+  *CarPropertyService*
+    There are 8 clients using CarPropertyService.
+    Current sync operation count: 0
+    Properties registered: 
+      propId: 0x11200402 is registered by 1 client(s).
+      propId: 0x11200407 is registered by 1 client(s).
+      propId: 0x11400400 is registered by 2 client(s).
+      propId: 0x11400409 is registered by 1 client(s).
+      propId: 0x1140050d is registered by 1 client(s).
+      propId: 0x1140050e is registered by 1 client(s).
+      propId: 0x11600104 is registered by 1 client(s).
+    Properties changed by CarPropertyService: 
+      propId: 0x21410f35 areaId: 0x0 by client: com.android.car.CarPropertyService$Client@cebc27b
+  *CarDrivingStateService*
+  Driving State Clients:
+    callbacks: 2
+    killed: false
+    broadcasts count: -1
+  Driving state change log:
+  03-21 16:50:36 CarDrivingStateService Boot: changed from -1 to 0
+  Current Driving State: 0
+  Supported gears: 4 1 2 8 16 32 64 128 256
+  *OccupantZoneService*
+  **mOccupantsConfig**
+   zoneId=0 info=OccupantZoneInfo{zoneId=0 type=0 seat=1}
+  **mDisplayConfigs**
+   port=0 config={displayType=1 occupantZoneId=0 inputTypes=[210, 100, 101, 10]}
+   uniqueId=virtual:com.android.car.cluster.osdouble:ClusterDisplay config={displayType=2 occupantZoneId=0 inputTypes=[100]}
+  **mAudioZoneIdToOccupantZoneIdMapping**
+   audioZoneId=0 zoneId=0
+  **mActiveOccupantConfigs**
+   zoneId=0 config={userId=10 displays={displayId=0 displayType=1}{displayId=3 displayType=2} audioZoneId=0}
+  mEnableProfileUserAssignmentForMultiDisplay:false
+  mEnableSourcePreferred:false
+  mSourcePreferredComponents: []
+  hasDriverZone: true
+  *CarUserNoticeService* mServiceIntent:Intent { cmp=com.google.android.car.setupwizard/.account.ShortNoticeService }, mUserId:10, mUiShown:true, mServiceBound:false, mKeyguardPollingCounter:0, Setting enabled:true, Ignore User: -10000
+  CarPerUserServiceHelper
+    bound: true
+    2 callbacks
+  * CarBluetoothService *
+  CarPerUserServiceHelper
+    bound: true
+    2 callbacks
+  User ID: 10
+  *Input Service*
+  Long-press delay: 400ms
+  Call button ends ongoing call: false
+  **InputCaptureClientController**
+  ***Display:1
+  ****All clients:
+  Client{uid:1010163,pid:1466,callback:android.car.input.ICarInputCallback$Stub$Proxy@b16c013,inputTypes:[10, 100, 101, 102],flags:1,grantedTypes:[10, 100, 101, 102]}
+  ****Full capture stack
+  **** Per Input stack, input type:10
+  Client{uid:1010163,pid:1466,callback:android.car.input.ICarInputCallback$Stub$Proxy@b16c013,inputTypes:[10, 100, 101, 102],flags:1,grantedTypes:[10, 100, 101, 102]}
+  **** Per Input stack, input type:100
+  Client{uid:1010163,pid:1466,callback:android.car.input.ICarInputCallback$Stub$Proxy@b16c013,inputTypes:[10, 100, 101, 102],flags:1,grantedTypes:[10, 100, 101, 102]}
+  **** Per Input stack, input type:101
+  Client{uid:1010163,pid:1466,callback:android.car.input.ICarInputCallback$Stub$Proxy@b16c013,inputTypes:[10, 100, 101, 102],flags:1,grantedTypes:[10, 100, 101, 102]}
+  **** Per Input stack, input type:102
+  Client{uid:1010163,pid:1466,callback:android.car.input.ICarInputCallback$Stub$Proxy@b16c013,inputTypes:[10, 100, 101, 102],flags:1,grantedTypes:[10, 100, 101, 102]}
+  ***Display:2
+  ****All clients:
+  Client{uid:10141,pid:1082,callback:android.car.input.ICarInputCallback$Stub$Proxy@8e7c250,inputTypes:[1],flags:2,grantedTypes:[]}
+  ****Full capture stack
+  Client{uid:10141,pid:1082,callback:android.car.input.ICarInputCallback$Stub$Proxy@8e7c250,inputTypes:[1],flags:2,grantedTypes:[]}
+  mNumKeyEventsDispatched:0,mNumRotaryEventsDispatched:0
+  *CarAudioService*
+    Configurations:
+      Run in legacy mode? false
+      Rely on core audio for volume(false)
+      Rely on core audio for routing(false)
+      Audio Patch APIs enabled? false
+    *CarZonesAudioFocus*
+      Has Focus Callback: true
+      Car Zones Audio Focus Listeners:
+        Zone Id: 0
+          *CarAudioFocus*
+            Audio Zone ID: 0
+            Is focus restricted? false
+            Is external focus eval enabled? false
+            
+            Reject Navigation on Call: false
+            Current Focus Holders:
+            Transient Focus Losers:
+            Queued Delayed Focus: None
+            Focus Events:
+              2026-09-04T22:32:55.226261 - setRestrictFocus: is focus restricted false
+        Zone Id: 1
+          *CarAudioFocus*
+  *Dump Vehicle HAL*
+  Vehicle HAL Interface: android.hardware.automotive.vehicle.IVehicle
+  **dump HAL services**
+  *Power HAL*
+  isPowerStateSupported:true, isDeepSleepAllowed:false, isHibernationAllowed:false
+  *Input HAL*
+  mKeyInputSupported:true
+  mRotaryInputSupported:true
+  mKeyInputV2Supported:true
+  mMotionInputSupported:true
+  mLastFewDispatchedV2KeyEvents:
+  mLastFewDispatchedMotionEvents:
+  *Diagnostic HAL*
+  *VMS HAL*
+  VmsProperty: supported
+  VmsClient: disconnected
+  *ExternalTime HAL*
+    mLastAndroidTimeReported: 1788707331195 millis
+  CAR.PropertyHalService
+    Properties available:
+  **All properties**
+  Property:0x11100100, Property name:INFO_VIN, access:0x1, changeMode:0x0, config:[], fs min:0.000000, fs max:0.000000
+  Property:0x11100101, Property name:INFO_MAKE, access:0x1, changeMode:0x0, config:[], fs min:0.000000, fs max:0.000000
+  Property:0x11100102, Property name:INFO_MODEL, access:0x1, changeMode:0x0, config:[], fs min:0.000000, fs max:0.000000
+  Property:0x11100f21, Property name:POWER_POLICY_REQ, access:0x1, changeMode:0x1, config:[], fs min:0.000000, fs max:0.000000
+  Property:0x11100f22, Property name:POWER_POLICY_GROUP_REQ, access:0x1, changeMode:0x1, config:[], fs min:0.000000, fs max:0.000000
+  **All Events, now ns:197686573386954**
+  event count:1, lastEvent: Property:0x11410a00, status: 0, timestamp: 101115374595756, zone: 0x0, floatValues: [], int32Values: [0, 0], int64Values: [], bytes: [], string: 
+  event count:1, lastEvent: Property:0x11410a01, status: 0, timestamp: 101115383558839, zone: 0x0, floatValues: [], int32Values: [6, 0], int64Values: [], bytes: [], string: 
+  event count:1, lastEvent: Property:0x11410f35, status: 0, timestamp: 101116269049673, zone: 0x0, floatValues: [], int32Values: [1, 12, 12, 388, 438, 135, 22, 135, 22, 0, -1], int64Values: [], bytes: [], string: 
+  **Property handlers**
+  Property Id: 286261504 // 0x11100100 name: INFO_VIN, service: com.android.car.hal.PropertyHalService@65c9237
+  Property Id: 286261505 // 0x11100101 name: INFO_MAKE, service: com.android.car.hal.PropertyHalService@65c9237
+  Property Id: 286261506 // 0x11100102 name: INFO_MODEL, service: com.android.car.hal.PropertyHalService@65c9237
+  Property Id: 287310600 // 0x11200308 name: FUEL_DOOR_OPEN, service: com.android.car.hal.PropertyHalService@65c9237
+  Property Id: 287310602 // 0x1120030a name: EV_CHARGE_PORT_OPEN, service: com.android.car.hal.PropertyHalService@65c9237
+  *Dump Car Service RROs*
+  RROs for System User
+  Overlay: com.android.car.resources.vendor, Enabled: true 
+  Overlay: com.android.car.resources.gms, Enabled: true 
+  Overlay: com.android.car.resources.emulator, Enabled: true 
+  Overlay: com.android.car.resources.emulator.media, Enabled: true 
+  Overlay: com.android.car.resources.emulator.osdouble, Enabled: true 
+  Overlay: com.android.car.resources.carevsservice, Enabled: false 
+  RROs for Current User: 10
+  Overlay: com.android.car.resources.vendor, Enabled: true 

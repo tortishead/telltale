@@ -49,6 +49,13 @@
   --amber:#b08a3e;
   --ok:#5fa87a;
   --shadow:0 6px 22px rgba(0,0,0,.45);
+  /* One colour per workspace, so which desk you are on is legible without
+     reading the name. Muted and in the same key as the rest of the page — the
+     first is the redline itself, so a single workspace looks like the page
+     always did. They are chrome, not data: the hues the drawing uses to mean
+     something are in FAMILY_COLORS and none of these is one of them. */
+  --acc-1:#d81e5b; --acc-2:#2ea88a; --acc-3:#c78b32;
+  --acc-4:#8b7ad0; --acc-5:#3f92c8; --acc-6:#9aa63f;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -72,6 +79,9 @@
   --amber:#8a6420;
   --ok:#3d7a53;          /* darker than the dark theme's, to hold on paper */
   --shadow:0 6px 18px rgba(31,41,34,.16);
+  /* The same six, taken down far enough to hold on a light strip. */
+  --acc-1:#c2124f; --acc-2:#1f7a63; --acc-3:#8a6420;
+  --acc-4:#5f4fa8; --acc-5:#1f6b9c; --acc-6:#5f6b1f;
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
@@ -186,9 +196,15 @@ main{
 }
 .doc-tab:first-child{border-left:1px solid var(--rule-soft)}
 .doc-tab:hover{background:var(--ink-2); color:var(--fg)}
+/* The open tab, at either level, is marked the same three ways: it is painted
+   the colour of the surface it opens onto, its name goes to full strength, and
+   a line caps it — the open workspace's own colour, on both strips, so the
+   dump you are reading is visibly on the desk you are standing at even when
+   the two open tabs are nowhere near each other in their strips. Only the
+   weight changes with the level; see the workspace strip below. */
 .doc-tab[aria-current="true"]{
   background:var(--ink); color:var(--fg-strong);
-  box-shadow:inset 0 2px 0 var(--redline);
+  box-shadow:inset 0 2px 0 var(--wsp-accent, var(--redline));
 }
 /* sit the open tab over the rule so it joins the pane below */
 .doc-tab[aria-current="true"]::after{
@@ -222,6 +238,181 @@ main{
   color:var(--dim); border-color:transparent;
 }
 .doc-add:hover{color:var(--fg-strong); border-color:var(--rule)}
+
+/* ---------- workspaces ---------- */
+/* Two strips, one inside the other. A workspace holds dumps, so the dump strip
+   has to read as something the open workspace contains rather than as a second
+   row of the same thing. Each level is cut out of the one above it and painted
+   a shade nearer the page — bar, then the open workspace, then the dump strip,
+   then the open dump, then the sheet — so the eye can follow one out of the
+   other without a label saying which is which. */
+/* The trough each strip's tabs sit in is a shade off both the bar above it and
+   the tab lifted out of it, so the open tab, the ones beside it and the one
+   under the pointer are three tones apart at either level. */
+.wspbar{
+  flex:none; display:flex; align-items:stretch;
+  padding:0 10px; background:var(--ink);
+  border-bottom:1px solid var(--rule);
+}
+.wsp-tabs{
+  flex:1; min-width:0; display:flex; align-items:stretch; gap:4px;
+  overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+}
+.wsp-tabs::-webkit-scrollbar{height:0; width:0}
+.wsp-tab{
+  position:relative; flex:none; display:inline-flex; align-items:center; gap:2px;
+  padding:0 4px 0 11px; min-height:34px; max-width:260px;
+  border:0; border-radius:0;
+  background:none; color:var(--dim); white-space:nowrap;
+}
+.wsp-tab:hover{background:var(--ink-2); color:var(--fg)}
+/* The open workspace is marked exactly as the open dump is, because they are
+   the same kind of thing: it is painted the dump strip's own colour and the
+   rule between them is painted over, so that strip reads as the inside of this
+   tab. Weight is what separates the levels — three pixels of redline over a
+   name set in medium, against two over a name set regular — so a glance down
+   the two strips reads as one nested inside the other rather than as two rows
+   of equals. Weight rather than height: the outer strip would have to be a
+   good deal taller to say the same thing, and both strips are chrome sitting
+   on top of the drawing. */
+.wsp-tab[aria-current="true"]{
+  background:var(--ink-3); color:var(--fg-strong);
+  box-shadow:inset 0 3px 0 var(--wsp-accent, var(--redline));
+}
+.wsp-tab[aria-current="true"]::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px;
+  height:1px; background:var(--ink-3);
+}
+.wsp-open{
+  min-width:0; display:flex; align-items:baseline; gap:7px;
+  background:none; border:0; margin:0; padding:7px 0; font:inherit;
+  color:inherit; cursor:pointer;
+}
+.wsp-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600}
+/* The workspace's colour, on every tab rather than only the open one, so the
+   strip can be aimed at as well as read. It is the same small square the
+   window list marks its rows with, which is where the eye already knows to
+   look for a colour standing for a thing. */
+.wsp-swatch{
+  flex:none; width:7px; height:7px; margin-right:5px; border-radius:1px;
+  background:var(--wsp-accent, var(--redline));
+}
+.wsp-tab:not([aria-current="true"]) .wsp-swatch{opacity:.75}
+.wsp-count{flex:none; color:var(--graphite); font-size:10.5px}
+.wsp-tab[aria-current="true"] .wsp-count{color:var(--dim)}
+/* Closing a workspace throws away every dump in it and there is nothing to put
+   them back with, so the cross asks first and says how many are at stake. It
+   is the widest thing on the strip while it is asking, on purpose. */
+.wsp-close{
+  flex:none; width:19px; height:19px; display:grid; place-items:center;
+  background:none; border:0; padding:0; border-radius:2px;
+  font-size:14px; line-height:1; color:transparent; cursor:pointer;
+}
+.wsp-tab:hover .wsp-close,
+.wsp-tab[aria-current="true"] .wsp-close{color:var(--graphite)}
+.wsp-close:hover{background:var(--rule); color:var(--fg-strong)}
+.wsp-close:focus-visible{color:var(--fg-strong)}
+@media (hover:none){ .wsp-close{color:var(--graphite)} }
+.wsp-close.is-armed{
+  width:auto; padding:0 7px; font-size:11px; letter-spacing:.01em;
+  color:var(--redline); border:1px solid var(--redline);
+}
+.wsp-close.is-armed:hover{background:var(--redline); color:var(--paper)}
+/* Renaming happens in the tab, at the width the name had, so naming a
+   workspace does not shove the strip sideways and back. */
+.wsp-rename{
+  min-width:0; width:150px; margin:0 2px; padding:2px 5px;
+  background:var(--ink); border:1px solid var(--wsp-accent, var(--redline));
+  border-radius:2px; color:var(--fg-strong);
+}
+.wsp-add{
+  flex:none; align-self:center; width:24px; height:24px; padding:0;
+  display:grid; place-items:center; font-size:15px; line-height:1;
+  color:var(--dim); border-color:transparent;
+}
+.wsp-add:hover{color:var(--fg-strong); border-color:var(--rule)}
+/* ---------- the reading pane ---------- */
+/* A dump with nothing to draw but a great deal to read gets the same three
+   panes as a drawn one, with the middle holding the section that is selected
+   instead of a sheet: the list on the left picks, the middle reads, the right
+   says what it is. The alternative — the list in the middle — leaves a dump
+   whose groups are one group with an empty pane on the left. */
+body.layout-doc .pane-plan > .legend,
+body.layout-doc .pane-plan > .sheet-foot{display:none}
+body.layout-doc .sheet{
+  display:block; padding:0; overflow:auto; background:var(--ink);
+}
+body.layout-doc main{--w-stack:340px; --w-detail:380px}
+.doc{padding:14px 16px 28px; font-size:12.5px}
+.doc-sec{margin:0 0 20px}
+.doc-sec h3{
+  margin:0 0 8px; padding-bottom:5px; border-bottom:1px solid var(--rule-soft);
+  font:600 11.5px/1.3 var(--sans); letter-spacing:.05em; text-transform:uppercase;
+  color:var(--dim);
+}
+.doc-sec h3 button{
+  background:none; border:0; padding:0; font:inherit; color:inherit; cursor:pointer;
+}
+.doc-sec h3 button:hover{color:var(--fg-strong)}
+.doc-path{margin:0 0 14px; color:var(--graphite); font-size:11.5px}
+.doc-path button{
+  background:none; border:0; padding:0; font:inherit; color:var(--dim); cursor:pointer;
+}
+.doc-path button:hover{color:var(--fg-strong)}
+.doc-empty{margin:0; color:var(--dim); font-family:var(--sans)}
+/* A run of lines printed to one shape, in columns. The head stays put while
+   the six hundred properties under it go past. */
+.doc-scroll{overflow-x:auto}
+.doc-table{border-collapse:collapse; font-size:11.5px}
+.doc-table th{
+  position:sticky; top:0; z-index:1; text-align:left; white-space:nowrap;
+  padding:5px 14px 5px 0; background:var(--ink); color:var(--dim);
+  font-weight:600; border-bottom:1px solid var(--rule);
+}
+.doc-table td{
+  padding:3px 14px 3px 0; border-bottom:1px solid var(--rule-soft);
+  color:var(--fg); vertical-align:top; overflow-wrap:anywhere;
+}
+.doc-table tr:hover td{background:var(--ink-2)}
+/* What a row printed under itself, kept with the row it belongs to. */
+.doc-under td{padding-left:16px; color:var(--dim)}
+/* The name a property id resolves to, taken from elsewhere in the same dump. */
+.doc-name{color:var(--label-soft)}
+/* What a section printed, one line to a row: the name it printed, the value
+   it printed after it, and the rows it printed under that one, indented. The
+   value is one line and clipped — the row is for finding it, and the details
+   pane is for reading it. */
+.doc-search{
+  flex:none; padding:8px 14px; border-bottom:1px solid var(--rule-soft);
+  background:var(--ink);
+}
+.doc-search .filter{width:100%}
+.doc-row{
+  width:100%; display:grid; grid-template-columns:minmax(140px,34%) minmax(0,1fr);
+  gap:14px; align-items:baseline; text-align:left; cursor:pointer;
+  padding:4px 8px; border:0; border-bottom:1px solid var(--rule-soft);
+  border-left:2px solid transparent; background:none; color:inherit; font:inherit;
+}
+.doc-row:hover{background:var(--ink-2)}
+.doc-row[aria-selected="true"]{
+  background:var(--ink-3); border-left-color:var(--wsp-accent, var(--redline));
+}
+.doc-key{color:var(--dim); overflow-wrap:anywhere}
+.doc-row[aria-selected="true"] .doc-key{color:var(--fg-strong)}
+/* A line that printed no name at all — a log line, a policy with its own
+   brackets — is all key and gets the width of the row for it. */
+.doc-row.is-bare{grid-template-columns:minmax(0,1fr)}
+.doc-row.is-bare .doc-key{
+  color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.doc-val{
+  min-width:0; color:var(--fg);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.doc-under-n{color:var(--graphite)}
+/* A row kept only because something under it matched the search. */
+.doc-row.is-context .doc-key,
+.doc-row.is-context .doc-val{color:var(--graphite)}
 
 /* ---------- window list ---------- */
 .wlist{list-style:none; margin:0; padding:0}
@@ -426,8 +617,11 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
   margin:0 0 7px; font-family:var(--sans); font-size:12px; font-weight:600;
   color:var(--dim); border-bottom:1px solid var(--rule-soft); padding-bottom:4px;
 }
-.dl{display:grid; grid-template-columns:minmax(88px,auto) 1fr; gap:3px 12px; margin:0}
-.dl dt{color:var(--dim); font-size:12px}
+/* The key column sizes to its keys, but never past 45% of the pane: one long
+   key — a car_service section prints whole sentences for some of them — would
+   otherwise take the width the values needed and push them out of sight. */
+.dl{display:grid; grid-template-columns:minmax(88px,45%) 1fr; gap:3px 12px; margin:0}
+.dl dt{color:var(--dim); font-size:12px; overflow-wrap:anywhere}
 .dl dd{margin:0; color:var(--fg-strong); font-size:12px; overflow-wrap:anywhere}
 .chips{display:flex; flex-wrap:wrap; gap:4px}
 .ins{padding:3px 0; border-bottom:1px solid var(--rule-soft); overflow-wrap:anywhere}
@@ -556,8 +750,9 @@ body.dragging .sheet-blank{border-color:var(--redline); box-shadow:0 0 0 3px rgb
   #gutterL{display:none}
   .tagline{display:none}
   .bar{padding:8px 12px; gap:10px}
-  .docbar{padding:0 6px}
+  .docbar,.wspbar{padding:0 6px}
   .doc-tab{max-width:190px; padding-left:9px}
+  .wsp-tab{max-width:170px; padding-left:9px}
   .doc-kind{display:none}
   .btn,.tab{padding:4px 9px}
   .pane-stack{display:none; border-right:none}
@@ -597,6 +792,12 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
   </div>
 </header>
 
+<nav class="wspbar" id="wspBar" aria-label="Workspaces" hidden>
+  <div class="wsp-tabs" id="wspTabs"></div>
+  <button class="btn btn-quiet wsp-add" id="btnWspAdd" type="button"
+          title="New workspace" aria-label="New workspace">+</button>
+</nav>
+
 <nav class="docbar" id="docBar" aria-label="Open dumps" hidden>
   <div class="doc-tabs" id="docTabs"></div>
   <button class="btn btn-quiet doc-add" id="btnDocAdd" type="button"
@@ -607,8 +808,9 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
   <div class="empty-card">
     <div class="sheet-blank">
       <h1>Drop an AOSP dump here</h1>
-      <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code> and <code>package</code>,
-      ANR traces, and whole bugreports. The file never leaves your browser.</p>
+      <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>
+      and <code>car_service</code>, ANR traces, and whole bugreports. The file never
+      leaves your browser.</p>
       <div class="empty-actions">
         <button class="btn-paper btn-paper-key" id="btnPick" type="button">Choose a file</button>
         <button class="btn-paper" id="btnPaste" type="button">Paste text</button>
@@ -620,6 +822,7 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
         <code class="cmd">adb shell dumpsys window windows   &gt; windows.txt
 adb shell dumpsys SurfaceFlinger  &gt; sf.txt
 adb shell dumpsys package         &gt; packages.txt
+adb shell dumpsys car_service     &gt; car.txt
 adb pull /data/anr/traces.txt</code>
         <p class="hint">A bugreport works too — drop the whole thing and Telltale finds every
         section it knows, with a switch in the top bar to move between them. Add
@@ -675,6 +878,11 @@ adb pull /data/anr/traces.txt</code>
   <section class="pane pane-plan" id="panePlan">
     <div class="sheet-head" id="sheetHead" hidden>
       <div class="tabs" id="displayTabs"></div>
+    </div>
+    <div class="doc-search" id="docSearch" hidden>
+      <input class="filter" id="attrFilter" type="search"
+             placeholder="Filter what this section printed"
+             aria-label="Filter what this section printed">
     </div>
     <div class="sheet" id="sheet"></div>
     <div class="legend" id="legend"></div>
@@ -2757,6 +2965,293 @@ function parseAnrDump(input) {
   return finaliseScene('anr', displays, nodes, globals);
 }
 
+/* ================ parse: dumpsys car_service ================ */
+
+/* A car_service dump is a document of nested sections rather than a list of
+   things: `*Name*` opens one, and everything up to the next heading of any
+   kind belongs to it. Depth is read from the stars first and the indent
+   second, because the services behind it disagree about which of the two
+   carries the nesting — CarAudioService indents its subsections and keeps one
+   star, Input Service leaves the indent alone and adds a star per level — and
+   neither of them is wrong. Reading both, stars first, is what puts every
+   writer's sections where they belong, the `***X dump***` heading the service
+   dumper prints at no indent at all included. */
+const CAR_HEAD_RE = /^(\s*)(\*+)\s*([^*\s].*?)\s*$/;
+
+/* The headings that are the shape of the document rather than anything in it.
+   They are dropped and whatever they held is raised into their place, so the
+   list opens on the services instead of on one row saying `Dump all
+   services`. */
+const CAR_STRUCTURAL_RE = /^dump (?:car service|versions?|all services)$/i;
+
+/* A service that threw on its way out says so, and then prints the stack it
+   threw. Either half is enough to know the block below is short of what it
+   should have held. */
+const CAR_FAIL_RE = /^\s*(?:Failed dumping\b|(?:java|android|dalvik)\.[\w.$]*(?:Exception|Error)\b)/m;
+
+/* A heading's own name, without the stars that close it and without whatever
+   the service went on to print on the same line. */
+function carHeadName(rest) {
+  const m = rest.match(/^(.*?)\s*\*+\s*(.*)$/);
+  const trail = m ? m[2].trim() : '';
+  /* `***CarOemProxyService dump***` is the heading the service dumper writes
+     for a service that prints none of its own; the service is the name. */
+  const name = (m ? m[1] : rest).trim().replace(/\s+dump$/i, '');
+  return { name, trail };
+}
+
+/* Most of what a section prints is `key: value` or `key=value`, one to a line,
+   so the details pane can lay it out instead of leaving it as a wall of text.
+   A line that starts with anything but a name — a timestamp, a stack frame, a
+   table row — is not a pair and is left to the raw block. */
+/* What a name printed before its value looks like. The charset is narrow on
+   purpose: a stack frame is `at Foo.dump(Foo.java:744)` and a log line starts
+   with a date, and neither is a name with a value after it. */
+const CAR_PAIR_RE = /^([A-Za-z_#][\w .#/-]*?)\s*[:=]\s*(.*)$/;
+
+function carPairs(body) {
+  const out = [];
+  for (const line of body) {
+    const t = line.trim();
+    /* A thrown stack is answered above the block rather than laid out in it. */
+    if (/^at\s/.test(t) || CAR_FAIL_RE.test(t)) continue;
+    const m = t.match(CAR_PAIR_RE);
+    if (m && m[2]) out.push([m[1].trim(), m[2].trim()]);
+  }
+  return out;
+}
+
+/* A line read as a record: `key: value` fields separated by commas that are
+   not inside brackets. A car_service dump prints its tables this way — one
+   property or one event to a line — and a run of them is unreadable until it
+   is laid out in columns. A line that does not read as a record from end to
+   end is not one, so prose stays prose. */
+function carFields(line) {
+  const t = String(line).trim();
+  if (!t) return null;
+  const parts = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (c === '[' || c === '{' || c === '(') depth++;
+    else if (c === ']' || c === '}' || c === ')') depth--;
+    else if (c === ',' && depth === 0) { parts.push(t.slice(start, i)); start = i + 1; }
+  }
+  parts.push(t.slice(start));
+
+  const fields = [];
+  for (const part of parts) {
+    const m = part.trim().match(/^([A-Za-z][\w .#/-]*?)\s*([:=])\s*(.*)$/);
+    if (!m) return null;
+    /* The separator comes back with the field. A line whose fields all use the
+       same one is a line of fields; one that mixes them is a name followed by
+       something that has fields of its own, and those are not the same thing. */
+    fields.push([m[1].trim(), m[3].trim(), m[2]]);
+  }
+  return fields;
+}
+
+/* What a section printed, split into the runs it printed it in: three or more
+   lines to the same shape at the same indent are a table, and everything else
+   is text. Two fields are the minimum for a table — a run of one-field lines
+   is a list, and a list reads better as the lines it was written as.
+   A line printed deeper than the run does not end it: a property that has
+   areas prints them under itself, and those belong to the row above rather
+   than to a table of their own. */
+function carRuns(body) {
+  const out = [];
+  let text = [];
+  const flush = () => { if (text.length) { out.push({ kind: 'text', lines: text }); text = []; } };
+  const sig = (f) => f.map(([k]) => k).join('|');
+
+  for (let i = 0; i < body.length;) {
+    const first = carFields(body[i]);
+    if (!first) { text.push(body[i]); i++; continue; }
+    const head = sig(first), pad = indentOf(body[i]);
+
+    const rows = [];
+    let j = i;
+    for (; j < body.length; j++) {
+      const line = body[j];
+      const fields = carFields(line);
+      if (fields && sig(fields) === head && indentOf(line) === pad) {
+        rows.push({ cells: fields.map(([, v]) => v), under: [] });
+      } else if (rows.length && line.trim() && indentOf(line) > pad) {
+        rows[rows.length - 1].under.push(line.trim());
+      } else break;
+    }
+
+    if (first.length >= 2 && rows.length >= 3) {
+      flush();
+      out.push({ kind: 'table', keys: first.map(([k]) => k), rows });
+    } else {
+      for (let k = i; k < j; k++) text.push(body[k]);
+    }
+    i = j;
+  }
+  flush();
+  return out;
+}
+
+/* The lines a section printed, as the tree the indenting says they are: a
+   line is an entry, and the lines under it at a deeper indent belong to it.
+   `key: value` and `key=value` split; a line that is neither is an entry with
+   no value, which is what a label over a block is, and what a log line or a
+   policy printed with its own brackets is too. The key rule is the one
+   carPairs uses, so a stack frame or a timestamp is not mistaken for a name. */
+function carEntries(lines) {
+  const roots = [];
+  const open = [];
+  lines.forEach((raw, at) => {
+    if (!raw.trim()) return;
+    const indent = indentOf(raw);
+    while (open.length && indent <= open[open.length - 1].indent) open.pop();
+
+    const line = raw.trim();
+    const parent = open.length ? open[open.length - 1].entry : null;
+    const add = (key, value, field) => {
+      const entry = { at, field, indent, key, value, line, children: [] };
+      (parent ? parent.children : roots).push(entry);
+      return entry;
+    };
+
+    /* A service that printed three names and their values on one line printed
+       three attributes, not one with a value that swallowed the other two.
+       They come back as siblings; anything printed under the line belongs to
+       the last of them, which is where the indenting continues from. */
+    const fields = carFields(line);
+    const split = fields && fields.length > 1
+      && fields.every((f) => f[2] === fields[0][2]);
+
+    let last;
+    if (split) fields.forEach(([key, value], i) => { last = add(key, value, i); });
+    else {
+      const m = line.match(CAR_PAIR_RE);
+      last = add(m ? m[1].trim() : line, m ? m[2].trim() : null, 0);
+    }
+    open.push({ indent, entry: last });
+  });
+  return roots;
+}
+
+/* A property id is printed as a bare hex int nearly everywhere and given its
+   name in two places: the Vehicle HAL's property list and its handler table.
+   Reading both means every other mention of that id can be named too, without
+   this file carrying a copy of the VHAL's property ids. */
+function carPropNames(text) {
+  const names = {};
+  const shapes = [
+    /Property:(0x[0-9a-f]+),\s*Property name:([A-Za-z0-9_]+)/gi,
+    /\/\/\s*(0x[0-9a-f]+)\s+name:\s*([A-Za-z0-9_]+)/gi,
+  ];
+  for (const re of shapes) {
+    let m;
+    while ((m = re.exec(text)) !== null) names[m[1].toLowerCase()] = m[2];
+  }
+  return names;
+}
+
+function carNode(h, parent, ancestors, hashOf, lines, z) {
+  const failed = CAR_FAIL_RE.test(h.raw);
+  const service = !parent;
+  const hal = /\bHALs?\b|HALSERVICE/i.test(h.name);
+  const family = failed ? 'car-failed' : hal ? 'car-hal'
+               : service ? 'car-service' : 'car-section';
+  const typeLabel = failed ? 'failed to dump' : hal ? 'HAL'
+                  : service ? 'service' : 'section';
+  const printed = h.body.filter((l) => l.trim()).length;
+
+  return {
+    hash: hashOf(h), title: h.name, displayId: 0,
+    frame: null, frameSource: null, z,
+    family, typeLabel,
+    badges: [
+      ...(failed ? [['failed to dump', 'badge-exit']] : []),
+      ...(!printed && !h.kids.length ? [['empty', 'badge-comp']] : []),
+    ],
+    /* The filter reaches the whole block, not just the heading: what a
+       car_service dump is opened for is usually a value somewhere inside one
+       of forty services, and the tree opens down to whatever matches. */
+    search: `${h.name} ${typeLabel} ${h.raw}`.toLowerCase(),
+    raw: h.raw, visible: true, focused: false,
+    parentHash: parent ? hashOf(parent) : null,
+    ancestors,
+    failed, service, hal,
+    /* The lines themselves, for the pane that reads the section rather than
+       summarising it. They are the same strings the raw block holds. */
+    body: h.body,
+    /* Where body[0] sits in the file. A section that went on printing on its
+       own heading line starts a line earlier than one that did not. */
+    bodyAt: h.trail ? h.line + 1 : h.line + 2,
+    subCount: h.kids.length,
+    own: h.own, lines,
+    at: h.line + 1,
+  };
+}
+
+function parseCarServiceDump(input) {
+  const lines = String(input || '').replace(/\r\n?/g, '\n').split('\n');
+
+  const heads = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(CAR_HEAD_RE);
+    if (!m) continue;
+    const { name, trail } = carHeadName(m[3]);
+    if (name) heads.push({ line: i, indent: m[1].length, stars: m[2].length, name, trail, kids: [] });
+  }
+  if (!heads.length) return finaliseScene('car', [], [], {});
+
+  /* A section holds what it printed before the next heading started, so a
+     service's own block is its preamble and its subsections are theirs. */
+  heads.forEach((h, i) => {
+    const end = i + 1 < heads.length ? heads[i + 1].line : lines.length;
+    h.body = (h.trail ? [h.trail] : []).concat(lines.slice(h.line + 1, end));
+    h.raw = lines.slice(h.line, end).join('\n').replace(/\n+$/, '');
+    h.own = end - h.line;
+  });
+
+  const deeper = (a, b) => a.stars > b.stars || (a.stars === b.stars && a.indent > b.indent);
+  const open = [];
+  for (const h of heads) {
+    while (open.length && !deeper(h, open[open.length - 1])) open.pop();
+    h.parent = open.length ? open[open.length - 1] : null;
+    if (h.parent) h.parent.kids.push(h);
+    open.push(h);
+  }
+
+  const structural = (h) => CAR_STRUCTURAL_RE.test(h.name);
+  const up = (h) => { let p = h.parent; while (p && structural(p)) p = p.parent; return p; };
+  const hashOf = (h) => `car:${h.line}`;
+  const deep = (h) => h.own + h.kids.reduce((sum, k) => sum + deep(k), 0);
+
+  const nodes = heads.filter((h) => !structural(h)).map((h, i) => {
+    const parent = up(h);
+    const chain = [];
+    for (let p = parent; p; p = up(p)) chain.unshift({ hash: hashOf(p), title: p.name });
+    return carNode(h, parent, chain, hashOf, deep(h), -i);
+  });
+
+  const versions = heads.find((h) => /^dump versions?$/i.test(h.name));
+  const globals = {
+    versions: versions ? carPairs(versions.body) : [],
+    propNames: carPropNames(lines.join('\n')),
+    services: nodes.filter((n) => !n.parentHash).length,
+    sections: nodes.length,
+    failed: nodes.filter((n) => n.failed).map((n) => n.hash),
+    lines: lines.length,
+  };
+
+  /* Nothing in a car_service dump belongs to a display or a user, so there is
+     one group and it is the dump. */
+  const display = {
+    id: 0, label: 'car service', name: null,
+    size: { w: 0, h: 0 }, insets: [], raw: '',
+    meta: `${globals.services} services · ${globals.sections} sections`,
+  };
+
+  return finaliseScene('car', [display], nodes, globals);
+}
+
 /* ================ state and shared helpers ================ */
 const VIEW0 = { yaw:34, pitch:19, sep:38 };   // the view Reset goes back to
 /* One dump loaded is one document. Everything the user does to a dump — which
@@ -2766,7 +3261,27 @@ const VIEW0 = { yaw:34, pitch:19, sep:38 };   // the view Reset goes back to
    and into another. `docs` and `docId` are the whole of the state; the rest of
    S is a view onto the open one. Pane widths and the theme belong to the page
    rather than to any document and are left alone by a switch. */
-const S = { docs:[], docId:null };
+/* The documents themselves belong to a workspace — one set of open dumps per
+   thing you are working on, so a bugreport opened for one investigation is not
+   sitting in the strip while you read another. `spaces` and `spaceId` are the
+   only state the page itself keeps; `docs` and `docId` are accessors onto the
+   open workspace, so every line below goes on reading and writing S.docs
+   without knowing there is more than one set of them. */
+let spaceSeq = 0;
+function newSpace(name){
+  const id = ++spaceSeq;
+  return { id, name: String(name || '').trim() || `workspace ${id}`, docs:[], docId:null };
+}
+const S = { spaces:[newSpace()], spaceId:null };
+S.spaceId = S.spaces[0].id;
+function currentSpace(){ return S.spaces.find(w => w.id === S.spaceId) || S.spaces[0]; }
+for(const key of ['docs', 'docId']){
+  Object.defineProperty(S, key, {
+    enumerable:true,
+    get(){ return currentSpace()[key]; },
+    set(v){ currentSpace()[key] = v; },
+  });
+}
 
 /* The fields a document carries, holding the values one that has never been
    opened starts on. Each is defined on S as an accessor onto the open
@@ -2778,8 +3293,13 @@ const S = { docs:[], docId:null };
    Set rather than a flag on the node because it is state about the open
    document, not about the dump: two tabs off the same file collapse
    separately, and reloading the dump does not remember what you shut. */
+/* `attr` and `attrFilter` are the reading pane's own pick and search — which
+   line of the section is being asked about, and what is being looked for
+   inside it. They sit here with the rest of what a document remembers, so two
+   tabs off the same dump keep their own place in it. */
 const DOC_STATE = { toolId:null, displayId:null, selected:null, filter:'',
-                    show:'all', dim:true, view:'depth', collapsed:null, ...VIEW0 };
+                    show:'all', dim:true, view:'depth', collapsed:null,
+                    attr:null, attrFilter:'', ...VIEW0 };
 for(const key of Object.keys(DOC_STATE)){
   Object.defineProperty(S, key, {
     enumerable:true,
@@ -2823,6 +3343,10 @@ const FAMILY_COLORS = {
   'anr-main':'#a3352f', 'anr-blocked':'#b4622a', 'anr-running':'#2e7d5b',
   'anr-waiting':'#55636f', 'anr-native':'#2f6f8f', 'anr-pool':'#6b5b95',
   'anr-other':'#55636f',
+  /* A car_service section is coloured by what it is: a service, one of the
+     HALs under it, a subsection of either, or one that threw on its way out. */
+  'car-service':'#2f6f8f', 'car-hal':'#6b5b95',
+  'car-section':'#55636f', 'car-failed':'#a3352f',
 };
 function colorFor(n){ return FAMILY_COLORS[n.family] || FAMILY_COLORS.other; }
 
@@ -2888,11 +3412,58 @@ function load(text, prefer, label){
     return fail(broke.length
       ? 'That looks like a dump Telltale knows, but it could not be read. ' + broke.join('; ')
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
-        + '`dumpsys SurfaceFlinger` and `dumpsys package` output and ART thread dumps '
-        + '(`/data/anr/traces.txt`), or a bugreport containing any of them.');
+        + '`dumpsys SurfaceFlinger`, `dumpsys package` and `dumpsys car_service` output '
+        + 'and ART thread dumps (`/data/anr/traces.txt`), or a bugreport containing any '
+        + 'of them.');
   }
   const entry = found.find(f => f.tool.id === prefer) || found[0];
   addDoc(found, entry, label);
+}
+
+/* ---------------- workspaces ---------------- */
+
+/* A workspace holds documents and which of them is open, and nothing else.
+   Everything a dump remembers still belongs to the dump, and pane widths and
+   the theme still belong to the page, so a switch moves neither. */
+
+function addSpace(){
+  const space = newSpace();
+  S.spaces.push(space);
+  openSpace(space);
+}
+
+/* Switching workspaces is the same move as switching tabs, one level up: the
+   dumps never left, so it is an assignment and one pass over the DOM. A
+   workspace with nothing in it opens on the loader, with the strip still up to
+   get back from. */
+function openSpace(space){
+  S.spaceId = space.id;
+  armedClose = null;
+  const doc = currentDoc() || S.docs[S.docs.length - 1];
+  if(doc) openDoc(doc); else showLoader();
+}
+
+function renameSpace(space, name){
+  const clean = String(name || '').trim();
+  if(clean) space.name = clean;
+  renderDocTabs();
+}
+
+/* Closing a workspace closes every dump in it, which is why the menu asks
+   again while it is holding any. The last workspace is emptied rather than
+   closed: the page always has a desk to load the next dump onto. */
+function closeSpace(space){
+  const i = S.spaces.indexOf(space);
+  if(i < 0) return;
+  armedClose = null;
+  const wasOpen = space.id === S.spaceId;
+  if(S.spaces.length === 1){
+    space.docId = null;
+    return reset();               // clears this workspace's docs and shows the loader
+  }
+  S.spaces.splice(i, 1);
+  if(!wasOpen) return renderDocTabs();
+  openSpace(S.spaces[Math.min(i, S.spaces.length - 1)]);
 }
 
 /* ---------------- documents ---------------- */
@@ -2977,18 +3548,24 @@ function syncUi(){
   $('filter').value = S.filter;
   $('filter').placeholder = tool.filterHint;
   $('filter').setAttribute('aria-label', `Filter ${tool.nouns}`);
+  /* Three layouts, and two questions about them: whether the list goes in the
+     middle pane, and whether the middle pane draws. A document does neither —
+     it keeps the list on the left, as a drawn dump does, and reads into the
+     middle instead of drawing there. */
   const list = tool.layout === 'list';
+  const drawn = tool.layout === 'spatial';
   document.body.classList.toggle('layout-list', list);
+  document.body.classList.toggle('layout-doc', tool.layout === 'doc');
   placePanes(list);
   /* On a narrow screen the two panes take turns, so the buttons that swap
      them say what each one holds rather than `Stack` and `Layout`. */
   const groups = tool.groupNouns || (tool.groupNoun || 'display') + 's';
-  $('tabStack').textContent = list ? cap(groups) : 'Stack';
-  $('tabPlan').textContent = list ? cap(tool.nouns) : 'Layout';
+  $('tabStack').textContent = list ? cap(groups) : drawn ? 'Stack' : cap(tool.nouns);
+  $('tabPlan').textContent = list ? cap(tool.nouns) : drawn ? 'Layout' : 'Contents';
   $('wlist').setAttribute('aria-label', list
     ? `${tool.nouns} in this ${tool.groupNoun || 'group'}`
     : `${tool.nouns} on this display, topmost first`);
-  $('optDim').closest('label').hidden = list;   // nothing to dim
+  $('optDim').closest('label').hidden = !drawn;   // nothing to dim
   $('optDim').checked = S.dim;
   $('groupHead').hidden = !list;
   if(list){
@@ -3197,12 +3774,98 @@ function setAllCollapsed(shut){
 
 /* ---------------- render: the pickers and the node list ---------------- */
 
+/* One tab per workspace, in the strip above the dumps. `armedClose` is the
+   workspace whose cross has been clicked once: closing one throws away every
+   dump in it and nothing puts them back, so the cross turns into a question
+   first. `renamingId` is the workspace whose name is being typed, which is
+   drawn as a box in place of the name rather than as a dialogue over it. */
+let armedClose = null, renamingId = null;
+
+const heldDumps = (c) => `${c} ${c === 1 ? 'dump' : 'dumps'}`;
+
+/* A workspace keeps its colour for as long as it exists, because it is taken
+   from the id it was made with rather than from where it sits in the strip:
+   closing the one to its left must not repaint the rest of them. There are six
+   and the ladder wraps, so a seventh workspace shares with the first. */
+const ACCENTS = 6;
+const accentOf = (space) => `var(--acc-${(space.id - 1) % ACCENTS + 1})`;
+
+function renderSpaceTabs(){
+  const strip = $('wspTabs');
+  strip.innerHTML = S.spaces.map(w => {
+    const open = w.id === S.spaceId;
+    const n = w.docs.length;
+    const armed = armedClose === w.id;
+    const last = S.spaces.length === 1;
+    const name = w.id === renamingId
+      ? `<input class="wsp-rename" type="text" maxlength="40" data-rename="${w.id}"
+           aria-label="Workspace name" value="${esc(w.name)}">`
+      : `<button class="wsp-open" type="button" data-space="${w.id}" aria-pressed="${open}"
+          title="${esc(w.name)} — ${heldDumps(n)}. Double-click to rename.">
+          <span class="wsp-name">${esc(w.name)}</span
+          ><span class="wsp-count">${n || 'empty'}</span>
+        </button>`;
+    /* The last workspace is emptied rather than closed — the page always has a
+       desk to load the next dump onto — so its cross says so. */
+    const closeTitle = armed
+      ? `Click again to discard ${heldDumps(n)}`
+      : last ? 'Empty this workspace' : 'Close this workspace';
+    return `<span class="wsp-tab" aria-current="${open}" style="--wsp-accent:${accentOf(w)}"
+      ><span class="wsp-swatch"></span>${name}<button
+        class="wsp-close${armed ? ' is-armed' : ''}" type="button" data-close-space="${w.id}"
+        title="${closeTitle}" aria-label="${closeTitle}: ${esc(w.name)}"
+        >${armed ? `discard ${n}?` : '\u00d7'}</button></span>`;
+  }).join('');
+  const box = strip.querySelector('[data-rename]');
+  if(box){ box.focus(); box.select(); }
+}
+
+/* Closing a workspace holding dumps asks once, in the cross itself. Anything
+   else the user does puts the question away again. */
+function requestCloseSpace(space){
+  if(space.docs.length && armedClose !== space.id){
+    armedClose = space.id;
+    return renderSpaceTabs();
+  }
+  closeSpace(space);
+}
+
+function disarmClose(){
+  if(armedClose === null) return;
+  armedClose = null;
+  renderSpaceTabs();
+}
+
+function startRename(space){
+  renamingId = space.id;
+  renderSpaceTabs();
+}
+
+function endRename(save){
+  const box = $('wspTabs').querySelector('[data-rename]');
+  if(!box) return;
+  const space = S.spaces.find(w => w.id === +box.dataset.rename);
+  const value = box.value;
+  renamingId = null;
+  if(save && space) renameSpace(space, value); else renderSpaceTabs();
+}
+
 /* One tab per dump loaded. The strip shows from the first one, because it is
-   also the way back from the loader. */
+   also the way back from the loader — and it stays up for a second workspace
+   even while the open one is empty, or there would be no way back to the
+   dumps in the other. */
 function renderDocTabs(){
-  const bar = $('docBar');
-  bar.hidden = !S.docs.length;
-  if(bar.hidden) return $('docTabs').innerHTML = '';
+  /* Both strips are one thing and come and go together: an empty workspace
+     still shows its own tab and an empty dump strip under it, because that is
+     what an empty desk looks like and the way back to a full one. Neither is
+     worth drawing before anything has been loaded at all. */
+  const any = S.spaces.some(w => w.docs.length) || S.spaces.length > 1;
+  $('wspBar').hidden = $('docBar').hidden = !any;
+  if(!any){ armedClose = renamingId = null; return $('docTabs').innerHTML = ''; }
+  renderSpaceTabs();
+  /* The dump strip is inside a workspace, so it is lit by that workspace's
+     colour: one property here, inherited by whichever tab is open. */
+  $('docBar').style.setProperty('--wsp-accent', accentOf(currentSpace()));
   const shown = !$('app').hidden;
   $('docTabs').innerHTML = S.docs.map(d => {
     const entry = d.found.find(f => f.tool.id === d.ui.toolId) || d.found[0];
@@ -3240,7 +3903,11 @@ function renderTabs(){
   const ds = S.data.displays;
   const list = S.tool.layout === 'list';
   const noun = S.tool.groupNoun || 'display';
-  $('sheetHead').hidden = list;
+  /* A drawn dump's group chip says how big the display is, which is worth the
+     strip even when there is only one of them. A document's says what the
+     details pane already says when nothing is picked, so one group there is a
+     header over nothing. */
+  $('sheetHead').hidden = list || (S.tool.layout === 'doc' && ds.length < 2);
   $('listHead').hidden = !list;
   const host = list ? $('listTabs') : $('displayTabs');
   host.innerHTML = ds.map(d => {
@@ -3335,9 +4002,204 @@ function renderList(){
    out of the grid, and everything that draws is reached from here. */
 function renderPlan(){
   if(S.tool.layout === 'list') return;
+  if(S.tool.layout === 'doc') return renderDoc();
   if(S.view === 'depth') renderDepth(); else renderFlat();
   renderLegend();
   renderSheetFoot();
+}
+
+/* ---------------- render: the reading pane ---------------- */
+
+/* Where a drawn dump has a sheet, a dump that is a document has whatever
+   section is selected, laid out to be read: the section, then everything
+   printed inside it. A run of lines written to one shape becomes a table,
+   because six hundred properties one to a line is not something anyone reads
+   as text, and the rest is left as it was written. */
+function renderDoc(){
+  const sheet = $('sheet');
+  const n = S.data.nodes.find(x => x.hash === S.selected);
+  /* Nothing to search until there is something being read. */
+  $('docSearch').hidden = !n;
+  $('attrFilter').value = S.attrFilter;
+  if(!n){
+    sheet.innerHTML = `<div class="doc"><p class="doc-empty">Pick a ${
+      esc(S.tool.noun)} from the list to read what it printed.</p></div>`;
+    return;
+  }
+
+  const out = [];
+  if(n.ancestors.length){
+    out.push(`<p class="doc-path">${n.ancestors
+      .map(a => `<button type="button" data-hash="${esc(a.hash)}">${esc(a.title)}</button>`)
+      .join(' / ')}</p>`);
+  }
+
+  const kidsOf = (hash) => S.data.nodes.filter(x => x.parentHash === hash).sort((a, b) => b.z - a.z);
+  const walk = (node, depth) => {
+    out.push(docSection(node, depth));
+    kidsOf(node.hash).forEach(k => walk(k, depth + 1));
+  };
+  walk(n, 0);
+
+  sheet.innerHTML = `<div class="doc">${out.join('')}</div>`;
+  if(!S.attrFilter) sheet.scrollTop = 0;
+  if(S.attrFilter && !sheet.querySelector('.doc-row, .doc-table')){
+    sheet.innerHTML = `<div class="doc"><p class="doc-empty">Nothing this ${
+      esc(S.tool.noun)} printed matches that.</p></div>`;
+  }
+}
+
+/* The heading of a subsection selects it, which is how a service that printed
+   two thousand lines is narrowed down to the part being read. */
+function docSection(node, depth){
+  const head = depth === 0 ? esc(node.title)
+    : `<button type="button" data-hash="${esc(node.hash)}">${esc(node.title)}</button>`;
+  const body = carRuns(node.body)
+    .map(run => run.kind === 'table' ? docTable(run) : docRows(node, run.lines))
+    .filter(Boolean).join('');
+  return `<section class="doc-sec" style="margin-left:${Math.min(depth, 4) * 14}px">
+    <h3>${head}</h3>
+    ${body || '<p class="doc-empty">Nothing printed here.</p>'}
+  </section>`;
+}
+
+/* The search reaches the tables as well as the rows: a table is what a run of
+   lines was printed as, and a line is a line. A table nothing in matches is
+   not drawn at all. */
+function docTable(run){
+  const q = S.attrFilter.trim().toLowerCase();
+  if(q){
+    const rows = run.rows.filter(r =>
+      `${r.cells.join(' ')} ${r.under.join(' ')}`.toLowerCase().includes(q));
+    if(!rows.length) return '';
+    run = { ...run, rows };
+  }
+  return `<div class="doc-scroll"><table class="doc-table">
+    <thead><tr>${run.keys.map(k => `<th>${esc(k)}</th>`).join('')}</tr></thead>
+    <tbody>${run.rows.map(r => {
+      const row = esc(r.cells.join(' '));
+      return `<tr>${r.cells.map(v => `<td>${docNamed(esc(v), row)}</td>`).join('')}</tr>` +
+        r.under.map(u => `<tr class="doc-under"><td colspan="${run.keys.length}"
+          >${docNamed(esc(u), row + ' ' + esc(u))}</td></tr>`).join('');
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+/* Text keeps the shape it was printed in, less the indent the whole block
+   carries: that indent is the dump's nesting, which the pane is already
+   showing. Every line becomes a row — the name it printed and the value after
+   it — so what a service printed can be searched and picked at instead of
+   read as a wall. A row is identified by the section it is in and the line it
+   is on, which is stable for as long as the dump is open. */
+function docRows(node, lines){
+  const q = S.attrFilter.trim().toLowerCase();
+  const hit = (e) => !q || `${e.key} ${e.value || ''}`.toLowerCase().includes(q);
+  const under = (e) => e.children.reduce((sum, c) => sum + 1 + under(c), 0);
+  /* A row whose child matched is kept as the way in to it, and marked so it
+     does not read as a match of its own. */
+  const keep = (e) => hit(e) || e.children.some(keep);
+
+  const out = [];
+  const walk = (e, depth) => {
+    if(q && !keep(e)) return;
+    const id = `${node.hash}#${e.at}.${e.field}`;
+    const kids = under(e);
+    const value = e.value === null ? ''
+      : e.value || (kids ? `${kids} under` : '');
+    out.push(`<button class="doc-row${e.value === null ? ' is-bare' : ''}${
+        q && !hit(e) ? ' is-context' : ''}" type="button" data-attr="${esc(id)}"
+        aria-selected="${S.attr === id}"
+        style="padding-left:${8 + Math.min(depth, 8) * 13}px" title="${esc(e.line)}">
+      <span class="doc-key">${docNamed(esc(e.key), esc(e.line))}</span>${
+      e.value === null ? '' : `<span class="doc-val">${docNamed(esc(value), esc(e.line))}${
+        e.value && kids ? ` <span class="doc-under-n">· ${kids} under</span>` : ''}</span>`}
+    </button>`);
+    e.children.forEach(c => walk(c, depth + 1));
+  };
+  carEntries(lines).forEach(e => walk(e, 0));
+  return out.join('');
+}
+
+/* The entry a row stands for, found again from the id the row carries. */
+function docEntryAt(node, id){
+  if(!id || !id.startsWith(`${node.hash}#`)) return null;
+  /* The line it is on, and which of the fields on that line it is: one line
+     can have printed several. */
+  const [at, field] = id.slice(node.hash.length + 1).split('.').map(Number);
+  const find = (list) => {
+    for(const e of list){
+      if(e.at === at && e.field === field) return e;
+      const deeper = find(e.children);
+      if(deeper) return deeper;
+    }
+    return null;
+  };
+  for(const run of carRuns(node.body)){
+    if(run.kind !== 'text') continue;
+    const found = find(carEntries(run.lines));
+    if(found) return found;
+  }
+  return null;
+}
+
+/* What the details pane answers about while a row is picked. The value is
+   pulled apart the same way everything else is — the `k=v` pairs a service
+   crams onto one line become a table — and what was printed under the row
+   comes with it. */
+function carAttrDetail(id){
+  const owner = S.data.nodes.find(n => n.hash === id.split('#')[0]);
+  const entry = owner && docEntryAt(owner, id);
+  if(!entry) return null;
+
+  const out = [];
+  out.push(`<section class="dgroup"><h3>Printed</h3>${dl([
+    ['name', docNamed(esc(entry.key), esc(entry.line))],
+    entry.value !== null && entry.value !== '' && ['value', docNamed(esc(entry.value), esc(entry.line))],
+    ['at', `line ${owner.bodyAt + entry.at}`],
+    ['in', carLink(owner.hash, owner.title)],
+  ])}</section>`);
+
+  const pairs = carInline(entry.value || '');
+  if(pairs.length > 1){
+    out.push(`<section class="dgroup"><h3>Pulled apart</h3>${
+      dl(pairs.map(([k, v]) => [esc(k), docNamed(esc(v), esc(entry.line))]))}</section>`);
+  }
+
+  if(entry.children.length){
+    out.push(`<section class="dgroup"><h3>Under it</h3>${dl(entry.children.map(c =>
+      [docNamed(esc(c.key), esc(c.line)),
+       c.value === null ? dim('—') : docNamed(esc(c.value), esc(c.line))]))}</section>`);
+  }
+
+  const block = [];
+  const collect = (e) => { block.push(e.line); e.children.forEach(collect); };
+  collect(entry);
+
+  return { title: entry.key, out, raw: block.length > 1 ? block.join('\n') : '' };
+}
+
+/* The `k=v` pairs a value is made of, where it is made of any. A value that is
+   one thing — a number, a path, a policy id — is not pulled apart. */
+function carInline(value){
+  const out = [];
+  let m;
+  KV_RE.lastIndex = 0;
+  while((m = KV_RE.exec(value)) !== null) out.push([m[1], m[2]]);
+  return out;
+}
+
+/* A property id is a bare hex int wherever it is printed. The dump names them
+   in two of its own tables, so every other mention can carry the name. */
+/* `within` is what the id was printed alongside — its row, or its line. The
+   two tables the names are read from print the name themselves, so an id
+   standing next to its own name is left alone rather than saying it twice. */
+function docNamed(html, within){
+  const names = (S.data.globals && S.data.globals.propNames) || {};
+  const near = within === undefined ? html : within;
+  return html.replace(/\b0x[0-9a-f]{6,8}\b/gi, (hex) => {
+    const name = names[hex.toLowerCase()];
+    return name && !near.includes(name) ? `${hex} <span class="doc-name">${esc(name)}</span>` : hex;
+  });
 }
 
 /* One swatch per node on the sheet, grouped by type — the shades only mean
@@ -4397,21 +5259,91 @@ function renderDetail(){
   hideTip();
   const n = S.data.nodes.find(x => x.hash === S.selected);
   if(!n) return renderDisplayDetail();
-  $('detailTitle').textContent = n.title;
 
-  const out = S.tool.detail(n);
-  if(n.raw) out.push(`<section class="dgroup"><h3>Raw block</h3>
+  /* A pane in the middle that picks within the section moves what this pane
+     is about: the line that was picked, and the section only until one is. */
+  const picked = S.attr && S.tool.attrDetail ? S.tool.attrDetail(S.attr) : null;
+  $('detailTitle').textContent = picked ? picked.title : n.title;
+
+  const out = picked ? picked.out : S.tool.detail(n);
+  const raw = picked ? picked.raw : n.raw;
+  if(raw) out.push(`<section class="dgroup"><h3>Raw block</h3>
     <button class="btn btn-quiet" id="btnCopy" type="button" style="margin-bottom:7px">Copy raw block</button>
-    <pre class="raw">${esc(n.raw)}</pre></section>`);
+    <pre class="raw">${esc(raw)}</pre></section>`);
   $('detail').innerHTML = out.join('');
 
   const copy = $('btnCopy');
   if(copy) copy.onclick = () => {
-    navigator.clipboard.writeText(n.raw).then(() => {
+    navigator.clipboard.writeText(raw).then(() => {
       copy.textContent = 'Copied';
       setTimeout(() => { copy.textContent = 'Copy raw block'; }, 1400);
     });
   };
+}
+
+/* ---- car_service ---- */
+
+/* A row in the pane that selects another section, which is how the failures
+   list and the path up out of a subsection are both walked. */
+const carLink = (hash, title) =>
+  `<button class="anc-row" type="button" data-hash="${esc(hash)}">${esc(title)}</button>`;
+
+function carDetail(n){
+  const out = [];
+
+  if(n.ancestors.length){
+    out.push(`<section class="dgroup"><h3>Inside</h3>${
+      n.ancestors.map(a => carLink(a.hash, a.title)).join('')}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>Section</h3>${dl([
+    ['kind', esc(n.typeLabel)],
+    ['at', `line ${n.at}`],
+    n.subCount && ['sections', n.subCount],
+    ['lines', n.subCount ? `${n.own} here · ${n.lines} with its sections` : n.own],
+  ])}</section>`);
+
+  /* A service that threw printed the stack where its dump should have been,
+     so the first line of it is the answer to why the block is short. */
+  if(n.failed){
+    /* Which service gave up and what it threw are two lines, and the second is
+       the one worth reading; the rest of the stack is the dumper's own frames
+       and stays in the block below. */
+    const why = n.raw.split('\n').filter(l => CAR_FAIL_RE.test(l)).slice(0, 2);
+    out.push(`<section class="dgroup"><h3>Did not dump</h3>
+      <p style="margin:0 0 7px">This service threw on its way out, so what it printed
+      is as far as it got.</p>${why.length
+        ? `<pre class="raw">${esc(why.map(l => l.trim()).join('\n'))}</pre>` : ''}</section>`);
+  }
+
+  return out;
+}
+
+function carDisplayDetail(d){
+  const g = S.data.globals;
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>Car service</h3>${dl([
+    ['services', g.services],
+    ['sections', g.sections],
+    ['lines', g.lines],
+  ])}</section>`);
+
+  if(g.versions.length){
+    out.push(`<section class="dgroup"><h3>Versions</h3>${
+      dl(g.versions.map(([k, v]) => [esc(k), esc(trim(v, 140))]))}</section>`);
+  }
+
+  /* The one thing in a car_service dump worth being told rather than found:
+     a service that threw is a hole in everything read below it. */
+  if(g.failed.length){
+    out.push(`<section class="dgroup"><h3>Did not dump</h3>${g.failed.map(h => {
+      const n = d.nodes.find(x => x.hash === h);
+      return carLink(h, n ? n.title : h);
+    }).join('')}</section>`);
+  }
+
+  return out;
 }
 
 /* With nothing selected the pane is the place for the display itself. */
@@ -4542,6 +5474,42 @@ const TOOLS = [
     detail: anrDetail,
     displayDetail: anrProcessDetail,
   },
+  {
+    id: 'car',
+    name: 'Car service',
+    /* A document: nothing to draw, but the sections are worth reading, so the
+       list keeps the left pane and the middle reads. */
+    layout: 'doc',
+    noun: 'section', nouns: 'sections', groupNoun: 'car service',
+    show: 'services',      // the forty services, not the two hundred sections
+    visBadge: false,
+    filterHint: 'Filter by section or anything printed in one',
+    /* What buries a car_service dump is its own depth: two thousand lines in
+       which the thing being looked for is a value inside one of forty
+       services. So the settings are about how far in to list, and the filter
+       reaches the whole of every block. */
+    shows: {
+      services: { label:'services', test:(n) => !n.parentHash },
+      problems: { label:'problems', test:(n) => n.failed },
+      all:      { label:'all',      test:() => true },
+    },
+    rowMeta: (n) => [
+      esc(n.typeLabel),
+      n.subCount ? `${n.subCount} section${n.subCount === 1 ? '' : 's'}` : null,
+      `${n.lines} line${n.lines === 1 ? '' : 's'}`,
+    ].filter(Boolean).join(' \u00b7 '),
+    /* A service's subsections are what is inside it, not what it is, so they
+       open shut and the list reads as the list of services. */
+    startCollapsed: (n) => !n.parentHash,
+    attrDetail: carAttrDetail,
+    detect: (t) => (/^\s*\*Dump car service\*/m.test(t) ? 3 : 0)
+                 + (/^\s*\*Dump all services\*/m.test(t) ? 3 : 0)
+                 + (/^\s*Car Version:\s*CarVersion\[/m.test(t) ? 1 : 0)
+                 + (/\*(?:CarPropertyService|CarFeatureController|CarAudioService)\*/.test(t) ? 1 : 0),
+    parse: parseCarServiceDump,
+    detail: carDetail,
+    displayDetail: carDisplayDetail,
+  },
 ];
 
 /* What `blocking` keeps: main, the chain behind it, a deadlock, and anything
@@ -4555,12 +5523,14 @@ function renderAll(){ renderList(); renderPlan(); renderDetail(); }
 
 function setView(view){
   S.view = view;
-  const list = S.tool && S.tool.layout === 'list';
-  $('viewTabs').hidden = list;
+  /* Plan, Z-order and the pose they are about belong to a dump that draws.
+     Nothing else has a view to set. */
+  const drawn = S.tool && S.tool.layout === 'spatial';
+  $('viewTabs').hidden = !drawn;
   $('viewPlan').setAttribute('aria-pressed', String(view === 'plan'));
   $('viewDepth').setAttribute('aria-pressed', String(view === 'depth'));
-  $('depthCtl').hidden = list || view !== 'depth';
-  $('sheet').classList.toggle('is-orbit', view === 'depth');
+  $('depthCtl').hidden = !drawn || view !== 'depth';
+  $('sheet').classList.toggle('is-orbit', drawn && view === 'depth');
   syncDepthCtl();
   renderPlan();
 }
@@ -4578,6 +5548,9 @@ function syncDepthCtl(){
 }
 
 function select(hash){
+  // Picking a section is a new thing to read; whatever was picked in the last
+  // one is not in this one.
+  if(hash !== S.selected) S.attr = null;
   S.selected = hash;
   revealAncestors(hash);
   renderList(); renderPlan(); renderDetail();
@@ -4640,8 +5613,30 @@ $('treeCtl').addEventListener('click', (e) => {
 const orbit = { id:null, x:0, y:0, live:false, hash:null };
 const TURN_SLOP = 7;   // px travelled before a press counts as a turn, not a pick
 
+/* The pose handlers belong to the sheet only while the sheet is drawing on.
+   A reading pane is text: a drag there is a selection, and a click that hit no
+   node must not clear the one the list picked. */
+const drawingSheet = () => S.tool && S.tool.layout === 'spatial';
+
+$('sheet').addEventListener('click', (e) => {
+  if(drawingSheet()) return;
+  const row = e.target.closest('[data-attr]');
+  if(row){
+    // Clicking the picked row again puts the pane back on the section.
+    S.attr = S.attr === row.dataset.attr ? null : row.dataset.attr;
+    return void (renderDoc(), renderDetail());
+  }
+  const b = e.target.closest('button[data-hash]');
+  if(b) select(b.dataset.hash);
+});
+
+$('attrFilter').addEventListener('input', (e) => {
+  S.attrFilter = e.target.value;
+  renderDoc();
+});
+
 $('sheet').addEventListener('pointerdown', (e) => {
-  if(!S.data || e.button !== 0) return;
+  if(!S.data || e.button !== 0 || !drawingSheet()) return;
   const hit = e.target.closest && e.target.closest('[data-hash]');
   orbit.id = e.pointerId;
   orbit.x = e.clientX; orbit.y = e.clientY;
@@ -4651,7 +5646,7 @@ $('sheet').addEventListener('pointerdown', (e) => {
 });
 
 $('sheet').addEventListener('pointermove', (e) => {
-  if(orbit.id !== e.pointerId || S.view !== 'depth') return;
+  if(orbit.id !== e.pointerId || S.view !== 'depth' || !drawingSheet()) return;
   const dx = e.clientX - orbit.x, dy = e.clientY - orbit.y;
   if(!orbit.live){
     if(Math.hypot(dx, dy) < TURN_SLOP) return;
@@ -4667,7 +5662,7 @@ $('sheet').addEventListener('pointermove', (e) => {
 });
 
 $('sheet').addEventListener('pointerup', (e) => {
-  if(orbit.id !== e.pointerId) return;
+  if(orbit.id !== e.pointerId || !drawingSheet()) return;
   const { live, hash } = orbit;
   orbit.id = null; orbit.live = false; orbit.hash = null;
   $('sheet').classList.remove('is-turning');
@@ -4708,6 +5703,57 @@ $('docTabs').addEventListener('auxclick', (e) => {
   closeDoc(+(b.dataset.doc || b.dataset.close));
 });
 $('btnDocAdd').addEventListener('click', showLoader);
+
+/* ---- the workspace strip ---- */
+/* The same gestures as the dump strip below it, one level up: click to open,
+   the cross to close, middle click to close, double click to rename. */
+$('wspTabs').addEventListener('click', (e) => {
+  const x = e.target.closest('[data-close-space]');
+  if(x){
+    const space = S.spaces.find(w => w.id === +x.dataset.closeSpace);
+    return space && requestCloseSpace(space);
+  }
+  const b = e.target.closest('[data-space]');
+  if(!b) return;
+  const space = S.spaces.find(w => w.id === +b.dataset.space);
+  // Clicking the open workspace is how the loader gets cancelled, so it is not
+  // a no-op while the app is hidden.
+  if(space && (space.id !== S.spaceId || $('app').hidden)) openSpace(space);
+});
+$('wspTabs').addEventListener('dblclick', (e) => {
+  const b = e.target.closest('[data-space]'); if(!b) return;
+  const space = S.spaces.find(w => w.id === +b.dataset.space);
+  if(space) startRename(space);
+});
+$('wspTabs').addEventListener('auxclick', (e) => {
+  if(e.button !== 1) return;
+  const b = e.target.closest('[data-space],[data-close-space]');
+  if(!b) return;
+  e.preventDefault();
+  const space = S.spaces.find(w => w.id === +(b.dataset.space || b.dataset.closeSpace));
+  if(space) requestCloseSpace(space);
+});
+/* The name box is drawn into the strip, so its handlers are delegated with it
+   rather than bound to an element a redraw would replace. */
+$('wspTabs').addEventListener('keydown', (e) => {
+  if(!e.target.closest('[data-rename]')) return;
+  // The page reads Escape and / on its own; in the box they are text.
+  e.stopPropagation();
+  if(e.key === 'Enter'){ e.preventDefault(); endRename(true); }
+  if(e.key === 'Escape'){ e.preventDefault(); endRename(false); }
+});
+$('wspTabs').addEventListener('focusout', (e) => {
+  if(e.target.closest('[data-rename]')) endRename(true);
+});
+$('btnWspAdd').addEventListener('click', addSpace);
+/* Anything done elsewhere puts an armed cross away. It listens on pointerdown
+   rather than click because arming redraws the strip: by the time a click on
+   the cross has bubbled up here its target has already been replaced, and a
+   detached node cannot say what it sits inside. */
+document.addEventListener('pointerdown', (e) => {
+  if(armedClose !== null && !e.target.closest('[data-close-space]')) disarmClose();
+});
+
 for(const id of ['displayTabs', 'listTabs']){
   $(id).addEventListener('click', (e) => {
     const t = e.target.closest('[data-did]'); if(!t) return;
@@ -4954,12 +6000,23 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe($('sheet'));
 
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
-    if(!$('empty').hidden && S.docs.length) openDoc(currentDoc() || S.docs[S.docs.length - 1]);
+    if(armedClose !== null) disarmClose();
+    else if(!$('empty').hidden && S.docs.length) openDoc(currentDoc() || S.docs[S.docs.length - 1]);
     else if(document.body.classList.contains('show-detail')) document.body.classList.remove('show-detail');
     else if(S.selected){ S.selected = null; renderAll(); }
   }
   if(e.key === '/' && !$('app').hidden && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
     e.preventDefault(); $('filter').focus();
+  }
+  /* Alt+shift+arrow moves between workspaces. Arrows rather than digits
+     because alt with a digit does not survive every keyboard layout, and the
+     workspaces are a ring worth stepping round. */
+  if(e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey
+     && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && S.spaces.length > 1){
+    e.preventDefault();
+    const n = S.spaces.length;
+    const i = S.spaces.findIndex(w => w.id === S.spaceId);
+    openSpace(S.spaces[(i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n]);
   }
   // Alt+1…9 picks a tab, and alt+0 the last one, as a browser does.
   if(e.altKey && !e.ctrlKey && !e.metaKey && /^[0-9]$/.test(e.key) && S.docs.length){
