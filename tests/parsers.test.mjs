@@ -247,3 +247,48 @@ test('thread pools collapse into one row that stands in for its members', () => 
   // the flat node list is the pools plus every thread, so nothing is dropped
   assert.equal(s.nodes.length, pools.length + s.globals.threads);
 });
+
+/* A bugreport dumps some processes in ART's format and some in the native one,
+   where thread names come from the kernel's comm field truncated to fifteen
+   characters. Everything below is about telling those two apart. */
+
+test('a Java process dumped in the native format still finds its main thread', () => {
+  const s = parseAnrDump(read('fixtures/anr-native-sample.txt'));
+  const app = s.displays.find((d) => d.proc.name === 'com.example.messaging');
+
+  assert.equal(app.proc.runtime, 'art', 'ART daemon threads give the runtime away');
+  assert.ok(app.analysis.main, 'the main thread was found');
+  assert.equal(app.analysis.main.name, 'ample.messaging',
+    'comm truncated the name, so it is not "main" and cannot be found by name');
+  assert.equal(app.analysis.main.sysTid, app.proc.pid,
+    'what identifies it is that its sysTid is the pid');
+});
+
+test('a native daemon is not reported as missing a main thread', () => {
+  const s = parseAnrDump(read('fixtures/anr-native-sample.txt'));
+  const daemon = s.displays.find((d) => d.proc.name === '/system/bin/exampleserver');
+
+  assert.equal(daemon.proc.runtime, 'native');
+  assert.equal(daemon.analysis.main, null, 'it has no main thread, which is correct');
+  assert.deepEqual(daemon.analysis.findings, [],
+    'and that is not a finding: it would fire on most processes in a bugreport');
+
+  // its first thread has the pid for a sysTid, so the fallback must not fire here
+  const first = daemon.proc.threads.find((t) => t.sysTid === daemon.proc.pid);
+  assert.ok(first, 'the thread the fallback would have taken exists');
+  assert.equal(first.isMain, false, 'and was deliberately not taken');
+});
+
+test('an ART process genuinely missing main is still reported', () => {
+  // no thread named main, no thread with the pid for a sysTid, but ART is running
+  const cut = read('fixtures/anr-native-sample.txt')
+    .replace('"ample.messaging" sysTid=6907', '"some-worker" sysTid=6999');
+  const s = parseAnrDump(cut);
+  const app = s.displays.find((d) => d.proc.name === 'com.example.messaging');
+
+  assert.equal(app.proc.runtime, 'art');
+  assert.equal(app.analysis.main, null);
+  assert.deepEqual(app.analysis.findings.map((f) => f.title),
+    ['No main thread in this process'],
+    'suppressing the finding for native processes must not suppress it here');
+});

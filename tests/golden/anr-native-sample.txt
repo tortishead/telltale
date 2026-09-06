@@ -1,0 +1,30 @@
+tool: anr
+displays: 2
+nodes: 8
+
+display 0  label=pid 6907  name=com.example.messaging  size=0x0
+    meta: 4 threads
+    wait edges: 0
+    cycles: none
+    chain to main: none
+    main: ample.messaging  idle=n
+    1  anr-main        vis=y                                             main                        ample.messaging
+    2  anr-native      vis=n                                             -                           Signal Catcher
+    3  anr-native      vis=n                                             -                           perfetto_hprof_listener
+    4  anr-native      vis=n                                             -                           pool-2-thread-1
+
+display 1  label=pid 905  name=/system/bin/exampleserver  size=0x0
+    meta: 3 threads
+    wait edges: 0
+    cycles: none
+    chain to main: none
+    main: none  idle=n
+    1  anr-native      vis=n                                             -                           exampleserver
+    2  anr-pool        vis=n                                             -                           Binder pool · pid 905
+    3  anr-native      vis=n         ^1:pool:Binder:905                  -                           binder:905_1
+    4  anr-native      vis=n         ^1:pool:Binder:905                  -                           binder:905_2
+
+globals:
+  processes: 2
+  threads: 7
+  fingerprint: generic/x/x:15/AP4A/1:user/release-keys

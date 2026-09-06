@@ -2251,7 +2251,37 @@ function anrProcesses(input) {
     if (f) t.frames.push(f);
   }
   flushThread();
-  return procs.filter((x) => x.threads.length);
+  return procs.filter((x) => x.threads.length).map(anrIdentifyMain);
+}
+
+/* The threads ART starts in every process it runs. One of them is the tell
+   that a process is running the runtime at all, which a native daemon is not. */
+const ANR_ART_DAEMON =
+  /^(Signal Catcher|HeapTaskDaemon|ReferenceQueueDaemon|Finalizer(?:Watchdog)?Daemon|Jit thread pool|JDWP|perfetto_hprof)/;
+
+/* Which thread is the UI thread, and whether the process is one that has such
+   a thing at all.
+
+   ART names it `main`, and where the dump is in ART's own format that is the
+   whole of it. But a process dumped in the native format takes its thread
+   names from the kernel's comm field, which is truncated to 15 characters, so
+   com.android.bluetooth's main thread arrives as `droid.bluetooth` and is
+   found by no name test. The thread whose sysTid is the pid is the main thread
+   by definition, and that recovers it.
+
+   The fallback is deliberately not applied to a native daemon. audioserver has
+   a first thread too, and calling it main would invite every question this
+   reader asks of a main thread — is it idle in the looper, is it blocked on a
+   monitor — of a thread that has no looper and no monitors. Those processes
+   have no main thread, which is not a fault in them or in the dump. */
+function anrIdentifyMain(p) {
+  p.runtime = p.threads.some((t) => t.tid !== null || ANR_ART_DAEMON.test(t.name))
+    ? 'art' : 'native';
+  if (p.runtime === 'art' && !p.threads.some((t) => t.isMain) && p.pid !== null) {
+    const main = p.threads.find((t) => t.sysTid === p.pid);
+    if (main) main.isMain = true;
+  }
+  return p;
 }
 
 /* ---------------- the wait-for graph ---------------- */
@@ -2415,8 +2445,13 @@ function anrFindings(proc, graph) {
 
   const main = proc.threads.find((t) => t.isMain);
   if (!main) {
-    out.push({ severity:'warn', title:'No main thread in this process',
-      detail:'Nothing here is named main. A partial dump, or a process with no UI thread.' });
+    /* A native daemon never had one. Saying so as a finding would put a
+       warning on two thirds of the processes in a bugreport and bury the one
+       that is actually wrong. */
+    if (proc.runtime !== 'native') {
+      out.push({ severity:'warn', title:'No main thread in this process',
+        detail:'Nothing here is named main and no thread has the pid for its sysTid. A partial dump, most likely.' });
+    }
     return { findings: out, mainIdle: false, main: null };
   }
 
@@ -4278,6 +4313,10 @@ function anrDetail(n){
   }
 
   out.push(`<section class="dgroup"><h3>Call stack ${dim('leaf first')}</h3>${anrStack(n)}</section>`);
+  /* The process the thread belongs to, kept in view: the chain and the graph
+     are what sent you into this thread, and following them should not cost you
+     sight of them. */
+  out.push(...anrProcessAnalysis(d));
   return out;
 }
 
@@ -4303,6 +4342,28 @@ function anrProcessDetail(d){
       : `<p style="color:var(--dim);font-family:var(--sans);margin:0">Nothing stood out: no lock cycle, no monitor under main, and nothing on the main thread matched a known ANR cause.</p>`
   }</section>`);
 
+  out.push(...anrProcessAnalysis(d));
+
+  const states = new Map();
+  for(const t of p.threads) states.set(t.state, (states.get(t.state) || 0) + 1);
+  out.push(`<section class="dgroup"><h3>Thread states</h3>${dl(
+    [...states.entries()].sort((x, y) => y[1] - x[1]).map(([s, c]) => [esc(s), c])
+  )}</section>`);
+  return out;
+}
+
+/* The chain and the graph belong to the process rather than to any one thread,
+   which is why they sit in the process pane — but they are also the reason a
+   thread was worth clicking, and having them vanish the moment you follow the
+   chain into it is the wrong way round. Both panes render them from here.
+
+   The graph is drawn even with no edges in it. A process with no monitor
+   contention is a real answer to "what is blocking this", and saying nothing
+   at all makes it indistinguishable from a reader that cannot do the work. */
+function anrProcessAnalysis(d){
+  const out = [], g = d.graph;
+  const byTid = new Map((d.threadNodes || []).map((x) => [x.thread.tid, x]));
+
   if(g.chain.length > 1){
     out.push(`<section class="dgroup"><h3>What main is waiting behind</h3><div class="anc">${
       g.chain.map((tid, i) => {
@@ -4313,19 +4374,18 @@ function anrProcessDetail(d){
     }</div></section>`);
   }
 
-  const states = new Map();
-  for(const t of p.threads) states.set(t.state, (states.get(t.state) || 0) + 1);
-  out.push(`<section class="dgroup"><h3>Thread states</h3>${dl(
-    [...states.entries()].sort((x, y) => y[1] - x[1]).map(([s, c]) => [esc(s), c])
-  )}</section>`);
-
-  if(g.edges.length){
-    out.push(`<section class="dgroup"><h3>Wait-for graph</h3>${dl([
+  out.push(`<section class="dgroup"><h3>Wait-for graph</h3>${
+    g.edges.length ? dl([
       ['edges', g.edges.length],
       ['deadlocks', g.cycles.length || dim('none')],
       ['note', dim('one edge per `waiting to lock`. `waiting on` — Object.wait() — is not an edge: the monitor was released, so the holder is not what blocks it.')],
-    ])}</section>`);
-  }
+    ]) : dl([
+      ['edges', dim('none')],
+      ['note', dim(d.proc.runtime === 'native'
+        ? 'a native process prints no monitor annotations, so there is no lock graph to build from this dump.'
+        : 'no thread in this process is waiting to lock a monitor another thread holds. Whatever is wrong here is not lock contention between these threads.')],
+    ])
+  }</section>`);
   return out;
 }
 
@@ -4459,7 +4519,7 @@ const TOOLS = [
     groupBadges: (d) => [
       ...(d.graph.cycles.length ? [['deadlock', 'badge-focus']] : []),
       ...(d.graph.chain.length > 1 ? [['main blocked', 'badge-focus']]
-        : !d.analysis.main ? [['no main thread', 'badge-exit']]
+        : !d.analysis.main && d.proc.runtime !== 'native' ? [['no main thread', 'badge-exit']]
         : d.analysis.mainIdle ? [['main idle', 'badge-comp']] : []),
       ...(d.blocked ? [[`${d.blocked} blocked`, 'badge-exit']] : []),
     ],
