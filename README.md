@@ -26,24 +26,6 @@ or point it at a URL.
 and each one that recognises something keeps its result, so a bugreport opens
 with a switch in the top bar between them.
 
-More than one thing can be open at a time; each gets a tab and keeps its own
-place — the filter, the selection, the view. Drop several files to open one tab
-each.
-
-Those tabs belong to a workspace, and there is a strip of workspaces above
-them — a workspace per thing you are looking into, so the dumps opened for one
-are not sitting in the strip while you read another. The dump strip shows the
-open workspace's tabs and nothing else. Click a workspace to switch to it,
-`+` to start another, double-click one to rename it, `×` to close it, or step
-round them with `alt+shift+←` and `alt+shift+→`. Closing a workspace closes
-every dump in it, so the cross asks once before it does. Nothing survives
-closing the page, workspace names included.
-
-Each workspace carries a colour, on its own tab and on the line over whichever
-dump is open inside it, so the desk you are standing at is legible without
-reading the name. There are six and they repeat; the first is the colour the
-page has always used, so one workspace looks like no workspaces at all.
-
 It also reads straight off a URL:
 
 ```
