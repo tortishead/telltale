@@ -747,6 +747,11 @@ const TYPE_INTS = {
   2039:'ACCESSIBILITY_MAGNIFICATION_OVERLAY', 2040:'NOTIFICATION_SHADE',
   2041:'STATUS_BAR_ADDITIONAL',
 };
+/* Window types are printed with the TYPE_ prefix the constant carries and read
+   without it everywhere. It sits here rather than with the other one-line
+   helpers because a parser names a window's type while parsing it, and the
+   parse layer is not allowed to reach forward into the render layer. */
+const shortType = (t) => t ? t.replace(/^TYPE_/,'') : '—';
 const KV_RE = /([A-Za-z_][\w.()]*)=("[^"]*"|[A-Za-z_]\w*\{[^{}]*\}|\{[^{}]*\}|\[[^\][]*\]|[^\s,]+)/g;
 const WIN_HEAD_RE = /^(\s*)Window #(-?\d+) Window\{(\S+?)(?:\s+(u\d+))?\s+(.+?)\}:\s*$/;
 const DISPLAY_HEAD_RE = /^(\s*)Display:\s*mDisplayId=(\d+)/;
@@ -2761,7 +2766,6 @@ const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 const trim = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
 const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
-const shortType = (t) => t ? t.replace(/^TYPE_/,'') : '—';
 const rectW = (r) => r.r - r.l, rectH = (r) => r.b - r.t;
 /* Rects go into SVG attributes often enough to be worth spelling once. */
 const rectAttrs = (rc) => `x="${rc.l}" y="${rc.t}" width="${rectW(rc)}" height="${rectH(rc)}"`;
