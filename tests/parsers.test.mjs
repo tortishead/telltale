@@ -75,7 +75,7 @@ test('deriveFrame gives up rather than guessing', () => {
 /* ---------------- windows ---------------- */
 
 test('the window sample parses to the stack it describes', () => {
-  const s = parseWindowDump(read('../sample.txt'));
+  const s = parseWindowDump(read('fixtures/window-sample.txt'));
   assert.ok(s.ok);
   assert.equal(s.displays.length, 1);
 
@@ -101,7 +101,7 @@ test('the window sample parses to the stack it describes', () => {
 });
 
 test('every node belongs to exactly one display', () => {
-  const s = parseWindowDump(read('../sample.txt'));
+  const s = parseWindowDump(read('fixtures/window-sample.txt'));
   for (const d of s.displays) {
     assert.equal(typeof d.id, 'number');
     assert.ok(d.nodes.length > 0, `display ${d.id} came back with no windows`);
@@ -124,7 +124,7 @@ test('sfFlagNames names the bits it knows and keeps the rest', () => {
 });
 
 test('the SurfaceFlinger sample parses to the layer tree it describes', () => {
-  const s = parseSurfaceFlingerDump(read('../sf-sample.txt'));
+  const s = parseSurfaceFlingerDump(read('fixtures/sf-sample.txt'));
   assert.ok(s.ok);
   assert.equal(s.displays.length, 1);
 

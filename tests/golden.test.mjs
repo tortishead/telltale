@@ -22,18 +22,22 @@ const UPDATE = process.env.UPDATE_GOLDEN === '1';
 
 /* The fixtures, and which parser each one is for. */
 const CASES = [
-  { name: 'window-sample',  file: '../sample.txt',               parse: 'parseWindowDump' },
-  { name: 'sf-sample',      file: '../sf-sample.txt',            parse: 'parseSurfaceFlingerDump' },
-  { name: 'package-sample', file: 'fixtures/package-sample.txt', parse: 'parsePackageDump' },
-  { name: 'anr-sample',     file: 'fixtures/anr-sample.txt',     parse: 'parseAnrDump' },
+  { name: 'window-sample',  parse: 'parseWindowDump' },
+  { name: 'sf-sample',      parse: 'parseSurfaceFlingerDump' },
+  { name: 'package-sample', parse: 'parsePackageDump' },
+  { name: 'anr-sample',     parse: 'parseAnrDump' },
 ];
+
+/* Every fixture is `tests/fixtures/<name>.txt` and every golden is
+   `tests/golden/<name>.txt`, so a case is a name and a parser. */
+const fixture = (c) => dir(`fixtures/${c.name}.txt`);
 
 if (UPDATE && !existsSync(dir('golden'))) mkdirSync(dir('golden'));
 
 for (const c of CASES) {
   test(`${c.name} digest is unchanged`, () => {
-    const scene = parsers[c.parse](readFileSync(dir(c.file), 'utf8'));
-    assert.ok(scene, `${c.parse} returned nothing for ${c.file}`);
+    const scene = parsers[c.parse](readFileSync(fixture(c), 'utf8'));
+    assert.ok(scene, `${c.parse} returned nothing for ${c.name}`);
     const got = digest(scene);
     const golden = dir(`golden/${c.name}.txt`);
 
@@ -61,7 +65,7 @@ const OWN = {
 
 test('each parser recognises its own dumps and no others', () => {
   const texts = Object.fromEntries(
-    CASES.map((c) => [c.name, readFileSync(dir(c.file), 'utf8')]));
+    CASES.map((c) => [c.name, readFileSync(fixture(c), 'utf8')]));
 
   for (const [fn, own] of Object.entries(OWN)) {
     for (const [name, text] of Object.entries(texts)) {
@@ -80,7 +84,7 @@ test('each parser recognises its own dumps and no others', () => {
    which `load` would report as "it could not be read". */
 test('a truncated dump parses without throwing', () => {
   for (const c of CASES) {
-    const text = readFileSync(dir(c.file), 'utf8');
+    const text = readFileSync(fixture(c), 'utf8');
     for (const frac of [0.1, 0.25, 0.5, 0.75, 0.9]) {
       const cut = text.slice(0, Math.floor(text.length * frac));
       assert.doesNotThrow(() => parsers[c.parse](cut),
