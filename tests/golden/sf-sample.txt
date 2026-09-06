@@ -1,0 +1,20 @@
+tool: sf
+displays: 1
+nodes: 8
+
+display 0  name=Built-in Screen  size=1080x2340  rot=0  power=2
+    hwc rows: 6
+    1  bar             [0,2208][1080,2340]       hwc frame   vis=y         ^sf0                                device                      NavigationBar0#9
+    2  bar             [0,0][1080,130]           hwc frame   vis=y         ^sf0                                device                      StatusBar#8
+    3  sf-buffer       [0,1474][1080,2340]       pos+size    vis=n         ^sf0                                hidden                      InputMethod#6
+    4  panel           [120,640][960,1160]       hwc frame   vis=y         ^sf2                                client                      PopupWindow:1a2b3c#5
+    5  sf-effect       [0,0][1080,2340]          hwc frame   vis=y         ^sf0                                solid_color                 Dim Layer for - t42#4
+    6  app             [0,0][1080,2340]          hwc frame   vis=y  focus  ^sf0                                device                      com.example.player/com.example.player.MainActivity#3
+    7  wallpaper       [0,0][1080,2340]          hwc frame   vis=y         ^sf0                                device                      com.android.systemui.ImageWallpaper#1
+    8  sf-container    —                         —           vis=n                                             -                           Display 0 name="Built-in Screen"#7
+
+globals:
+  build: [sf DEBUG=0 HAS_CONTEXT_PRIORITY=1 SF_PRIMARY_DISPLAY_ORIENTATION=0] [libui] [libgui]
+  hwcVersion: 2.4
+  visibleLayers: 6
+  totalLayers: 8

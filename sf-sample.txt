@@ -1,0 +1,115 @@
+Build configuration: [sf DEBUG=0 HAS_CONTEXT_PRIORITY=1 SF_PRIMARY_DISPLAY_ORIENTATION=0] [libui] [libgui]
+
+Display identification data:
+Display 4630946584839588224 (HWC display 0): port=0 pnpId=EXA displayName="Built-in Screen"
+
+Display Devices:
++ DisplayDevice: Built-in Screen
+   type=0, hwcId=0, layerStack=0, (1080x2340), ANativeWindow=0x7b1c2d3e40, orient=  0 (type=0), flips=91234, isSecure=1, isVirtual=0, powerMode=2, activeConfig=0, numLayers=8
+   v:[0,0,1080,2340], f:[0,0,1080,2340], s:[0,0,1080,2340], transform:-2 (0)
+
+Visible layers (count = 6)
+Total layers (count = 8)
+
++ ContainerLayer (Display 0 name="Built-in Screen"#7) uid=1000
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=0)
+  Region SurfaceDamageRegion (this=0x0 count=0)
+      layerStack=   0, z=        0, pos=(0,0), size=(  -1,  -1), crop=[0, 0, -1, -1], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=Default, defaultPixelFormat=Unknown/None, backgroundBlurRadius=0, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[0.00, 0.00][0.00, 0.00]
+      parent=none
+      zOrderRelativeOf=none
+      activeBuffer=[   0x   0:   0,Unknown/None], tr=[0.00, 0.00][0.00, 0.00] queued-frames=0, mRefreshPending=0
+
++ BufferStateLayer (com.android.systemui.ImageWallpaper#1) uid=1000
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=1)
+    [    0,    0, 1080, 2340]
+  Region SurfaceDamageRegion (this=0x0 count=0)
+      layerStack=   0, z=    11000, pos=(0,0), size=(1080,2340), crop=[0, 0, 1080, 2340], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=1, invalidate=0, dataspace=BT709 sRGB Full range, defaultPixelFormat=RGBA_8888, backgroundBlurRadius=0, color=(0.000,0.000,0.000,1.000), flags=0x00000002, tr=[1.00, 0.00][0.00, 1.00]
+      parent=Display 0 name="Built-in Screen"#7
+      zOrderRelativeOf=none
+      activeBuffer=[1080x2340:1088,  1], tr=[1.00, 0.00][0.00, 1.00] queued-frames=0, mRefreshPending=0
+
++ BufferStateLayer (com.example.player/com.example.player.MainActivity#3) uid=10233
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=1)
+    [    0,    0, 1080, 2340]
+  Region SurfaceDamageRegion (this=0x0 count=1)
+    [    0,    0, 1080, 2340]
+      layerStack=   0, z=    21000, pos=(0,0), size=(1080,2340), crop=[0, 0, 1080, 2340], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=BT709 sRGB Full range, defaultPixelFormat=RGBA_8888, backgroundBlurRadius=0, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]
+      parent=Display 0 name="Built-in Screen"#7
+      zOrderRelativeOf=none
+      activeBuffer=[1080x2340:1088,  1], tr=[1.00, 0.00][0.00, 1.00] queued-frames=1, mRefreshPending=0
+
++ EffectLayer (Dim Layer for - t42#4) uid=1000
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=1)
+    [    0,    0, 1080, 2340]
+  Region SurfaceDamageRegion (this=0x0 count=0)
+      layerStack=   0, z=    21000, pos=(0,0), size=(1080,2340), crop=[0, 0, 1080, 2340], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=Default, defaultPixelFormat=Unknown/None, backgroundBlurRadius=0, color=(0.000,0.000,0.000,0.400), flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]
+      parent=Display 0 name="Built-in Screen"#7
+      zOrderRelativeOf=none
+      activeBuffer=[   0x   0:   0,Unknown/None], tr=[0.00, 0.00][0.00, 0.00] queued-frames=0, mRefreshPending=0
+
++ BufferStateLayer (PopupWindow:1a2b3c#5) uid=10233
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=1)
+    [  120,  640,  960, 1160]
+  Region SurfaceDamageRegion (this=0x0 count=1)
+    [  120,  640,  960, 1160]
+      layerStack=   0, z=    21001, pos=(120,640), size=(840,520), crop=[0, 0, 840, 520], cornerRadius=28.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=BT709 sRGB Full range, defaultPixelFormat=RGBA_8888, backgroundBlurRadius=60, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]
+      parent=com.example.player/com.example.player.MainActivity#3
+      zOrderRelativeOf=none
+      activeBuffer=[ 840x 520: 840,  1], tr=[1.00, 0.00][0.00, 1.00] queued-frames=0, mRefreshPending=0
+
++ BufferStateLayer (InputMethod#6) uid=10122
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=0)
+  Region SurfaceDamageRegion (this=0x0 count=0)
+      layerStack=   0, z=   151000, pos=(0,1474), size=(1080,866), crop=[0, 0, 1080, 866], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=BT709 sRGB Full range, defaultPixelFormat=RGBA_8888, backgroundBlurRadius=0, color=(0.000,0.000,0.000,1.000), flags=0x00000001, tr=[1.00, 0.00][0.00, 1.00]
+      parent=Display 0 name="Built-in Screen"#7
+      zOrderRelativeOf=none
+      activeBuffer=[1080x 866:1088,  1], tr=[1.00, 0.00][0.00, 1.00] queued-frames=0, mRefreshPending=0
+
++ BufferStateLayer (StatusBar#8) uid=10046
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=1)
+    [    0,    0, 1080,  130]
+  Region SurfaceDamageRegion (this=0x0 count=1)
+    [    0,    0, 1080,  130]
+      layerStack=   0, z=   181000, pos=(0,0), size=(1080,130), crop=[0, 0, 1080, 130], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=BT709 sRGB Full range, defaultPixelFormat=RGBA_8888, backgroundBlurRadius=0, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]
+      parent=Display 0 name="Built-in Screen"#7
+      zOrderRelativeOf=none
+      activeBuffer=[1080x 130:1088,  1], tr=[1.00, 0.00][0.00, 1.00] queued-frames=0, mRefreshPending=0
+
++ BufferStateLayer (NavigationBar0#9) uid=10046
+  Region TransparentRegion (this=0x0 count=0)
+  Region VisibleRegion (this=0x0 count=1)
+    [    0, 2208, 1080, 2340]
+  Region SurfaceDamageRegion (this=0x0 count=1)
+    [    0, 2208, 1080, 2340]
+      layerStack=   0, z=   231000, pos=(0,2208), size=(1080,132), crop=[0, 0, 1080, 132], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=1, isOpaque=0, invalidate=0, dataspace=BT709 sRGB Full range, defaultPixelFormat=RGBA_8888, backgroundBlurRadius=0, color=(0.000,0.000,0.000,1.000), flags=0x00000200, tr=[1.00, 0.00][0.00, 1.00]
+      parent=Display 0 name="Built-in Screen"#7
+      zOrderRelativeOf=none
+      activeBuffer=[1080x 132:1088,  1], tr=[1.00, 0.00][0.00, 1.00] queued-frames=0, mRefreshPending=0
+
+Hardware Composer state (version 2.4):
+  Composition layers
+Display 4630946584839588224 (active) HWC layers:
+--------------------------------------------------------------------------------
+ Layer name
+           Z |  Window Type |  Comp Type |  Transform |   Disp Frame (LTRB) |          Source Crop (LTRB) |     Frame Rate (Explicit) (Seamlessness) [Focused]
+--------------------------------------------------------------------------------
+ com.android.systemui.ImageWallpaper#1
+        11000 |         2013 |     DEVICE |          0 |    0    0 1080 2340 |    0.0    0.0 1080.0 2340.0 |                                       [ ]
+ com.example.player/com.example.player.MainActivity#3
+        21000 |            1 |     DEVICE |          0 |    0    0 1080 2340 |    0.0    0.0 1080.0 2340.0 |                                       [*]
+ Dim Layer for - t42#4
+        21000 |            0 | SOLID_COLOR |          0 |    0    0 1080 2340 |    0.0    0.0    0.0    0.0 |                                       [ ]
+ PopupWindow:1a2b3c#5
+        21001 |         1002 |     CLIENT |          0 |  120  640  960 1160 |    0.0    0.0  840.0  520.0 |                                       [ ]
+ StatusBar#8
+       181000 |         2000 |     DEVICE |          0 |    0    0 1080  130 |    0.0    0.0 1080.0  130.0 |                                       [ ]
+ NavigationBar0#9
+       231000 |         2019 |     DEVICE |          0 |    0 2208 1080 2340 |    0.0    0.0 1080.0  132.0 |                                       [ ]
+--------------------------------------------------------------------------------

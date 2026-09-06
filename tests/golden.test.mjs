@@ -23,6 +23,7 @@ const UPDATE = process.env.UPDATE_GOLDEN === '1';
 /* The fixtures, and which parser each one is for. */
 const CASES = [
   { name: 'window-sample',  file: '../sample.txt',               parse: 'parseWindowDump' },
+  { name: 'sf-sample',      file: '../sf-sample.txt',            parse: 'parseSurfaceFlingerDump' },
   { name: 'package-sample', file: 'fixtures/package-sample.txt', parse: 'parsePackageDump' },
   { name: 'anr-sample',     file: 'fixtures/anr-sample.txt',     parse: 'parseAnrDump' },
 ];
@@ -53,7 +54,7 @@ for (const c of CASES) {
    returning nothing. */
 const OWN = {
   parseWindowDump: ['window-sample'],
-  parseSurfaceFlingerDump: [],
+  parseSurfaceFlingerDump: ['sf-sample'],
   parsePackageDump: ['package-sample'],
   parseAnrDump: ['anr-sample'],
 };

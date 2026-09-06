@@ -123,9 +123,26 @@ test('sfFlagNames names the bits it knows and keeps the rest', () => {
   assert.deepEqual(sfFlagNames('802'), ['OPAQUE', '0x800']);
 });
 
-/* parseSurfaceFlingerDump has no fixture any more, so nothing here reads a
-   layer tree. sfFlagNames above is the only SurfaceFlinger coverage left.
-   Putting a dump in tests/fixtures and adding it to CASES restores the rest. */
+test('the SurfaceFlinger sample parses to the layer tree it describes', () => {
+  const s = parseSurfaceFlingerDump(read('../sf-sample.txt'));
+  assert.ok(s.ok);
+  assert.equal(s.displays.length, 1);
+
+  const byTitle = (t) => s.nodes.find((n) => n.title.includes(t));
+
+  const popup = byTitle('PopupWindow');
+  assert.deepEqual(popup.frame, { l: 120, t: 640, r: 960, b: 1160 });
+  assert.ok(popup.parentHash, 'the popup hangs off the activity it belongs to');
+
+  const ime = byTitle('InputMethod');
+  assert.equal(ime.visible, false, 'a layer with an empty visible region is not showing');
+
+  // the HWC table is joined onto the layers by name
+  const d = s.displays[0];
+  assert.ok(d.hwc && d.hwc.rows.length, 'the HWC rows were read');
+  const activity = byTitle('MainActivity');
+  assert.equal(activity.focused, true, 'the [*] in the HWC table marks the focused layer');
+});
 
 /* ---------------- packages ---------------- */
 
