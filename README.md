@@ -630,10 +630,14 @@ change you made, then rewrite them:
 UPDATE_GOLDEN=1 node --test 'tests/**/*.test.mjs'
 ```
 
-The fixtures are `sample.txt`, `sf-sample.txt` and `window.txt` beside
-`index.html`, plus `tests/fixtures`. `window.txt` is a real dump off a device
-rather than a written one, so it is the one that keeps the window parser honest
-about what `dumpsys` actually prints.
+The fixtures are `sample.txt` beside `index.html` and the two in
+`tests/fixtures`. They cover the window, package and ANR parsers;
+`parseSurfaceFlingerDump` has no fixture and no coverage beyond its flag
+decoding. All of them are written rather than captured, so they say what a dump
+looks like in the shape the parsers were built against — a real dump off a
+device is worth more for catching what `dumpsys` actually prints. To add
+either, drop the file in `tests/fixtures`, add it to `CASES` in
+`golden.test.mjs`, and run with `UPDATE_GOLDEN=1` to record it.
 
 ## Limits
 

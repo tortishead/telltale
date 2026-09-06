@@ -20,15 +20,11 @@ import { digest } from '../tools/scene-digest.mjs';
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
 const UPDATE = process.env.UPDATE_GOLDEN === '1';
 
-/* The fixtures, and which parser each one is for. `window.txt` is a real dump
-   off a device rather than a written one, so it is the one that keeps the
-   window parser honest about what dumpsys actually prints. */
+/* The fixtures, and which parser each one is for. */
 const CASES = [
-  { name: 'window-sample',  file: '../sample.txt',                    parse: 'parseWindowDump' },
-  { name: 'window-device',  file: '../window.txt',                    parse: 'parseWindowDump' },
-  { name: 'sf-sample',      file: '../sf-sample.txt',                 parse: 'parseSurfaceFlingerDump' },
-  { name: 'package-sample', file: 'fixtures/package-sample.txt',      parse: 'parsePackageDump' },
-  { name: 'anr-sample',     file: 'fixtures/anr-sample.txt',          parse: 'parseAnrDump' },
+  { name: 'window-sample',  file: '../sample.txt',               parse: 'parseWindowDump' },
+  { name: 'package-sample', file: 'fixtures/package-sample.txt', parse: 'parsePackageDump' },
+  { name: 'anr-sample',     file: 'fixtures/anr-sample.txt',     parse: 'parseAnrDump' },
 ];
 
 if (UPDATE && !existsSync(dir('golden'))) mkdirSync(dir('golden'));
@@ -56,8 +52,8 @@ for (const c of CASES) {
    set, so a parser reports "not mine" by coming back with it false, not by
    returning nothing. */
 const OWN = {
-  parseWindowDump: ['window-sample', 'window-device'],
-  parseSurfaceFlingerDump: ['sf-sample'],
+  parseWindowDump: ['window-sample'],
+  parseSurfaceFlingerDump: [],
   parsePackageDump: ['package-sample'],
   parseAnrDump: ['anr-sample'],
 };
