@@ -43,28 +43,3 @@ works.
 
 Copy `index.html` into a repository and turn on GitHub Pages. That is the whole
 deployment. It opens from `file://` just as well.
-
-## Extending it
-
-Telltale is a set of readers behind one page. A reader scores how much a text
-looks like its own, turns it into a scene, and renders a details pane; the
-tabs, the filter, the tree, the drawing and the selection are already there and
-already shared. Adding one means an entry in `TOOLS` near the bottom of the
-script and the functions it names. Nothing else on the page knows how many
-kinds there are.
-
-The script is one file in four layers — parse, state, render, events, in that
-order, with a comment at each boundary.
-
-## Limits
-
-Text only. If you can get proto output or a Perfetto trace, Winscope will give
-you more — real hierarchy and time. Telltale is for when all you have is text
-from a field log, a bugreport or a vendor.
-
-Geometry is drawn as reported: transforms, scaling and cropping are shown but
-not applied. An ANR trace is one moment, not a timeline.
-
-## License
-
-MIT.
