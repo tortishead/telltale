@@ -1,0 +1,111 @@
+WINDOW MANAGER DISPLAY CONTENTS (dumpsys window displays)
+  Display: mDisplayId=0 rootDisplayAreaId=0
+    init=1080x2340 420dpi cur=1080x2340 app=1080x2210 rng=1080x1005-2210x2135
+    deferred=false mLayoutNeeded=false
+    mCurrentFocus=Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}
+    mFocusedApp=ActivityRecord{7f3e2d u0 com.example.player/.MainActivity t42}
+
+WINDOW MANAGER WINDOWS (dumpsys window windows)
+  Window #6 Window{c0ffee1 u0 NavigationBar0}:
+    mDisplayId=0 rootTaskId=-1 mSession=Session{9a1b2c 1234:1000} mClient=android.os.BinderProxy@33aa11
+    mOwnerUid=1000 showForAllUsers=true package=com.android.systemui appop=NONE
+    mAttrs={(0,0)(fillx132) gr=BOTTOM sim={adjust=pan} ty=NAVIGATION_BAR fmt=TRANSLUCENT
+      fl=NOT_FOCUSABLE NOT_TOUCH_MODAL TOUCHABLE_WHEN_WAKING SPLIT_TOUCH HARDWARE_ACCELERATED
+      pfl=COLOR_SPACE_AGNOSTIC FIT_INSETS_CONTROLLED}
+    Requested w=1080 h=132 mLayoutSeq=1085
+    mBaseLayer=231000 mSubLayer=0    mToken=WindowToken{4b5c6d type=2019}
+    mViewVisibility=0x0 mHaveFrame=true mObscured=false
+    mHasSurface=true isReadyForDisplay()=true mWindowRemovalAllowed=false
+    Frames: containing=[0,0][1080,2340] parent=[0,2208][1080,2340]
+        display=[0,0][1080,2340]
+        frame=[0,2208][1080,2340] last=[0,2208][1080,2340]
+    isOnScreen=true
+    isVisible=true
+
+  Window #5 Window{beef002 u0 StatusBar}:
+    mDisplayId=0 rootTaskId=-1 mSession=Session{9a1b2c 1234:1000} mClient=android.os.BinderProxy@44bb22
+    mOwnerUid=1000 showForAllUsers=true package=com.android.systemui appop=NONE
+    mAttrs={(0,0)(fillx130) gr=TOP sim={adjust=pan} ty=STATUS_BAR fmt=TRANSLUCENT
+      fl=NOT_FOCUSABLE SPLIT_TOUCH HARDWARE_ACCELERATED}
+    Requested w=1080 h=130 mLayoutSeq=1085
+    mBaseLayer=181000 mSubLayer=0    mToken=WindowToken{5c6d7e type=2000}
+    mViewVisibility=0x0 mHaveFrame=true mObscured=false
+    mHasSurface=true isReadyForDisplay()=true
+    mFrame=[0,0][1080,130] last=[0,0][1080,130]
+    isOnScreen=true
+    isVisible=true
+
+  Window #4 Window{d00d003 u0 InputMethod}:
+    mDisplayId=0 rootTaskId=-1 mSession=Session{7c8d9e 2345:10122} mClient=android.os.BinderProxy@55cc33
+    mOwnerUid=10122 showForAllUsers=false package=com.google.android.inputmethod.latin appop=NONE
+    mAttrs={(0,0)(fillx866) gr=BOTTOM CENTER_VERTICAL sim={adjust=pan} ty=INPUT_METHOD fmt=TRANSPARENT
+      fl=NOT_FOCUSABLE LAYOUT_IN_SCREEN SPLIT_TOUCH HARDWARE_ACCELERATED}
+    Requested w=1080 h=866 mLayoutSeq=1080
+    mBaseLayer=151000 mSubLayer=0    mToken=WindowToken{6d7e8f type=2011}
+    mViewVisibility=0x8 mHaveFrame=true mObscured=false
+    mHasSurface=false isReadyForDisplay()=false
+    mFrame=[0,1474][1080,2340] last=[0,1474][1080,2340]
+    isOnScreen=false
+    isVisible=false
+
+  Window #3 Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}:
+    mDisplayId=0 rootTaskId=42 mSession=Session{1a2b3c 3456:10233} mClient=android.os.BinderProxy@66dd44
+    mOwnerUid=10233 showForAllUsers=false package=com.example.player appop=NONE
+    mAttrs={(0,0)(fillxfill) sim={adjust=resize} ty=BASE_APPLICATION fmt=TRANSLUCENT
+      fl=LAYOUT_IN_SCREEN LAYOUT_INSET_DECOR SPLIT_TOUCH HARDWARE_ACCELERATED DRAWS_SYSTEM_BAR_BACKGROUNDS}
+    Requested w=1080 h=2340 mLayoutSeq=1085
+    mBaseLayer=21000 mSubLayer=0    mToken=ActivityRecord{7f3e2d u0 com.example.player/.MainActivity t42}
+    mViewVisibility=0x0 mHaveFrame=true mObscured=false
+    mGlobalScale=1.0
+    mHasSurface=true isReadyForDisplay()=true
+    Frames: containing=[0,0][1080,2340] parent=[0,0][1080,2340]
+        display=[0,0][1080,2340]
+        frame=[0,0][1080,2340] last=[0,0][1080,2340]
+        content=[0,130][1080,2208] visible=[0,130][1080,2208]
+    isOnScreen=true
+    isVisible=true
+
+  Window #2 Window{f00d004 u0 PopupWindow:1a2b3c}:
+    mDisplayId=0 rootTaskId=42 mSession=Session{1a2b3c 3456:10233} mClient=android.os.BinderProxy@77ee55
+    mOwnerUid=10233 showForAllUsers=false package=com.example.player appop=NONE
+    mAttrs={(120,640)(840x520) gr=LEFT TOP sim={adjust=pan} ty=APPLICATION_SUB_PANEL fmt=TRANSLUCENT
+      fl=ALT_FOCUSABLE_IM SPLIT_TOUCH HARDWARE_ACCELERATED}
+    Requested w=840 h=520 mLayoutSeq=1085
+    mBaseLayer=21000 mSubLayer=1    mToken=ActivityRecord{7f3e2d u0 com.example.player/.MainActivity t42}
+    mViewVisibility=0x0 mHaveFrame=true mObscured=false
+    mHasSurface=true isReadyForDisplay()=true
+    mFrame=[120,640][960,1160] last=[120,640][960,1160]
+    isOnScreen=true
+    isVisible=true
+
+  Window #1 Window{cafe005 u0 com.android.systemui.ImageWallpaper}:
+    mDisplayId=0 rootTaskId=-1 mSession=Session{9a1b2c 1234:1000} mClient=android.os.BinderProxy@88ff66
+    mOwnerUid=1000 showForAllUsers=true package=com.android.systemui appop=NONE
+    mAttrs={(0,0)(fillxfill) gr=CENTER sim={adjust=pan} ty=WALLPAPER fmt=RGB_565
+      fl=NOT_FOCUSABLE SCALED NOT_TOUCH_MODAL LAYOUT_IN_SCREEN LAYOUT_NO_LIMITS}
+    Requested w=1080 h=2340 mLayoutSeq=1085
+    mBaseLayer=11000 mSubLayer=0    mToken=WallpaperWindowToken{8f9a0b}
+    mViewVisibility=0x0 mHaveFrame=true mObscured=true
+    mHasSurface=true isReadyForDisplay()=true
+    mFrame=[0,0][1080,2340] last=[0,0][1080,2340]
+    isOnScreen=true
+    isVisible=true
+
+  Window #0 Window{dead006 u0 com.example.old/com.example.old.SplashActivity EXITING}:
+    mDisplayId=0 rootTaskId=41 mSession=Session{2b3c4d 4567:10244} mClient=android.os.BinderProxy@99aa77
+    mOwnerUid=10244 showForAllUsers=false package=com.example.old appop=NONE
+    mAttrs={(0,0)(fillxfill) sim={adjust=resize} ty=BASE_APPLICATION fmt=OPAQUE
+      fl=LAYOUT_IN_SCREEN SPLIT_TOUCH}
+    Requested w=1080 h=2340 mLayoutSeq=1071
+    mBaseLayer=21000 mSubLayer=0    mToken=ActivityRecord{6e5d4c u0 com.example.old/.SplashActivity t41}
+    mViewVisibility=0x8 mHaveFrame=true mObscured=true
+    mAnimatingExit=true mRemoveOnExit=true
+    mHasSurface=false isReadyForDisplay()=false
+    mFrame=[0,0][1080,2340] last=[0,0][1080,2340]
+    isOnScreen=false
+    isVisible=false
+
+  mGlobalConfiguration={1.0 ?mcc?mnc [en_US] ldltr sw411dp w411dp h842dp 420dpi nrml long port}
+  mCurrentFocus=Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}
+  mFocusedApp=ActivityRecord{7f3e2d u0 com.example.player/.MainActivity t42}
+  imeLayeringTarget=Window{a1b2c3 u0 com.example.player/com.example.player.MainActivity}
