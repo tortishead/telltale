@@ -4,9 +4,7 @@ What the device says about itself.
 
 Telltale is a browser toolkit for reading what an Android device reports about
 itself. Drop something in and it works out what it is holding, then draws it or
-lists it: the window stack to scale, SurfaceFlinger layers, packages, the
-thread that blocks main in an ANR trace. A whole bugreport works too — every
-reader gets a look, and each one that recognises something keeps its result.
+lists it.
 
 One static HTML file. No dependencies, no build step, no server. What you load
 never leaves your browser.
@@ -16,13 +14,16 @@ never leaves your browser.
 Open `index.html`. Drop a file in, paste text, pick one with the file dialog,
 or point it at a URL.
 
-```
-adb shell dumpsys window windows   > windows.txt
-adb shell dumpsys SurfaceFlinger   > sf.txt
-adb shell dumpsys package          > packages.txt
-adb pull /data/anr/traces.txt
-adb bugreport                          # all of the above at once
-```
+| Take it with | Reads | `?tool=` | Shows |
+| --- | --- | --- | --- |
+| `adb shell dumpsys window windows` | windows | `window` | Every window drawn to scale on its display, in z order, with frames, flags and visibility. A window that printed no frame is placed from its gravity and size. |
+| `adb shell dumpsys SurfaceFlinger` | layers | `sf` | Every layer drawn to scale on its display, as a tree, with its regions, composition type and the row the hardware composer gave it. |
+| `adb shell dumpsys package` | packages | `package` | Every package, grouped by Android user, with its flags, paths, permissions and the uid it shares. Opens on third-party. |
+| `adb pull /data/anr/traces.txt` | threads | `anr` | Every thread, grouped by process, with what blocks main, deadlocks and thread pools. Opens on the threads that block. |
+
+`adb bugreport` holds all four. Every reader gets a look at whatever you load
+and each one that recognises something keeps its result, so a bugreport opens
+with a switch in the top bar between them.
 
 More than one thing can be open at a time; each gets a tab and keeps its own
 place — the filter, the selection, the view. Drop several files to open one tab
