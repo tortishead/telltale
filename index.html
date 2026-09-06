@@ -916,15 +916,19 @@ function deriveFrame(w, disp) {
 
   const g = w.gravity || '';
   const has = (t) => new RegExp('\\b' + t + '\\b').test(g);
+  /* Gravity.toString collapses CENTER_HORIZONTAL|CENTER_VERTICAL back to the
+     one word CENTER, so a centred window prints `gr=CENTER` and never names
+     the axis. Reading only the axis words placed it at the origin instead. */
+  const centred = (axis) => has(axis) || has('CENTER');
 
   let l;
   if (has('RIGHT') && !has('LEFT')) l = dw - ww - x;
-  else if (!has('LEFT') && (has('CENTER_HORIZONTAL') || has('FILL_HORIZONTAL'))) l = Math.round((dw - ww) / 2) + x;
+  else if (!has('LEFT') && (centred('CENTER_HORIZONTAL') || has('FILL_HORIZONTAL'))) l = Math.round((dw - ww) / 2) + x;
   else l = x;
 
   let t;
   if (has('BOTTOM') && !has('TOP')) t = dh - hh - y;
-  else if (!has('TOP') && (has('CENTER_VERTICAL') || has('FILL_VERTICAL'))) t = Math.round((dh - hh) / 2) + y;
+  else if (!has('TOP') && (centred('CENTER_VERTICAL') || has('FILL_VERTICAL'))) t = Math.round((dh - hh) / 2) + y;
   else t = y;
 
   return { l, t, r: l + ww, b: t + hh };
