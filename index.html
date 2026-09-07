@@ -8,7 +8,7 @@
 <!-- The mark is the device on the left and what it reports streaming off it:
      amber for the signal, the way an instrument cluster draws a telltale.
      Inline so the page stays one file, and legible down to 16px. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%23d81e5b'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23d81e5b'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23d81e5b'/%3E%3Cg%20stroke='%23d81e5b'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%233ddc84'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%233ddc84'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%233ddc84'/%3E%3Cg%20stroke='%233ddc84'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E">
 <script>
 /* Before the first paint: a stored choice wins, otherwise the system's, and a
    system that will not say gets the dark theme Telltale has always drawn in. */
@@ -45,16 +45,20 @@
   --fg:#ccd6e0;
   --fg-strong:#f0f4f8;
   --redline:#d81e5b;
+  /* The mark only. Android's green, kept out of --redline so the rest of
+     the page — the selected row, the focus badge, workspace one — stays the
+     colour it was. */
+  --mark:#3ddc84;
   --placeholder:#5a6874;
   --amber:#b08a3e;
   --ok:#5fa87a;
   --shadow:0 6px 22px rgba(0,0,0,.45);
   /* One colour per workspace, so which desk you are on is legible without
      reading the name. Muted and in the same key as the rest of the page — the
-     first is the redline itself, so a single workspace looks like the page
-     always did. They are chrome, not data: the hues the drawing uses to mean
+     first is the mark's own green, so a single workspace matches the badge
+     in the top bar. They are chrome, not data: the hues the drawing uses to mean
      something are in FAMILY_COLORS and none of these is one of them. */
-  --acc-1:#d81e5b; --acc-2:#2ea88a; --acc-3:#c78b32;
+  --acc-1:var(--mark); --acc-2:#2ea88a; --acc-3:#c78b32;
   --acc-4:#8b7ad0; --acc-5:#3f92c8; --acc-6:#9aa63f;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -75,12 +79,13 @@
   --fg:#2c3a30;
   --fg-strong:#16211a;
   --redline:#c2124f;
+  --mark:#0f9d58;       /* taken down to hold on the light bar */
   --placeholder:#8b968c;
   --amber:#8a6420;
   --ok:#3d7a53;          /* darker than the dark theme's, to hold on paper */
   --shadow:0 6px 18px rgba(31,41,34,.16);
   /* The same six, taken down far enough to hold on a light strip. */
-  --acc-1:#c2124f; --acc-2:#1f7a63; --acc-3:#8a6420;
+  --acc-1:var(--mark); --acc-2:#1f7a63; --acc-3:#8a6420;
   --acc-4:#5f4fa8; --acc-5:#1f6b9c; --acc-6:#5f6b1f;
 }
 *{box-sizing:border-box}
@@ -107,9 +112,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 .mark::before{
   /* The same glyph the tab shows, painted through a mask so it takes the
-     redline token and follows the theme rather than baking a colour in. */
+     mark token and follows the theme rather than baking a colour in. */
   content:""; position:absolute; left:0; top:0; width:20px; height:20px;
-  background:var(--redline);
+  background:var(--mark);
   -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%23000'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Cg%20stroke='%23000'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E") 50%/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%23000'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Cg%20stroke='%23000'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E") 50%/contain no-repeat;
 }
@@ -161,13 +166,13 @@ main{
 .show{display:flex; gap:4px; align-items:center}
 .checks label{display:flex; gap:5px; align-items:center; cursor:pointer}
 .checks label[hidden]{display:none}
-.checks input{accent-color:var(--redline); margin:0}
+.checks input{accent-color:var(--mark); margin:0}
 .tabs{display:flex; gap:4px; flex-wrap:wrap}
 .tab{
   background:none; border:1px solid var(--rule); color:var(--dim);
   padding:3px 9px; cursor:pointer; border-radius:2px; font-size:12px;
 }
-.tab[aria-pressed="true"]{border-color:var(--redline); color:var(--fg-strong)}
+.tab[aria-pressed="true"]{border-color:var(--mark); color:var(--fg-strong)}
 
 /* ---------- the open dumps ---------- */
 /* A tab strip, not a row of buttons: the open one is cut out of the rule under
@@ -417,22 +422,44 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 /* ---------- window list ---------- */
 .wlist{list-style:none; margin:0; padding:0}
 .wrow{
-  display:grid; grid-template-columns:12px minmax(0,1fr); gap:9px; align-items:baseline;
+  display:grid; grid-template-columns:12px minmax(0,1fr); gap:9px; align-items:start;
   padding:7px 12px 7px 9px; border-bottom:1px solid var(--rule-soft);
   cursor:pointer; border-left:2px solid transparent;
+  /* Depth is a variable rather than an inline pixel padding so the rails below
+     can be drawn from the same number. `--step` is one level of nesting. */
+  --step:11px;
+  padding-left:calc(9px + var(--depth,0) * var(--step));
+  /* One rail per ancestor, each under the twisty of the row it belongs to, so
+     a child a long way down a scrolled list still reads as owned by something.
+     The tile is a repeating gradient bounded by background-size, which paints
+     exactly `--depth` of them and no more. */
+  background-image:repeating-linear-gradient(
+    to right, var(--rule) 0 1px, transparent 1px var(--step));
+  background-size:calc(var(--depth,0) * var(--step)) 100%;
+  background-position:16px 0;
+  background-repeat:no-repeat;
 }
-.wlist.is-tree .wrow{grid-template-columns:13px 12px minmax(0,1fr); gap:5px 7px}
-.wrow:hover{background:var(--ink-2)}
+.wlist.is-tree .wrow{grid-template-columns:15px 12px minmax(0,1fr); gap:5px 7px}
+/* Hover and selection are colour only: the shorthand would take the rails with
+   it. */
+.wrow:hover{background-color:var(--ink-2)}
 /* The twisty is the row's own control, so it does not take the row's hover or
-   its selection colour with it. */
+   its selection colour with it. It carries one arrow, turned rather than
+   swapped, so open and shut are the same shape at the same weight — and the
+   turn happens on the glyph, not the button, so the hit area stays square. */
 .twisty{
-  align-self:start; width:13px; height:17px; padding:0; line-height:17px;
-  background:none; border:none; color:var(--dim); font-size:11.5px; cursor:pointer;
+  width:15px; height:19px; padding:0; line-height:19px; text-align:center;
+  background:none; border:none; border-radius:2px;
+  color:var(--fg); font-size:11px; cursor:pointer;
 }
-.twisty:hover{color:var(--fg-strong)}
+.twisty-arrow{display:inline-block; transition:transform .12s ease}
+.twisty.is-open .twisty-arrow{transform:rotate(90deg)}
+.twisty:hover{color:var(--fg-strong); background:var(--ink-3)}
 .twisty-none{display:block}
-.wrow[aria-selected="true"]{background:var(--ink-3); border-left-color:var(--redline)}
-.swatch{width:9px; height:9px; border-radius:1px; align-self:center}
+.wrow[aria-selected="true"]{background-color:var(--ink-3); border-left-color:var(--redline)}
+/* Aligned to the title line rather than centred over the whole two-line row,
+   which left it floating in the gap between title and meta. */
+.swatch{width:9px; height:9px; border-radius:1px; margin-top:5px}
 .wtitle{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--fg-strong)}
 .wmeta{display:block; color:var(--dim); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .wrow > span{min-width:0}
@@ -542,7 +569,7 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 #listTabs .tab-display b{font-size:13px}
 .tab-badges{display:flex; flex-wrap:wrap; gap:4px 0; margin:1px 0}
 #listTabs button.tab-display:hover{background:var(--ink-2)}
-#listTabs .tab-display[aria-pressed="true"]{background:var(--ink-3); border-left-color:var(--redline)}
+#listTabs .tab-display[aria-pressed="true"]{background:var(--ink-3); border-left-color:var(--mark)}
 .sheet-foot{
   flex:none; padding:7px 14px; border-top:1px solid var(--rule-soft);
   color:var(--dim); font-size:12px; display:flex; gap:20px; flex-wrap:wrap;
@@ -808,9 +835,9 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
   <div class="empty-card">
     <div class="sheet-blank">
       <h1>Drop an AOSP dump here</h1>
-      <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>
-      and <code>car_service</code>, ANR traces, and whole bugreports. The file never
-      leaves your browser.</p>
+      <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>,
+      <code>user</code>, <code>car_service</code> and <code>binder_calls_stats</code>,
+      ANR traces, and whole bugreports. The file never leaves your browser.</p>
       <div class="empty-actions">
         <button class="btn-paper btn-paper-key" id="btnPick" type="button">Choose a file</button>
         <button class="btn-paper" id="btnPaste" type="button">Paste text</button>
@@ -822,8 +849,15 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
         <code class="cmd">adb shell dumpsys window windows   &gt; windows.txt
 adb shell dumpsys SurfaceFlinger  &gt; sf.txt
 adb shell dumpsys package         &gt; packages.txt
+adb shell dumpsys user            &gt; users.txt
 adb shell dumpsys car_service     &gt; car.txt
-adb pull /data/anr/traces.txt</code>
+adb pull /data/anr/traces.txt
+
+# binder_calls_stats records nothing while charging, and samples by default
+adb shell dumpsys battery unplug
+adb shell dumpsys binder_calls_stats --enable --no-sampling --enable-detailed-tracking
+adb shell dumpsys binder_calls_stats --reset      # then reproduce, then:
+adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
         <p class="hint">A bugreport works too — drop the whole thing and Telltale finds every
         section it knows, with a switch in the top bar to move between them. Add
         <code>?url=</code> to this page's address to open a dump straight from a link.</p>
@@ -3004,10 +3038,10 @@ function carHeadName(rest) {
    so the details pane can lay it out instead of leaving it as a wall of text.
    A line that starts with anything but a name — a timestamp, a stack frame, a
    table row — is not a pair and is left to the raw block. */
-/* What a name printed before its value looks like. The charset is narrow on
-   purpose: a stack frame is `at Foo.dump(Foo.java:744)` and a log line starts
-   with a date, and neither is a name with a value after it. */
-const CAR_PAIR_RE = /^([A-Za-z_#][\w .#/-]*?)\s*[:=]\s*(.*)$/;
+/* What a name printed before its value looks like, in any dump. The charset
+   is narrow on purpose: a stack frame is `at Foo.dump(Foo.java:744)` and a log
+   line starts with a date, and neither is a name with a value after it. */
+const PAIR_RE = /^([A-Za-z_#][\w .#/-]*?)\s*[:=]\s*(.*)$/;
 
 function carPairs(body) {
   const out = [];
@@ -3015,18 +3049,18 @@ function carPairs(body) {
     const t = line.trim();
     /* A thrown stack is answered above the block rather than laid out in it. */
     if (/^at\s/.test(t) || CAR_FAIL_RE.test(t)) continue;
-    const m = t.match(CAR_PAIR_RE);
+    const m = t.match(PAIR_RE);
     if (m && m[2]) out.push([m[1].trim(), m[2].trim()]);
   }
   return out;
 }
 
 /* A line read as a record: `key: value` fields separated by commas that are
-   not inside brackets. A car_service dump prints its tables this way — one
-   property or one event to a line — and a run of them is unreadable until it
-   is laid out in columns. A line that does not read as a record from end to
-   end is not one, so prose stays prose. */
-function carFields(line) {
+   not inside brackets. Dumps print their tables this way — one property, one
+   event, one user to a line — and a run of them is unreadable until it is laid
+   out in columns. A line that does not read as a record from end to end is not
+   one, so prose stays prose. */
+function lineFields(line) {
   const t = String(line).trim();
   if (!t) return null;
   const parts = [];
@@ -3058,14 +3092,14 @@ function carFields(line) {
    A line printed deeper than the run does not end it: a property that has
    areas prints them under itself, and those belong to the row above rather
    than to a table of their own. */
-function carRuns(body) {
+function blockRuns(body) {
   const out = [];
   let text = [];
   const flush = () => { if (text.length) { out.push({ kind: 'text', lines: text }); text = []; } };
   const sig = (f) => f.map(([k]) => k).join('|');
 
   for (let i = 0; i < body.length;) {
-    const first = carFields(body[i]);
+    const first = lineFields(body[i]);
     if (!first) { text.push(body[i]); i++; continue; }
     const head = sig(first), pad = indentOf(body[i]);
 
@@ -3073,7 +3107,7 @@ function carRuns(body) {
     let j = i;
     for (; j < body.length; j++) {
       const line = body[j];
-      const fields = carFields(line);
+      const fields = lineFields(line);
       if (fields && sig(fields) === head && indentOf(line) === pad) {
         rows.push({ cells: fields.map(([, v]) => v), under: [] });
       } else if (rows.length && line.trim() && indentOf(line) > pad) {
@@ -3093,13 +3127,13 @@ function carRuns(body) {
   return out;
 }
 
-/* The lines a section printed, as the tree the indenting says they are: a
-   line is an entry, and the lines under it at a deeper indent belong to it.
+/* The lines a block printed, as the tree the indenting says they are: a line
+   is an entry, and the lines under it at a deeper indent belong to it.
    `key: value` and `key=value` split; a line that is neither is an entry with
-   no value, which is what a label over a block is, and what a log line or a
-   policy printed with its own brackets is too. The key rule is the one
-   carPairs uses, so a stack frame or a timestamp is not mistaken for a name. */
-function carEntries(lines) {
+   no value, which is what a label over a list is, and what a log line or a
+   policy printed with its own brackets is too. This and blockRuns are what the
+   reading pane is built on, and neither knows which dump it is reading. */
+function blockEntries(lines) {
   const roots = [];
   const open = [];
   lines.forEach((raw, at) => {
@@ -3119,14 +3153,14 @@ function carEntries(lines) {
        three attributes, not one with a value that swallowed the other two.
        They come back as siblings; anything printed under the line belongs to
        the last of them, which is where the indenting continues from. */
-    const fields = carFields(line);
+    const fields = lineFields(line);
     const split = fields && fields.length > 1
       && fields.every((f) => f[2] === fields[0][2]);
 
     let last;
     if (split) fields.forEach(([key, value], i) => { last = add(key, value, i); });
     else {
-      const m = line.match(CAR_PAIR_RE);
+      const m = line.match(PAIR_RE);
       last = add(m ? m[1].trim() : line, m ? m[2].trim() : null, 0);
     }
     open.push({ indent, entry: last });
@@ -3252,6 +3286,607 @@ function parseCarServiceDump(input) {
   return finaliseScene('car', [display], nodes, globals);
 }
 
+/* ================ parse: dumpsys user ================ */
+
+/* A user dump is a document too, but one that marks nothing: its sections are
+   simply the lines at no indent at all, and what belongs to a section is what
+   is indented under it. Inside two of them the dump lists things rather than
+   settings — the users, and the types a user can be — and those are printed in
+   shapes worth recognising, so they become sections of their own and can be
+   picked, badged and counted. Everything else stays what it is: attributes,
+   which the reading pane lays out. */
+const USER_HEAD_RE = /^\s*UserInfo\{(-?\d+):([^:}]*):([0-9a-f]+)\}(.*)$/;
+const USER_TYPE_HEAD_RE = /^\s*(android\.os\.usertype\.[\w.]+):\s*$/;
+
+/* The flags a user carries are printed as an int and then spelled out; the
+   spelling is what anyone reads, and it is what the badges come from. */
+function userFlagNames(line) {
+  const m = String(line).match(/^\s*Flags:\s*\d+\s*\(([^)]*)\)/);
+  return m ? m[1].split('|').map((f) => f.trim()).filter(Boolean) : [];
+}
+
+/* The value printed after a name somewhere in a block, at any depth. It reads
+   a line the same way the reading pane does, so what a dump calls a name is
+   one thing across the whole page. */
+function userField(body, name) {
+  for (const line of body) {
+    const m = line.trim().match(PAIR_RE);
+    if (m && m[1].trim() === name) return m[2].trim();
+  }
+  return null;
+}
+
+/* A list printed under a label — the restrictions a user has, mostly. `none`
+   and `null` are the dump saying there are none, not the name of one. */
+function userListUnder(body, label) {
+  const at = body.findIndex((l) => l.trim().replace(/:$/, '') === label);
+  if (at < 0) return [];
+  const pad = indentOf(body[at]);
+  const out = [];
+  for (let i = at + 1; i < body.length; i++) {
+    const line = body[i];
+    if (!line.trim()) continue;
+    if (indentOf(line) <= pad) break;
+    const item = line.trim();
+    if (item !== 'none' && item !== 'null') out.push(item);
+  }
+  return out;
+}
+
+function userNode(head, body, opts) {
+  const { hash, title, family, typeLabel, badges, meta } = opts;
+  return {
+    hash, title, displayId: 0,
+    frame: null, frameSource: null, z: opts.z,
+    family, typeLabel, badges,
+    search: `${title} ${typeLabel} ${head}\n${body.join('\n')}`.toLowerCase(),
+    raw: [head, ...body].join('\n').replace(/\n+$/, ''),
+    visible: opts.visible !== false, focused: !!opts.focused,
+    parentHash: opts.parentHash || null,
+    ancestors: opts.ancestors || [],
+    body, bodyAt: opts.bodyAt, subCount: 0,
+    own: body.length + 1, lines: body.length + 1,
+    at: opts.at, meta,
+  };
+}
+
+function parseUserDump(input) {
+  const lines = String(input || '').replace(/\r\n?/g, '\n').split('\n');
+  const current = (() => {
+    const m = lines.join('\n').match(/^\s*Current user:\s*(-?\d+)/m);
+    return m ? +m[1] : null;
+  })();
+
+  /* The sections are the lines at no indent. Each one holds what is indented
+     under it, up to the next. */
+  const heads = [];
+  lines.forEach((line, i) => {
+    if (line.trim() && indentOf(line) === 0) heads.push({ at: i, title: line.trim() });
+  });
+  if (!heads.length) return finaliseScene('user', [], [], {});
+  heads.forEach((h, i) => {
+    const end = i + 1 < heads.length ? heads[i + 1].at : lines.length;
+    h.body = lines.slice(h.at + 1, end);
+  });
+
+  const nodes = [];
+  let z = 0;
+  const push = (n) => { nodes.push(n); return n; };
+
+  for (const h of heads) {
+    /* `Current user: 10` and the like are one line and no block; they are what
+       the dump says about itself, not a part of it. */
+    if (!h.body.some((l) => l.trim())) continue;
+
+    const title = h.title.replace(/:$/, '');
+    const kids = [];
+    const section = push(userNode(h.title, h.body, {
+      hash: `user:${h.at}`, title,
+      family: 'user-section', typeLabel: 'section', badges: [],
+      z: -z++, at: h.at + 1, bodyAt: h.at + 2,
+    }));
+    const ancestors = [{ hash: section.hash, title }];
+
+    /* Inside a section, a line in one of the two shapes the dump lists things
+       in opens a thing of its own; what follows it, indented deeper, is what
+       it printed. */
+    const opens = [];
+    h.body.forEach((line, i) => {
+      const m = line.match(USER_HEAD_RE) || line.match(USER_TYPE_HEAD_RE);
+      if (m) opens.push({ i, line, indent: indentOf(line), user: !!line.match(USER_HEAD_RE) });
+    });
+
+    opens.forEach((open, k) => {
+      const end = k + 1 < opens.length ? opens[k + 1].i : h.body.length;
+      const body = h.body.slice(open.i + 1, end);
+      const at = h.at + 1 + open.i;
+      /* The line it starts on is what makes a node's hash: a dump that printed
+         the same name twice must still be two things that can be picked
+         apart. */
+      const shared = {
+        z: -z++, at: at + 1, bodyAt: at + 2,
+        parentHash: section.hash, ancestors,
+      };
+      kids.push(open.user
+        ? push(userAccountNode(open.line, body, shared, current))
+        : push(userTypeNode(open.line, body, shared)));
+    });
+
+    section.subCount = kids.length;
+    if (kids.length) section.meta = `${kids.length} ${kids[0].typeLabel}${kids.length === 1 ? '' : 's'}`;
+  }
+
+  const users = nodes.filter((n) => n.user);
+  const types = nodes.filter((n) => n.userType);
+  const text = lines.join('\n');
+  const one = (re) => { const m = text.match(re); return m ? m[1].trim() : null; };
+  const globals = {
+    current,
+    users: users.length,
+    types: types.length,
+    maxUsers: one(/^\s*Max users:\s*(.+)$/m),
+    switchable: one(/^\s*Supports switchable users:\s*(\S+)/m),
+    headless: one(/^\s*Is headless-system mode:\s*(\S+)/m),
+    userVersion: one(/^\s*User version:\s*(\S+)/m),
+    bootUser: one(/^\s*Boot user:\s*(\S+)/m),
+    deviceManaged: one(/^\s*Device managed:\s*(\S+)/m),
+    visible: one(/^\s*Visible users:\s*(.+)$/m),
+    warnings: one(/^\s*(\d+) warnings\s*$/m),
+    lines: lines.length,
+  };
+
+  const display = {
+    id: 0, label: 'users', name: null,
+    size: { w: 0, h: 0 }, insets: [], raw: '',
+    meta: `${users.length} user${users.length === 1 ? '' : 's'} · ${types.length} types`,
+  };
+
+  return finaliseScene('user', [display], nodes, globals);
+}
+
+/* One user. The id, the name and the flags are on the head line; the type, the
+   state and what it is barred from are in the block under it. */
+function userAccountNode(head, body, shared, current) {
+  const m = head.match(USER_HEAD_RE);
+  const id = +m[1];
+  const name = m[2] === 'null' ? null : m[2];
+  const flags = userFlagNames(body.find((l) => /^\s*Flags:/.test(l)) || '');
+  const type = userField(body, 'Type') || '';
+  const base = (type.match(/usertype\.(\w+)\./) || [])[1] || null;
+  const state = userField(body, 'State');
+  const restrictions = userListUnder(body, 'Effective restrictions');
+  const isCurrent = current !== null && id === current;
+  const running = /^RUNNING/.test(state || '');
+
+  const family = base === 'system' ? 'user-system' : base === 'profile' ? 'user-profile'
+               : flags.includes('GUEST') ? 'user-guest' : 'user-full';
+
+  return {
+    ...userNode(head, body, {
+      ...shared,
+      hash: `user:${shared.at}`,
+      title: name ? `user ${id} · ${name}` : `user ${id}`,
+      family,
+      typeLabel: 'user',
+      badges: [
+        ...(isCurrent ? [['current', 'badge-focus']] : []),
+        ...(running ? [] : [[String(state || 'not running').toLowerCase(), 'badge-exit']]),
+        ...(flags.includes('EPHEMERAL') ? [['ephemeral', 'badge-comp']] : []),
+        ...(flags.includes('DISABLED') ? [['disabled', 'badge-exit']] : []),
+        ...(flags.includes('PARTIAL') ? [['partial', 'badge-exit']] : []),
+        ...(restrictions.length ? [[`${restrictions.length} restricted`, 'badge-comp']] : []),
+      ],
+      meta: [type.replace(/^android\.os\.usertype\./, ''), state].filter(Boolean).join(' · '),
+    }),
+    current: isCurrent,
+    user: true, userId: id, userName: name,
+    type, base, state, flags, restrictions,
+    serial: (head.match(/serialNo=(-?\d+)/) || [])[1] || null,
+  };
+}
+
+/* One type a user can be. */
+function userTypeNode(head, body, shared) {
+  const full = head.match(USER_TYPE_HEAD_RE)[1];
+  const base = userField(body, 'mBaseType');
+  const enabled = userField(body, 'mEnabled') === 'true';
+  const maxAllowed = userField(body, 'mMaxAllowed');
+  const perParent = userField(body, 'mMaxAllowedPerParent');
+
+  return {
+    ...userNode(head, body, {
+      ...shared,
+      hash: `user:${shared.at}`,
+      title: full.replace(/^android\.os\.usertype\./, ''),
+      family: base === 'PROFILE' ? 'user-profile' : base === 'SYSTEM' ? 'user-system' : 'user-full',
+      typeLabel: 'type',
+      badges: enabled ? [] : [['disabled', 'badge-exit']],
+      meta: [base, maxAllowed && maxAllowed !== '-1' && `max ${maxAllowed}`,
+             perParent && perParent !== '-1' && `${perParent} per parent`]
+        .filter(Boolean).join(' · '),
+    }),
+    userType: true, typeName: full, base, enabled,
+  };
+}
+
+/* ================ parse: dumpsys binder_calls_stats ================ */
+
+/* binder_calls_stats is not a document and nothing in it sits anywhere: it is
+   one table of counters, a row per caller and method, and it is opened to
+   compare — who is spending the system's time, and what threw on the way back
+   out. So the rows become a two-level list, each caller over the methods it
+   called, grouped by the Android user the caller runs as. On a car that
+   grouping is the point: one app runs once for the driver and once for the
+   system user, and the dump prints it as two callers that look alike.
+
+   Two lines above the table decide whether any of the numbers mean anything,
+   and both are easy to read past. `On battery time (ms): 0` means the
+   collector never ran — nothing is recorded while the device is charging,
+   which is an emulator's normal state, so a dump taken without
+   `dumpsys battery unplug` is an empty table rather than a quiet device.
+   `Sampling interval period: N` above 1 means one call in N was timed, so the
+   times are a sample scaled up while the counts are not. Both are reported
+   here rather than left as header lines nobody reads.
+
+   The columns are read by the names the header prints rather than by
+   position: builds have added and moved them, and `worksource` and
+   `screen_interactive` are not in all of them. */
+
+const BINDER_RAW_HEAD_RE = /^\s*Per-UID raw data.*\(([^()]*)\):\s*$/;
+const BINDER_SUM_HEAD_RE = /^\s*Per-UID Summary.*\(([^()]*)\):\s*$/;
+const BINDER_SUM_ROW_RE = /^\s+(\d+)\s+(\d+)%\s+(\d+)\s+(\d+)\s+(\S.*?)\s*$/;
+const BINDER_EXC_ROW_RE = /^\s+(\d+)\s+([\w$]+(?:\.[\w$]+)+)\s*$/;
+const BINDER_TOTAL_RE = /^\s*Summary:\s*total_cpu_time=(\d+),\s*calls_count=(\d+)(?:,\s*avg_call_cpu_time=(\S+))?/m;
+
+/* The header names every column, and the name is what the parser goes by. A
+   column this table gains keeps its own name and is carried through as-is. */
+const BINDER_COLS = {
+  'package/uid': 'who',
+  'worksource': 'worksource',
+  'call_desc': 'desc',
+  'screen_interactive': 'screen',
+  'cpu_time_micros': 'cpu',
+  'max_cpu_time_micros': 'maxCpu',
+  'latency_time_micros': 'latency',
+  'max_latency_time_micros': 'maxLatency',
+  'exception_count': 'exceptions',
+  'max_request_size_bytes': 'maxRequest',
+  'max_reply_size_bytes': 'maxReply',
+  'recorded_call_count': 'recorded',
+  'call_count': 'calls',
+};
+
+/* A caller printed as a bare number is one of the uids the platform reserves,
+   and the number is not what anyone calls it. Only the ones that turn up in a
+   binder dump are worth the table. */
+const BINDER_UID_NAMES = {
+  0: 'root', 1000: 'system', 1001: 'phone', 1002: 'bluetooth', 1003: 'graphics',
+  1004: 'input', 1005: 'audio', 1006: 'camera', 1007: 'log', 1010: 'wifi',
+  1013: 'media', 1017: 'keystore', 1019: 'drm', 1021: 'gps', 1027: 'nfc',
+  1041: 'audioserver', 1046: 'mediacodec', 1047: 'cameraserver',
+  1053: 'webview_zygote', 1066: 'network_stack', 1068: 'secure_element',
+  2000: 'shell', 9999: 'nobody',
+};
+
+/* Every binder interface answers a handful of transactions that belong to
+   binder rather than to the interface, and their codes are four packed
+   characters rather than a method index. Unpacking one is how `#1598311760`
+   turns back into the dump call that the row is actually about. */
+const BINDER_META_TXN = {
+  _PNG: 'ping', _DMP: 'dump', _CMD: 'shell command', _NTF: 'interface',
+  _SPR: 'sysprops', _EXT: 'extension', _PID: 'debug pid', _RPC: 'rpc client',
+  _TWT: 'tweet', _LIK: 'like',
+};
+
+function binderTxn(code) {
+  if (!(code > 0x00ffffff)) return null;      // below this it is a method index
+  const chars = [24, 16, 8, 0].map((s) => (code >>> s) & 0xff);
+  if (chars.some((c) => c < 32 || c > 126)) return null;
+  return String.fromCharCode(...chars);
+}
+
+const binderNum = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+
+/* The times are microseconds and span four orders of magnitude, so each is
+   read in the unit that keeps it to three figures. */
+function binderTime(us) {
+  const n = Number(us);
+  if (!Number.isFinite(n)) return '—';
+  if (n >= 1e6) return `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)} s`;
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)} ms`;
+  return `${n} µs`;
+}
+
+function binderBytes(b) {
+  const n = Number(b);
+  if (!Number.isFinite(n)) return '—';
+  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  if (n >= 1024) return `${(n / 1024).toFixed(n >= 10240 ? 0 : 1)} kB`;
+  return `${n} B`;
+}
+
+/* A reply this big is worth pointing at: the buffer a binder transaction is
+   copied through is a megabyte shared by the whole process, and the calls that
+   fill it are the ones that fail under load rather than in a dump. */
+const BINDER_BIG_REPLY = 64 * 1024;
+
+/* `com.android.systemui/u0a210`, `shared:android.uid.phone/1001`, or a bare
+   `0`. The half after the slash is the uid, written either as the plain number
+   or as the user-and-app pair, and it is the only part that says which user
+   the caller ran as. */
+function binderCaller(field) {
+  const raw = String(field == null ? '' : field).trim();
+  const slash = raw.lastIndexOf('/');
+  const name = slash < 0 ? null : raw.slice(0, slash);
+  const spec = slash < 0 ? raw : raw.slice(slash + 1);
+  const shared = !!name && name.startsWith('shared:');
+
+  let uid = null, user = null, appId = null;
+  const pair = spec.match(/^u(\d+)a(\d+)$/);
+  if (pair) {
+    user = +pair[1];
+    appId = 10000 + +pair[2];
+    uid = user * 100000 + appId;
+  } else if (/^\d+$/.test(spec)) {
+    uid = +spec;
+    user = Math.floor(uid / 100000);
+    appId = uid % 100000;
+  }
+
+  const plain = name ? name.replace(/^shared:/, '') : null;
+  const label = plain
+    || (uid !== null && BINDER_UID_NAMES[uid] ? BINDER_UID_NAMES[uid] : null)
+    || (spec ? `uid ${spec}` : 'unknown caller');
+
+  return { raw, name: plain, shared, spec, uid, user, appId, label };
+}
+
+/* `com.android.server.am.ActivityManagerService#startService`. The class is
+   printed in full and the method only when detailed tracking is on; without it
+   the dump prints the transaction code, or `null` where it has neither. */
+function binderCall(desc) {
+  const s = String(desc == null ? '' : desc).trim();
+  const at = s.lastIndexOf('#');
+  const cls = at < 0 ? s : s.slice(0, at);
+  const printed = at < 0 ? null : s.slice(at + 1);
+  const tail = cls.split('.').pop() || cls;
+  const service = tail.split('$')[0] || tail;
+  const inner = tail.includes('$') ? tail.slice(tail.indexOf('$') + 1) : null;
+
+  let method = printed, named = true;
+  if (!printed || printed === 'null') {
+    method = null;
+    named = false;
+  } else if (/^\d+$/.test(printed)) {
+    named = false;
+    const txn = binderTxn(+printed);
+    method = txn ? (BINDER_META_TXN[txn] || txn) : `transaction ${printed}`;
+  }
+
+  return { cls, service, inner, method, named,
+           title: `${service}#${method || '?'}` };
+}
+
+function binderNode(opts) {
+  return {
+    hash: opts.hash, title: opts.title, displayId: opts.displayId,
+    frame: null, frameSource: null, z: opts.z,
+    family: opts.family, typeLabel: opts.typeLabel, badges: opts.badges,
+    search: String(opts.search || '').toLowerCase(),
+    raw: opts.raw || '',
+    visible: true, focused: false,
+    parentHash: opts.parentHash || null,
+    ancestors: opts.ancestors || [],
+    at: opts.at, meta: opts.meta || null, subCount: opts.subCount || 0,
+  };
+}
+
+function parseBinderCallsStatsDump(input) {
+  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const lines = text.split('\n');
+
+  const headAt = lines.findIndex((l) => BINDER_RAW_HEAD_RE.test(l));
+  if (headAt < 0) return finaliseScene('binder', [], [], {});
+
+  const cols = lines[headAt].match(BINDER_RAW_HEAD_RE)[1]
+    .split(',').map((c) => BINDER_COLS[c.trim()] || c.trim());
+
+  /* The table runs to the first blank line. A row with the wrong number of
+     fields is not one of its rows, so the table stops there too rather than
+     the parser guessing which column it lost. */
+  const rows = [];
+  for (let i = headAt + 1; i < lines.length; i++) {
+    if (!lines[i].trim()) break;
+    const parts = lines[i].split(',');
+    if (parts.length !== cols.length) break;
+    const row = { at: i + 1, line: lines[i] };
+    cols.forEach((c, k) => { row[c] = parts[k].trim(); });
+    rows.push(row);
+  }
+
+  /* The summary below the table is the same callers totalled, and it counts
+     the rows the table dropped when it kept only the top of the dump. Where it
+     and the rows disagree, it is the one that saw everything. */
+  const summary = new Map();
+  const sumAt = lines.findIndex((l) => BINDER_SUM_HEAD_RE.test(l));
+  if (sumAt >= 0) {
+    for (let i = sumAt + 1; i < lines.length; i++) {
+      const m = lines[i].match(BINDER_SUM_ROW_RE);
+      if (!m) { if (!lines[i].trim()) continue; break; }
+      summary.set(m[5], { cpu: +m[1], pct: +m[2], recorded: +m[3], calls: +m[4] });
+    }
+  }
+
+  const exceptions = [];
+  const excAt = lines.findIndex((l) => /^\s*Exceptions thrown \(/.test(l));
+  if (excAt >= 0) {
+    for (let i = excAt + 1; i < lines.length; i++) {
+      const m = lines[i].match(BINDER_EXC_ROW_RE);
+      if (!m) { if (!lines[i].trim()) continue; break; }
+      exceptions.push([+m[1], m[2]]);
+    }
+  }
+
+  /* One caller per distinct `package/uid`, holding the rows it was printed
+     across. A caller the summary named but the table dropped is still a
+     caller, with its totals and nothing under it. */
+  const callers = new Map();
+  const caller = (key) => {
+    let c = callers.get(key);
+    if (!c) {
+      c = { key, who: binderCaller(key), rows: [],
+            cpu: 0, calls: 0, recorded: 0, exceptions: 0, maxReply: 0 };
+      callers.set(key, c);
+    }
+    return c;
+  };
+  for (const row of rows) {
+    const c = caller(row.who);
+    c.rows.push(row);
+    c.cpu += binderNum(row.cpu);
+    c.calls += binderNum(row.calls);
+    c.recorded += binderNum(row.recorded);
+    c.exceptions += binderNum(row.exceptions);
+    c.maxReply = Math.max(c.maxReply, binderNum(row.maxReply));
+  }
+  for (const key of summary.keys()) caller(key);
+  for (const c of callers.values()) {
+    c.summary = summary.get(c.key) || null;
+    c.cpuTotal = c.summary ? c.summary.cpu : c.cpu;
+    c.callsTotal = c.summary ? c.summary.calls : c.calls;
+    c.pct = c.summary ? c.summary.pct : null;
+    /* A caller whose totals are bigger than its rows had some of them dropped
+       when the dump kept only the top by cpu time. */
+    c.trimmed = c.rows.length > 0 && c.callsTotal > c.calls;
+  }
+
+  const nodes = [];
+  let z = 0;
+  const ordered = [...callers.values()]
+    .sort((a, b) => b.cpuTotal - a.cpuTotal || a.key.localeCompare(b.key));
+
+  for (const c of ordered) {
+    const user = c.who.user === null ? 0 : c.who.user;
+    const hash = `binder:uid:${c.key}`;
+    const methods = c.rows.length;
+    const uidText = c.who.uid === null ? c.who.spec : String(c.who.uid);
+
+    const node = binderNode({
+      hash, title: c.who.label, displayId: user, z: -z++,
+      family: 'binder-caller', typeLabel: c.who.shared ? 'shared uid' : 'caller',
+      badges: [
+        ...(c.exceptions ? [[`${c.exceptions} threw`, 'badge-focus']] : []),
+        ...(c.who.shared ? [['shared', 'badge-comp']] : []),
+        ...(c.maxReply >= BINDER_BIG_REPLY
+          ? [[`reply ${binderBytes(c.maxReply)}`, 'badge-exit']] : []),
+      ],
+      search: `${c.key} ${c.who.label} ${uidText} ${c.rows.map((r) => r.desc).join(' ')}`,
+      raw: c.rows.map((r) => r.line).join('\n'),
+      at: c.rows.length ? c.rows[0].at : (sumAt >= 0 ? sumAt + 1 : headAt + 1),
+      subCount: methods,
+      meta: `${methods} method${methods === 1 ? '' : 's'}`,
+    });
+    Object.assign(node, {
+      caller: true, key: c.key, who: c.who,
+      uid: c.who.uid, appId: c.who.appId, sharedUid: c.who.shared,
+      cpu: c.cpuTotal, calls: c.callsTotal, recorded: c.recorded,
+      exceptions: c.exceptions, pct: c.pct, methods,
+      maxReply: c.maxReply, trimmed: c.trimmed,
+      rowsCpu: c.cpu, rowsCalls: c.calls,
+    });
+    nodes.push(node);
+
+    const ancestors = [{ hash, title: c.who.label }];
+    for (const row of c.rows.slice().sort((a, b) => binderNum(b.cpu) - binderNum(a.cpu))) {
+      const call = binderCall(row.desc);
+      const threw = binderNum(row.exceptions);
+      const calls = binderNum(row.calls);
+      const recorded = binderNum(row.recorded);
+      const maxReply = binderNum(row.maxReply);
+
+      const kid = binderNode({
+        hash: `binder:call:${row.at}`, title: call.title, displayId: user, z: -z++,
+        family: threw ? 'binder-threw' : call.named ? 'binder-call' : 'binder-unnamed',
+        typeLabel: call.named ? 'method' : 'transaction',
+        badges: [
+          ...(threw ? [[`${threw} threw`, 'badge-focus']] : []),
+          ...(maxReply >= BINDER_BIG_REPLY
+            ? [[`reply ${binderBytes(maxReply)}`, 'badge-exit']] : []),
+          ...(recorded < calls ? [['sampled', 'badge-comp']] : []),
+        ],
+        search: `${c.key} ${c.who.label} ${row.desc} ${call.service} ${call.method || ''}`,
+        raw: row.line.trim(),
+        at: row.at,
+        parentHash: hash, ancestors,
+      });
+      Object.assign(kid, {
+        call: true, desc: row.desc, cls: call.cls, service: call.service,
+        inner: call.inner, method: call.method, named: call.named,
+        cpu: binderNum(row.cpu), maxCpu: binderNum(row.maxCpu),
+        latency: binderNum(row.latency), maxLatency: binderNum(row.maxLatency),
+        exceptions: threw, calls, recorded,
+        maxRequest: binderNum(row.maxRequest), maxReply,
+        screen: row.screen === undefined ? null : row.screen === 'true',
+        worksource: row.worksource === undefined || row.worksource === row.who
+          ? null : row.worksource,
+      });
+      nodes.push(kid);
+    }
+  }
+
+  const one = (re) => { const m = text.match(re); return m ? m[1].trim() : null; };
+  const int = (re) => { const v = one(re); return v === null ? null : +v; };
+  const total = text.match(BINDER_TOTAL_RE);
+  const batteryMs = int(/^\s*On battery time \(ms\):\s*(\d+)\s*$/m);
+  const sampling = int(/^\s*Sampling interval period:\s*(\d+)\s*$/m);
+  const userIds = [...new Set(nodes.map((n) => n.displayId))].sort((a, b) => a - b);
+
+  const globals = {
+    startTime: one(/^\s*Start time:\s*(.+)$/m),
+    batteryMs,
+    sampling,
+    sharding: int(/^\s*Sharding modulo:\s*(\d+)\s*$/m),
+    totalCpu: total ? +total[1] : null,
+    totalCalls: total ? +total[2] : null,
+    avgCpu: total && total[3] !== undefined && total[3] !== 'NaN' ? total[3] : null,
+    exceptions,
+    threw: exceptions.reduce((sum, [n]) => sum + n, 0),
+    callers: ordered.length,
+    rows: rows.length,
+    users: userIds.length,
+    /* The two things that decide whether the table means anything, worked out
+       once here so every pane that says so is saying the same thing. */
+    recording: batteryMs === null ? null : batteryMs > 0,
+    detailed: rows.length ? rows.some((r) => binderCall(r.desc).named) : null,
+    lines: lines.length,
+  };
+
+  const displays = (userIds.length ? userIds : [0]).map((id) => {
+    const own = nodes.filter((n) => n.displayId === id);
+    const heads = own.filter((n) => n.caller);
+    const cpu = heads.reduce((sum, n) => sum + n.cpu, 0);
+    const calls = heads.reduce((sum, n) => sum + n.calls, 0);
+    const threw = own.filter((n) => n.call).reduce((sum, n) => sum + n.exceptions, 0);
+    return {
+      id, label: `user ${id}`, name: null,
+      size: { w: 0, h: 0 }, insets: [], raw: '',
+      callers: heads.length, methods: own.length - heads.length,
+      cpu, calls, threw,
+      meta: heads.length
+        ? `${heads.length} caller${heads.length === 1 ? '' : 's'} · ${calls} call${
+            calls === 1 ? '' : 's'} · ${binderTime(cpu)}`
+        : 'nothing recorded',
+    };
+  });
+
+  const scene = finaliseScene('binder', displays, nodes, globals);
+  /* A collector that never ran prints this dump with an empty table, and why
+     it is empty is the answer it has. `ok` is whether the table was there, not
+     whether anything got into it. */
+  scene.ok = true;
+  return scene;
+}
+
 /* ================ state and shared helpers ================ */
 const VIEW0 = { yaw:34, pitch:19, sep:38 };   // the view Reset goes back to
 /* One dump loaded is one document. Everything the user does to a dump — which
@@ -3347,6 +3982,15 @@ const FAMILY_COLORS = {
      HALs under it, a subsection of either, or one that threw on its way out. */
   'car-service':'#2f6f8f', 'car-hal':'#6b5b95',
   'car-section':'#55636f', 'car-failed':'#a3352f',
+  /* A user is coloured by what kind of user it is, and a section of the dump
+     by being one. */
+  'user-system':'#55636f', 'user-full':'#2f6f8f', 'user-profile':'#6b5b95',
+  'user-guest':'#b4622a', 'user-section':'#55636f',
+  /* A binder row is coloured by what it is worth knowing about it: the caller
+     it hangs under, a call that came back with an exception, a call whose
+     method the dump did not record, and everything else. */
+  'binder-caller':'#6b5b95', 'binder-call':'#2f6f8f',
+  'binder-threw':'#a3352f', 'binder-unnamed':'#55636f',
 };
 function colorFor(n){ return FAMILY_COLORS[n.family] || FAMILY_COLORS.other; }
 
@@ -3412,9 +4056,10 @@ function load(text, prefer, label){
     return fail(broke.length
       ? 'That looks like a dump Telltale knows, but it could not be read. ' + broke.join('; ')
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
-        + '`dumpsys SurfaceFlinger`, `dumpsys package` and `dumpsys car_service` output '
-        + 'and ART thread dumps (`/data/anr/traces.txt`), or a bugreport containing any '
-        + 'of them.');
+        + '`dumpsys SurfaceFlinger`, `dumpsys package`, `dumpsys user`, '
+        + '`dumpsys car_service` and `dumpsys binder_calls_stats` output and ART '
+        + 'thread dumps (`/data/anr/traces.txt`), '
+        + 'or a bugreport containing any of them.');
   }
   const entry = found.find(f => f.tool.id === prefer) || found[0];
   addDoc(found, entry, label);
@@ -3721,8 +4366,12 @@ function listItems(){
 
   /* A filter searches the whole dump, so it has to be able to reach what a
      shut row is hiding: while one is typed the tree is open, and the collapse
-     state is left alone to come back when the filter is cleared. */
-  const shut = S.filter.trim() ? null : S.collapsed;
+     state is left alone to come back when the filter is cleared. A tool whose
+     rows open shut can ask for the same of its `show` settings, where picking
+     one is picking the rows and burying them behind a twisty would make the
+     button look as though it did nothing. */
+  const narrowed = S.tool.openOnShow && S.show !== 'all';
+  const shut = S.filter.trim() || narrowed ? null : S.collapsed;
   const under = (n) => kids.get(n.hash).reduce((sum, k) => sum + 1 + under(k), 0);
 
   // Siblings keep the order the flat list had them in: topmost first.
@@ -3975,17 +4624,18 @@ function renderList(){
        has something to hit, and `aria-hidden` because the row itself already
        says whether it is open and the arrow keys already work it. */
     const twisty = !tree ? ''
-      : kids ? `<button class="twisty" type="button" tabindex="-1" aria-hidden="true"
+      : kids ? `<button class="twisty${open ? ' is-open' : ''}" type="button" tabindex="-1" aria-hidden="true"
             data-toggle="${esc(w.hash)}"
             title="${open ? 'Hide what is under this' : `Show the ${hiding} below this`}"
-          >${open ? '\u25be' : '\u25b8'}</button>`
+          ><span class="twisty-arrow">\u25b8</span></button>`
       : '<span class="twisty twisty-none"></span>';
     // Indentation is charged against the title, which is the thing worth
-    // reading, so it stays small and the pane can be dragged wider.
+    // reading, so it stays small and the pane can be dragged wider. The rails
+    // are what carries the nesting, so the step can afford to stay narrow.
     return `<li class="wrow ${w.visible ? '' : 'is-hidden'}${context ? ' is-context' : ''}"
         role="${tree ? 'treeitem' : 'option'}"${tree ? ` aria-level="${depth + 1}"` : ''}${
           tree && kids ? ` aria-expanded="${open}"` : ''} tabindex="0"
-        style="padding-left:${9 + Math.min(depth, 12) * 8}px" title="${esc(w.title)}"
+        style="--depth:${Math.min(depth, 8)}" title="${esc(w.title)}"
         data-hash="${esc(w.hash)}" aria-selected="${S.selected===w.hash}">
       ${twisty}<span class="swatch" style="background:${tintFor(w)}"></span>
       <span>
@@ -4054,7 +4704,7 @@ function renderDoc(){
 function docSection(node, depth){
   const head = depth === 0 ? esc(node.title)
     : `<button type="button" data-hash="${esc(node.hash)}">${esc(node.title)}</button>`;
-  const body = carRuns(node.body)
+  const body = blockRuns(node.body)
     .map(run => run.kind === 'table' ? docTable(run) : docRows(node, run.lines))
     .filter(Boolean).join('');
   return `<section class="doc-sec" style="margin-left:${Math.min(depth, 4) * 14}px">
@@ -4116,7 +4766,7 @@ function docRows(node, lines){
     </button>`);
     e.children.forEach(c => walk(c, depth + 1));
   };
-  carEntries(lines).forEach(e => walk(e, 0));
+  blockEntries(lines).forEach(e => walk(e, 0));
   return out.join('');
 }
 
@@ -4134,9 +4784,9 @@ function docEntryAt(node, id){
     }
     return null;
   };
-  for(const run of carRuns(node.body)){
+  for(const run of blockRuns(node.body)){
     if(run.kind !== 'text') continue;
-    const found = find(carEntries(run.lines));
+    const found = find(blockEntries(run.lines));
     if(found) return found;
   }
   return null;
@@ -4146,7 +4796,7 @@ function docEntryAt(node, id){
    pulled apart the same way everything else is — the `k=v` pairs a service
    crams onto one line become a table — and what was printed under the row
    comes with it. */
-function carAttrDetail(id){
+function docAttrDetail(id){
   const owner = S.data.nodes.find(n => n.hash === id.split('#')[0]);
   const entry = owner && docEntryAt(owner, id);
   if(!entry) return null;
@@ -4156,10 +4806,10 @@ function carAttrDetail(id){
     ['name', docNamed(esc(entry.key), esc(entry.line))],
     entry.value !== null && entry.value !== '' && ['value', docNamed(esc(entry.value), esc(entry.line))],
     ['at', `line ${owner.bodyAt + entry.at}`],
-    ['in', carLink(owner.hash, owner.title)],
+    ['in', docLink(owner.hash, owner.title)],
   ])}</section>`);
 
-  const pairs = carInline(entry.value || '');
+  const pairs = docInline(entry.value || '');
   if(pairs.length > 1){
     out.push(`<section class="dgroup"><h3>Pulled apart</h3>${
       dl(pairs.map(([k, v]) => [esc(k), docNamed(esc(v), esc(entry.line))]))}</section>`);
@@ -4180,7 +4830,7 @@ function carAttrDetail(id){
 
 /* The `k=v` pairs a value is made of, where it is made of any. A value that is
    one thing — a number, a path, a policy id — is not pulled apart. */
-function carInline(value){
+function docInline(value){
   const out = [];
   let m;
   KV_RE.lastIndex = 0;
@@ -5285,7 +5935,7 @@ function renderDetail(){
 
 /* A row in the pane that selects another section, which is how the failures
    list and the path up out of a subsection are both walked. */
-const carLink = (hash, title) =>
+const docLink = (hash, title) =>
   `<button class="anc-row" type="button" data-hash="${esc(hash)}">${esc(title)}</button>`;
 
 function carDetail(n){
@@ -5293,7 +5943,7 @@ function carDetail(n){
 
   if(n.ancestors.length){
     out.push(`<section class="dgroup"><h3>Inside</h3>${
-      n.ancestors.map(a => carLink(a.hash, a.title)).join('')}</section>`);
+      n.ancestors.map(a => docLink(a.hash, a.title)).join('')}</section>`);
   }
 
   out.push(`<section class="dgroup"><h3>Section</h3>${dl([
@@ -5339,9 +5989,261 @@ function carDisplayDetail(d){
   if(g.failed.length){
     out.push(`<section class="dgroup"><h3>Did not dump</h3>${g.failed.map(h => {
       const n = d.nodes.find(x => x.hash === h);
-      return carLink(h, n ? n.title : h);
+      return docLink(h, n ? n.title : h);
     }).join('')}</section>`);
   }
+
+  return out;
+}
+
+/* ---- dumpsys user ---- */
+
+const userChips = (list) =>
+  `<div class="chips">${list.map(f => `<span class="chip">${esc(f)}</span>`).join('')}</div>`;
+
+function userDetail(n){
+  const out = [];
+
+  if(n.ancestors.length){
+    out.push(`<section class="dgroup"><h3>Inside</h3>${
+      n.ancestors.map(a => docLink(a.hash, a.title)).join('')}</section>`);
+  }
+
+  if(n.user){
+    out.push(`<section class="dgroup"><h3>User</h3>${dl([
+      ['id', n.userId],
+      ['name', n.userName ? esc(n.userName) : dim('unnamed')],
+      ['type', esc(n.type || '—')],
+      ['state', esc(n.state || '—')],
+      n.serial && ['serial', esc(n.serial)],
+      ['current', n.current ? 'yes' : 'no'],
+    ])}</section>`);
+    if(n.flags.length){
+      out.push(`<section class="dgroup"><h3>Flags</h3>${userChips(n.flags)}</section>`);
+    }
+    /* What a user may not do is the reason to look one up more often than
+       anything else in this dump, so it gets a block rather than a row. */
+    out.push(`<section class="dgroup"><h3>Effective restrictions</h3>${
+      n.restrictions.length ? userChips(n.restrictions)
+        : `<p style="margin:0">${dim('none')}</p>`}</section>`);
+  } else if(n.userType){
+    out.push(`<section class="dgroup"><h3>User type</h3>${dl([
+      ['name', esc(n.typeName)],
+      ['base', esc(n.base || '—')],
+      ['enabled', n.enabled ? 'yes' : 'no'],
+    ])}</section>`);
+  } else {
+    out.push(`<section class="dgroup"><h3>Section</h3>${dl([
+      ['at', `line ${n.at}`],
+      ['lines', n.lines],
+      n.subCount && ['holds', n.meta],
+    ])}</section>`);
+  }
+
+  return out;
+}
+
+function userGroupDetail(d){
+  const g = S.data.globals;
+  const users = d.nodes.filter(n => n.user);
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>Users</h3>${dl([
+    ['current', g.current === null ? dim('unknown')
+      : (() => { const u = users.find(x => x.userId === g.current);
+                 return u ? docLink(u.hash, u.title) : String(g.current); })()],
+    ['users', g.users],
+    ['types', g.types],
+    g.visible && ['visible', esc(g.visible)],
+    g.bootUser && ['boot user', esc(g.bootUser)],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Device</h3>${dl([
+    g.maxUsers && ['max users', esc(g.maxUsers)],
+    g.switchable && ['switchable', esc(g.switchable)],
+    g.headless && ['headless system', esc(g.headless)],
+    g.deviceManaged && ['managed', esc(g.deviceManaged)],
+    g.userVersion && ['user version', esc(g.userVersion)],
+  ])}</section>`);
+
+  /* The dump counts its own complaints about the allowlist. It is the one
+     number in here that is a finding rather than a fact. */
+  if(g.warnings && g.warnings !== '0'){
+    out.push(`<section class="dgroup"><h3>Allowlist</h3><p style="margin:0">${
+      esc(g.warnings)} warning${g.warnings === '1' ? '' : 's'} — packages allowlisted for a
+      user type that are not on the device. They are listed at the end of
+      <b>Whitelisted packages per user type</b>.</p></section>`);
+  }
+
+  return out;
+}
+
+/* ---- binder_calls_stats ---- */
+
+/* Whether the dump is worth reading at all is two facts about how it was
+   taken, and neither is on the row you are looking at. Both panes ask for them
+   here so they read the same in both. */
+function binderCaveats(g){
+  const out = [];
+  if(g.recording === false){
+    out.push(`<section class="dgroup"><h3>Nothing was recorded</h3>
+      <p style="margin:0">This dump ran with <b>On battery time (ms): 0</b>.
+      binder_calls_stats records nothing while the device is charging, which is
+      an emulator's normal state, so an empty table here is the collector never
+      having run rather than a quiet device. Take it again after
+      <code>adb shell dumpsys battery unplug</code>.</p></section>`);
+  }
+  if(g.sampling > 1){
+    out.push(`<section class="dgroup"><h3>Times are sampled</h3>
+      <p style="margin:0">One call in ${g.sampling} was timed, so every cpu and
+      latency figure below is that sample scaled up. The call counts and the
+      exception counts are not sampled — they are counted on every call.
+      <code>dumpsys binder_calls_stats --no-sampling</code> times all of
+      them.</p></section>`);
+  }
+  if(g.detailed === false){
+    out.push(`<section class="dgroup"><h3>No method names</h3>
+      <p style="margin:0">This dump was taken without detailed tracking, so the
+      rows name the interface and the transaction code rather than the method.
+      <code>dumpsys binder_calls_stats --enable-detailed-tracking</code> puts
+      the names in.</p></section>`);
+  }
+  return out;
+}
+
+function binderDetail(n){
+  const g = S.data.globals;
+  const out = [];
+
+  if(n.ancestors.length){
+    out.push(`<section class="dgroup"><h3>Called by</h3>${
+      n.ancestors.map(a => docLink(a.hash, a.title)).join('')}</section>`);
+  }
+
+  if(n.caller){
+    out.push(`<section class="dgroup"><h3>Caller</h3>${dl([
+      ['name', esc(n.who.name || n.who.label)],
+      ['uid', n.uid === null ? esc(n.who.spec) : `${n.uid}${
+        n.who.spec !== String(n.uid) ? dim(` · ${esc(n.who.spec)}`) : ''}`],
+      n.who.user !== null && ['user', n.who.user],
+      ['shared uid', n.sharedUid ? 'yes' : 'no'],
+    ])}</section>`);
+
+    out.push(`<section class="dgroup"><h3>Cost</h3>${dl([
+      ['calls', n.calls],
+      ['methods', n.methods],
+      ['cpu time', binderTime(n.cpu)],
+      n.pct !== null && ['share of cpu', `${n.pct}%`],
+      ['threw', n.exceptions || dim('none')],
+    ])}</section>`);
+
+    /* The table above the summary keeps only the top of the dump, so a caller
+       can total more than the rows under it add up to. Saying so is cheaper
+       than letting the two numbers disagree in silence. */
+    if(n.trimmed){
+      out.push(`<section class="dgroup"><h3>Not all of it is here</h3>
+        <p style="margin:0">The summary counts ${n.calls} calls for this caller;
+        the rows below it are ${n.rowsCalls}. The table keeps the top 90% by cpu
+        time, so the rest were dropped before it was printed.</p></section>`);
+    }
+    return out;
+  }
+
+  out.push(`<section class="dgroup"><h3>Call</h3>${dl([
+    ['interface', esc(n.cls)],
+    n.inner && ['implemented by', esc(n.inner)],
+    ['method', n.named ? esc(n.method)
+      : dim(n.method ? esc(n.method) + ' — not a method of this interface'
+                     : 'not recorded')],
+    ['calls', `${n.calls}${n.recorded < n.calls
+      ? dim(` · ${n.recorded} timed`) : ''}`],
+    n.screen !== null && ['screen on', n.screen ? 'yes' : 'no'],
+    n.worksource && ['work source', esc(n.worksource)],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Time</h3>${dl([
+    ['cpu', binderTime(n.cpu)],
+    ['worst cpu', binderTime(n.maxCpu)],
+    ['latency', binderTime(n.latency)],
+    ['worst latency', binderTime(n.maxLatency)],
+  ])}</section>`);
+
+  /* The two sizes are the high-water marks of what went through the binder
+     buffer, which is a megabyte shared by the whole process. A reply near it
+     is the call that falls over under load rather than in a dump. */
+  out.push(`<section class="dgroup"><h3>Payload</h3>${dl([
+    ['largest request', binderBytes(n.maxRequest)],
+    ['largest reply', `${binderBytes(n.maxReply)}${
+      n.maxReply >= BINDER_BIG_REPLY
+        ? dim(' · a binder buffer is 1 MB for the whole process') : ''}`],
+  ])}</section>`);
+
+  if(n.exceptions){
+    /* The dump counts exceptions per row but names them only once, in the
+       tally at the end, so which of them this row threw is not in the file. */
+    const named = g.exceptions.length
+      ? `The dump names ${g.exceptions.length === 1 ? 'one class' : 'the classes'} it
+         threw across every row — ${g.exceptions.map(([c, cls]) =>
+           `<b>${esc(cls.split('.').pop())}</b> ×${c}`).join(', ')} — but not
+         which of them came from this one.`
+      : '';
+    out.push(`<section class="dgroup"><h3>Threw</h3>
+      <p style="margin:0">${n.exceptions} of these ${n.calls} calls came back with
+      an exception instead of a reply. ${named}</p></section>`);
+  }
+
+  return out;
+}
+
+function binderUserDetail(d){
+  const g = S.data.globals;
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>User ${d.id}</h3>${dl([
+    ['callers', d.callers],
+    ['calls', d.calls],
+    ['methods', d.methods],
+    ['cpu time', binderTime(d.cpu)],
+    ['threw', d.threw || dim('none')],
+  ])}</section>`);
+
+  out.push(...binderCaveats(g));
+
+  /* What the dump throws is the question it gets opened with most often, and
+     the answer is two halves: the tally names the classes, the rows name the
+     callers. Neither is much use without the other, so they sit together. */
+  const threw = d.nodes.filter(n => n.call && n.exceptions)
+    .sort((a, b) => b.exceptions - a.exceptions);
+  if(g.exceptions.length || threw.length){
+    const rows = threw.length
+      ? `<h3 style="margin-top:11px">Thrown by</h3>${threw.map(n =>
+          docLink(n.hash, `${n.exceptions} · ${n.title}`)).join('')}`
+      : '';
+    out.push(`<section class="dgroup"><h3>Exceptions thrown</h3>${
+      g.exceptions.length
+        ? dl(g.exceptions.map(([c, cls]) => [esc(cls), c]))
+        : `<p style="margin:0">${dim('none')}</p>`}
+      <p style="margin:7px 0 0;color:var(--dim)">Counted device-wide, on every
+      call rather than on the sampled ones. A permission check that fails
+      throws across binder, so a steady count of
+      <b>SecurityException</b> is apps asking for what they do not hold rather
+      than anything being wrong.</p>${rows}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>Dump</h3>${dl([
+    g.startTime && ['start time', esc(g.startTime)],
+    g.batteryMs !== null && ['on battery', g.batteryMs
+      ? binderTime(g.batteryMs * 1000)
+      : dim('none · charging the whole time, so nothing was recorded')],
+    g.sampling !== null && ['sampling', g.sampling === 1
+      ? 'every call' : `1 in ${g.sampling}`],
+    g.sharding !== null && g.sharding !== 1 && ['sharding modulo', g.sharding],
+    g.totalCpu !== null && ['total cpu', binderTime(g.totalCpu)],
+    g.totalCalls !== null && ['total calls', g.totalCalls],
+    g.avgCpu !== null && ['average call', esc(g.avgCpu) + ' µs'],
+    ['callers', g.callers],
+    ['rows', g.rows],
+  ])}</section>`);
 
   return out;
 }
@@ -5501,7 +6403,7 @@ const TOOLS = [
     /* A service's subsections are what is inside it, not what it is, so they
        open shut and the list reads as the list of services. */
     startCollapsed: (n) => !n.parentHash,
-    attrDetail: carAttrDetail,
+    attrDetail: docAttrDetail,
     detect: (t) => (/^\s*\*Dump car service\*/m.test(t) ? 3 : 0)
                  + (/^\s*\*Dump all services\*/m.test(t) ? 3 : 0)
                  + (/^\s*Car Version:\s*CarVersion\[/m.test(t) ? 1 : 0)
@@ -5509,6 +6411,84 @@ const TOOLS = [
     parse: parseCarServiceDump,
     detail: carDetail,
     displayDetail: carDisplayDetail,
+  },
+  {
+    id: 'user',
+    name: 'Users',
+    layout: 'doc',         // a document, and a short one: seventeen rows
+    noun: 'section', nouns: 'sections', groupNoun: 'dump',
+    show: 'all',           // nothing is buried in a list this size
+    visBadge: false,
+    filterHint: 'Filter by user, type, package or anything printed',
+    shows: {
+      users: { label:'users', test:(n) => !!n.user },
+      types: { label:'types', test:(n) => !!n.userType },
+      all:   { label:'all',   test:() => true },
+    },
+    rowMeta: (n) => [esc(n.typeLabel), n.meta && esc(n.meta)].filter(Boolean).join(' \u00b7 '),
+    /* `Users:` at no indent is this dump's own heading and nothing else's;
+       `UserInfo{` on its own turns up in other dumps, so it only adds to a
+       score rather than making one. */
+    detect: (t) => (/^Users:\s*$/m.test(t) ? 3 : 0)
+                 + (/^Current user:\s*-?\d+/m.test(t) ? 2 : 0)
+                 + (/^\s*UserInfo\{-?\d+:/m.test(t) ? 1 : 0)
+                 + (/^User types \(\d+ types\):/m.test(t) ? 1 : 0),
+    parse: parseUserDump,
+    detail: userDetail,
+    displayDetail: userGroupDetail,
+    attrDetail: docAttrDetail,
+  },
+  {
+    id: 'binder',
+    name: 'Binder calls',
+    layout: 'list',        // a table of counters; nothing in it sits anywhere
+    noun: 'call', nouns: 'calls', groupNoun: 'user',
+    show: 'all',           // the callers, with their methods folded under them
+    visBadge: false,
+    filterHint: 'Filter by package, uid, interface or method',
+    /* What buries this dump is that every caller is printed once per method it
+       called, so a few hundred rows are a couple of dozen callers. The list is
+       those callers, shut, and the settings are about which of them to open
+       with: everything, or only what threw. */
+    shows: {
+      all:     { label:'all',     test:() => true },
+      callers: { label:'callers', test:(n) => !n.parentHash },
+      threw:   { label:'threw',   test:(n) => n.exceptions > 0 },
+    },
+    /* A caller's methods are the breakdown of it, not what it is, so they open
+       shut and the list reads as the list of callers — until a setting asks for
+       the methods themselves, which is what `threw` is for. */
+    startCollapsed: (n) => !!n.caller,
+    openOnShow: true,
+    rowMeta: (n) => n.caller
+      ? [`${n.calls} call${n.calls === 1 ? '' : 's'}`,
+         binderTime(n.cpu),
+         n.pct !== null ? `${n.pct}% of cpu` : null,
+         `${n.methods} method${n.methods === 1 ? '' : 's'}`,
+        ].filter(Boolean).join(' \u00b7 ')
+      : [`${n.calls} call${n.calls === 1 ? '' : 's'}`,
+         binderTime(n.cpu),
+         `worst ${binderTime(n.maxCpu)}`,
+         `latency ${binderTime(n.latency)}`,
+        ].filter(Boolean).join(' \u00b7 '),
+    /* How the dump was taken decides whether any of it means anything, so the
+       two ways it comes back empty or estimated are said on the group itself
+       rather than found in the reading pane. */
+    groupBadges: (d) => {
+      const g = S.data.globals;
+      return [
+        ...(g.recording === false ? [['not recording', 'badge-exit']] : []),
+        ...(g.sampling > 1 ? [[`1 in ${g.sampling}`, 'badge-comp']] : []),
+        ...(d.threw ? [[`${d.threw} threw`, 'badge-focus']] : []),
+      ];
+    },
+    detect: (t) => (/^\s*Per-UID raw data.*\(.*call_desc.*\):\s*$/m.test(t) ? 3 : 0)
+                 + (/^\s*Exceptions thrown \(exception_count, class_name\):/m.test(t) ? 3 : 0)
+                 + (/^\s*Sampling interval period:\s*\d+\s*$/m.test(t) ? 1 : 0)
+                 + (/^\s*Summary: total_cpu_time=\d+/m.test(t) ? 1 : 0),
+    parse: parseBinderCallsStatsDump,
+    detail: binderDetail,
+    displayDetail: binderUserDetail,
   },
 ];
 

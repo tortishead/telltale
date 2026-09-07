@@ -1,0 +1,80 @@
+tool: binder
+displays: 2
+nodes: 54
+
+display 0  label=user 0  size=0x0
+    meta: 5 callers · 1973 calls · 252 ms
+    1  binder-caller   vis=y                                             3 threw,shared,reply 66 kB  com.google.uid.shared
+    2  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           ActivityManagerService#startService
+    3  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  reply 66 kB                 PackageManagerService#queryIntentServices
+    4  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           ActivityManagerService#bindServiceInstance
+    5  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           ActivityManagerService#unbindService
+    6  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           ContentService#notifyChange
+    7  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           PowerManagerService#acquireWakeLock
+    8  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           ActivityManagerService#finishReceiver
+    9  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           PowerManagerService#releaseWakeLock
+   10  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  -                           ActivityManagerService#serviceDoneExecuting
+   11  binder-unnamed  vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  reply 66 kB                 BaseParceledListSlice#transaction 1
+   12  binder-threw    vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  1 threw                     PackageManagerService#setComponentEnabledSetting
+   13  binder-threw    vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  1 threw                     ContentService#registerContentObserver
+   14  binder-threw    vis=y         ^binder:uid:shared:com.google.uid.shared/u0a198  1 threw                     WifiServiceImpl#getUsableChannels
+   15  binder-caller   vis=y                                             -                           root
+   16  binder-unnamed  vis=y         ^binder:uid:0                       -                           BinderCallsStatsService#dump
+   17  binder-unnamed  vis=y         ^binder:uid:0                       -                           PackageManagerService#?
+   18  binder-unnamed  vis=y         ^binder:uid:0                       -                           ActivityManagerService#?
+   19  binder-unnamed  vis=y         ^binder:uid:0                       -                           InputManagerService#?
+   20  binder-unnamed  vis=y         ^binder:uid:0                       -                           PackageManagerService#?
+   21  binder-unnamed  vis=y         ^binder:uid:0                       -                           NetdEventListenerService#transaction 5
+   22  binder-caller   vis=y                                             -                           com.android.systemui
+   23  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a210  -                           AccessibilityManagerService#sendAccessibilityEvent
+   24  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a210  -                           Session#relayout
+   25  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a210  -                           WindowOrganizerController#applySyncTransaction
+   26  binder-unnamed  vis=y         ^binder:uid:com.android.systemui/u0a210  -                           ContentProvider#transaction 21
+   27  binder-caller   vis=y                                             shared                      android.uid.phone
+   28  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  -                           TelephonyRegistry#notifySignalStrengthForPhoneId
+   29  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  -                           VcnManagementService#getUnderlyingNetworkPolicy
+   30  binder-caller   vis=y                                             shared                      android.uid.system
+   31  binder-unnamed  vis=y         ^binder:uid:shared:android.uid.system/1000  -                           HealthRegCallbackAidl#transaction 1
+
+display 10  label=user 10  size=0x0
+    meta: 5 callers · 1555 calls · 132 ms
+    1  binder-caller   vis=y                                             2 threw,shared              com.google.uid.shared
+    2  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           ActivityManagerService#startService
+    3  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           ContentService#notifyChange
+    4  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           ActivityManagerService#serviceDoneExecuting
+    5  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           ActivityManagerService#unbindService
+    6  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           ActivityManagerService#bindServiceInstance
+    7  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           ActivityManagerService#stopServiceToken
+    8  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  -                           PackageManagerService#queryIntentServices
+    9  binder-threw    vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  1 threw                     PackageManagerService#setComponentEnabledSetting
+   10  binder-threw    vis=y         ^binder:uid:shared:com.google.uid.shared/u10a198  1 threw                     WifiServiceImpl#getUsableChannels
+   11  binder-caller   vis=y                                             reply 65 kB                 com.google.android.carassistant
+   12  binder-call     vis=y         ^binder:uid:com.google.android.carassistant/u10a196  -                           ActivityManagerService#bindServiceInstance
+   13  binder-call     vis=y         ^binder:uid:com.google.android.carassistant/u10a196  -                           ActivityManagerService#unbindService
+   14  binder-call     vis=y         ^binder:uid:com.google.android.carassistant/u10a196  reply 65 kB                 PackageManagerService#getInstalledPackages
+   15  binder-unnamed  vis=y         ^binder:uid:com.google.android.carassistant/u10a196  reply 65 kB                 BaseParceledListSlice#transaction 1
+   16  binder-caller   vis=y                                             -                           com.android.car.mapsplaceholder
+   17  binder-call     vis=y         ^binder:uid:com.android.car.mapsplaceholder/u10a181  -                           Session#relayout
+   18  binder-call     vis=y         ^binder:uid:com.android.car.mapsplaceholder/u10a181  -                           InputMethodManagerService#startInputOrWindowGainedFocus
+   19  binder-caller   vis=y                                             -                           com.android.car.carlauncher
+   20  binder-call     vis=y         ^binder:uid:com.android.car.carlauncher/u10a167  -                           ActivityManagerService#getContentProvider
+   21  binder-call     vis=y         ^binder:uid:com.android.car.carlauncher/u10a167  -                           ActivityClientController#activityPaused
+   22  binder-caller   vis=y                                             -                           com.android.car.rotary
+   23  binder-call     vis=y         ^binder:uid:com.android.car.rotary/u10a163  -                           AccessibilityServiceConnection#findAccessibilityNodeInfoByAccessibilityId
+
+globals:
+  startTime: 2026-09-07 00:10:32
+  batteryMs: 259168
+  sampling: 1
+  sharding: 1
+  totalCpu: 417470
+  totalCalls: 3950
+  avgCpu: 106
+  exceptions: 3,java.lang.SecurityException,2,java.lang.IllegalArgumentException
+  threw: 5
+  callers: 10
+  rows: 44
+  users: 2
+  recording: true
+  detailed: true
+  lines: 66

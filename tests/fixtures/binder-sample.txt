@@ -1,0 +1,65 @@
+Start time: 2026-09-07 00:10:32
+On battery time (ms): 259168
+Sampling interval period: 1
+Sharding modulo: 1
+Per-UID raw data (top 90% by cpu time) (package/uid, worksource, call_desc, screen_interactive, cpu_time_micros, max_cpu_time_micros, latency_time_micros, max_latency_time_micros, exception_count, max_request_size_bytes, max_reply_size_bytes, recorded_call_count, call_count):
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.TelephonyRegistry#notifySignalStrengthForPhoneId,false,33066,5222,35885,5522,0,804,4,26,26
+    0,0,com.android.server.BinderCallsStatsService#1598311760,false,20601,11285,21839,11960,0,48,4,3,3
+    0,0,com.android.server.pm.PackageManagerService$IPackageManagerImpl#null,false,18157,18157,100238,100238,0,80,4,1,1
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.am.ActivityManagerService#startService,false,13992,724,71914,21152,0,816,192,89,89
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.am.ActivityManagerService#startService,false,13690,494,36192,4969,0,1256,192,103,103
+    0,0,com.android.server.am.ActivityManagerService#null,false,13153,5309,35857,11412,0,268,4,7,7
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.pm.PackageManagerService$IPackageManagerImpl#queryIntentServices,false,11382,1801,14862,2292,0,428,67972,139,139
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.am.ActivityManagerService#bindServiceInstance,false,9922,1490,32496,16243,0,668,8,16,16
+    com.android.systemui/u0a210,com.android.systemui/u0a210,com.android.server.accessibility.AccessibilityManagerService#sendAccessibilityEvent,false,8852,1577,9841,1656,0,376,0,41,41
+    0,0,com.android.server.input.InputManagerService#null,false,8832,2180,42904,12296,0,192,4,13,13
+    com.android.car.carlauncher/u10a167,com.android.car.carlauncher/u10a167,com.android.server.am.ActivityManagerService#getContentProvider,false,8436,8436,18817,18817,0,280,3328,1,1
+    com.android.systemui/u0a210,com.android.systemui/u0a210,com.android.server.wm.Session#relayout,false,8410,1561,15242,2504,0,508,1720,9,9
+    com.android.systemui/u0a210,com.android.systemui/u0a210,com.android.server.wm.WindowOrganizerController#applySyncTransaction,false,8303,3439,78429,43685,0,692,8,4,4
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.content.ContentService#notifyChange,false,8207,266,12042,1086,0,344,4,100,100
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.am.ActivityManagerService#unbindService,false,7288,1720,18847,9034,0,104,8,16,16
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.am.ActivityManagerService#serviceDoneExecuting,false,6915,719,29528,5229,0,116,0,142,142
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.am.ActivityManagerService#unbindService,false,6811,2609,9271,2605,0,104,8,10,10
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.content.ContentService#notifyChange,false,6693,396,27129,18710,0,344,4,98,98
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.power.PowerManagerService$BinderService#acquireWakeLock,false,6238,755,8073,1786,0,500,4,53,53
+    com.google.android.carassistant/u10a196,com.google.android.carassistant/u10a196,com.android.server.am.ActivityManagerService#bindServiceInstance,false,5646,2268,9905,5914,0,436,8,4,4
+    com.android.car.mapsplaceholder/u10a181,com.android.car.mapsplaceholder/u10a181,com.android.server.wm.Session#relayout,false,5562,1146,34287,10798,0,580,3148,8,8
+    0,0,com.android.server.pm.PackageManagerService$IPackageManagerImpl#null,false,5313,2760,6806,4194,0,204,4,2,2
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.am.ActivityManagerService#finishReceiver,false,4969,718,11971,1134,0,124,0,43,43
+    com.google.android.carassistant/u10a196,com.google.android.carassistant/u10a196,com.android.server.am.ActivityManagerService#unbindService,false,4833,3311,5892,4009,0,104,8,3,3
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.am.ActivityManagerService#bindServiceInstance,false,4634,2092,7124,2602,0,620,8,10,10
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.power.PowerManagerService$BinderService#releaseWakeLock,false,4471,509,7567,1537,0,100,4,53,53
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.am.ActivityManagerService#stopServiceToken,false,4419,3295,6138,4581,0,296,8,5,5
+    com.google.android.carassistant/u10a196,com.google.android.carassistant/u10a196,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getInstalledPackages,false,4240,4240,4342,4342,0,100,66808,1,1
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.am.ActivityManagerService#serviceDoneExecuting,false,4111,436,64795,20893,0,116,0,117,117
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.VcnManagementService#getUnderlyingNetworkPolicy,false,4090,1550,4888,1797,0,688,336,5,5
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.pm.PackageManagerService$IPackageManagerImpl#queryIntentServices,false,3893,124,5496,1001,0,428,45484,132,132
+    com.android.car.rotary/u10a163,com.android.car.rotary/u10a163,com.android.server.accessibility.AccessibilityServiceConnection#findAccessibilityNodeInfoByAccessibilityId,false,3741,271,6291,1148,0,200,76,41,41
+    com.android.car.mapsplaceholder/u10a181,com.android.car.mapsplaceholder/u10a181,com.android.server.inputmethod.InputMethodManagerService#startInputOrWindowGainedFocus,false,3677,839,6774,1837,0,532,416,7,7
+    com.android.systemui/u0a210,com.android.systemui/u0a210,android.content.ContentProvider$Transport#21,false,3642,1062,4214,1061,0,340,44,13,13
+    com.android.car.carlauncher/u10a167,com.android.car.carlauncher/u10a167,com.android.server.wm.ActivityClientController#activityPaused,false,3601,2496,13913,10893,0,120,4,3,3
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,android.content.pm.BaseParceledListSlice$1#1,false,1415,354,2221,383,0,4,67760,20,20
+    com.google.android.carassistant/u10a196,com.google.android.carassistant/u10a196,android.content.pm.BaseParceledListSlice$1#1,false,1226,354,1748,520,0,4,66972,5,5
+    0,0,com.android.server.connectivity.NetdEventListenerService#5,false,1215,248,1274,245,0,136,0,8,8
+    shared:android.uid.system/1000,shared:android.uid.system/1000,com.android.server.health.HealthRegCallbackAidl$HalInfoCallback#1,false,1149,376,1177,389,0,236,0,8,8
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.pm.PackageManagerService$IPackageManagerImpl#setComponentEnabledSetting,false,952,167,1068,164,1,396,276,34,34
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.pm.PackageManagerService$IPackageManagerImpl#setComponentEnabledSetting,false,715,180,1396,759,1,396,1340,28,28
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.content.ContentService#registerContentObserver,false,610,361,5215,4921,1,256,248,6,6
+    shared:com.google.uid.shared/u10a198,shared:com.google.uid.shared/u10a198,com.android.server.wifi.WifiServiceImpl#getUsableChannels,false,378,378,405,405,1,456,884,1,1
+    shared:com.google.uid.shared/u0a198,shared:com.google.uid.shared/u0a198,com.android.server.wifi.WifiServiceImpl#getUsableChannels,false,303,303,303,303,1,456,96,1,1
+
+Per-UID Summary (top 90% by cpu time) (cpu_time, % of total cpu_time, recorded_call_count, call_count, package/uid):
+       96669  23%     1462     1462 shared:com.google.uid.shared/u0a198
+       72800  17%     1338     1338 shared:com.google.uid.shared/u10a198
+       67688  16%       54       54 0
+       49584  12%      414      414 com.android.systemui/u0a210
+       37244   9%       35       35 shared:android.uid.phone/1001
+       20309   5%       65       65 com.google.android.carassistant/u10a196
+       19157   5%       76       76 com.android.car.mapsplaceholder/u10a181
+       16165   4%       35       35 com.android.car.carlauncher/u10a167
+
+  Summary: total_cpu_time=417470, calls_count=3950, avg_call_cpu_time=106
+
+Exceptions thrown (exception_count, class_name):
+       3 java.lang.SecurityException
+       2 java.lang.IllegalArgumentException

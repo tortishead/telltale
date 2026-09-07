@@ -43,6 +43,8 @@ const EXPORTS = [
   'parsePackageDump',
   'parseAnrDump',
   'parseCarServiceDump',
+  'parseUserDump',
+  'parseBinderCallsStatsDump',
   // the pieces the parsers are built from, worth testing on their own
   'indentOf',
   'takeBlock',
@@ -55,10 +57,17 @@ const EXPORTS = [
   'anrCycles',
   'carHeadName',
   'carPairs',
-  'carFields',
-  'carRuns',
-  'carEntries',
+  'lineFields',
+  'blockRuns',
+  'blockEntries',
   'carPropNames',
+  'userFlagNames',
+  'userListUnder',
+  'binderCaller',
+  'binderCall',
+  'binderTxn',
+  'binderTime',
+  'binderBytes',
   'TYPE_INTS',
 ];
 
@@ -77,8 +86,11 @@ function build() {
 export const parsers = build();
 export const {
   parseWindowDump, parseSurfaceFlingerDump, parsePackageDump, parseAnrDump,
-  parseCarServiceDump,
+  parseCarServiceDump, parseUserDump, parseBinderCallsStatsDump,
   indentOf, takeBlock, harvest, deriveFrame, shortType, sfFlagNames,
   anrLock, anrWaitGraph, anrCycles,
-  carHeadName, carPairs, carFields, carRuns, carEntries, carPropNames, TYPE_INTS,
+  carHeadName, carPairs, lineFields, blockRuns, blockEntries, carPropNames,
+  userFlagNames, userListUnder,
+  binderCaller, binderCall, binderTxn, binderTime, binderBytes,
+  TYPE_INTS,
 } = parsers;

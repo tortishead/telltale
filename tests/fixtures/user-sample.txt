@@ -1,0 +1,192 @@
+Current user: 10
+
+Users:
+  UserInfo{0:null:813} serialNo=0 isPrimary=true
+    Type: android.os.usertype.system.HEADLESS
+    Flags: 2067 (ADMIN|INITIALIZED|PRIMARY|SYSTEM)
+    State: RUNNING_UNLOCKED
+    Created: <unknown>
+    Last logged in: +47d3h49m14s999ms ago
+    Last logged in fingerprint: 733bd7a95ad791a934613be78e8f6564386ac673
+    Start time: +2d13h19m52s484ms ago
+    Unlock time: +2d13h19m49s39ms ago
+    Last entered foreground: <unknown>
+    Has profile owner: false
+    Restrictions:
+      no_record_audio
+      no_modify_accounts
+    Device policy restrictions:
+      null
+    Effective restrictions:
+      no_record_audio
+      no_modify_accounts
+    UserProperties:
+        mPropertiesPresent=0
+        mShowInLauncher=0
+        mStartWithParent=false
+        mShowInSettings=0
+        mInheritDevicePolicy=0
+        mUseParentsContacts=false
+        mUpdateCrossProfileIntentFiltersOnOTA=false
+        mCrossProfileIntentFilterAccessControl=0
+        mCrossProfileIntentResolutionStrategy=0
+        mMediaSharedWithParent=false
+        mCredentialShareableWithParent=false
+        mDeleteAppWithParent=false
+    Ignore errors preparing storage: false
+  UserInfo{10:Driver:412} serialNo=10 isPrimary=false
+    Type: android.os.usertype.full.SECONDARY
+    Flags: 1042 (ADMIN|FULL|INITIALIZED)
+    State: RUNNING_UNLOCKED
+    Created: +225d1h11m49s313ms ago
+    Last logged in: +47d3h49m13s588ms ago
+    Last logged in fingerprint: 733bd7a95ad791a934613be78e8f6564386ac673
+    Start time: +2d13h19m52s229ms ago
+    Unlock time: +2d13h19m48s965ms ago
+    Effective restrictions:
+      none
+    UserProperties:
+        mPropertiesPresent=0
+        mShowInLauncher=0
+        mStartWithParent=false
+        mShowInSettings=0
+        mInheritDevicePolicy=0
+        mUseParentsContacts=false
+        mUpdateCrossProfileIntentFiltersOnOTA=false
+        mCrossProfileIntentFilterAccessControl=0
+        mCrossProfileIntentResolutionStrategy=0
+        mMediaSharedWithParent=false
+        mCredentialShareableWithParent=false
+        mDeleteAppWithParent=false
+    Ignore errors preparing storage: false
+
+Device properties:
+  Device policy global restrictions:
+    null
+  Guest restrictions:
+    no_install_apps
+    no_modify_accounts
+    no_uninstall_apps
+    no_install_unknown_sources
+    no_factory_reset
+    no_remove_user
+
+  Device managed: false
+  Started users state: [0=RUNNING_UNLOCKED, 10=RUNNING_UNLOCKED]
+  Cached user IDs: [0, 10]
+  Cached user IDs (including pre-created): [0, 10]
+
+UserVisibilityMediator
+  DBG: false
+  Current user id: 10
+  Visible users: [10]
+  Number of started visible user / profile group mappings: 2
+    u:0 -> pg:0
+    u:10 -> pg:10
+  Supports visible background users on displays: false
+  Supports visible background users on default display: false
+  No user / display mappings
+  No extra display / user mappings
+  Number of listeners: 2
+    0: com.android.server.location.injector.SystemUserInfoHelper$$ExternalSyntheticLambda0@31813ca
+    1: com.android.internal.car.CarServiceHelperService$2@f84293b
+
+
+  Max users: 4 (limit reached: false)
+  Supports switchable users: true
+  All guests ephemeral: true
+  Force ephemeral users: false
+  Is headless-system mode: true
+  User version: 11
+  Owner name: Driver
+  Boot user: 10
+
+Number of listeners for
+  restrictions: 5
+  user lifecycle events: 4
+
+User types version: 0
+User types (9 types):
+    android.os.usertype.profile.TEST: 
+        mName: android.os.usertype.profile.TEST
+        mBaseType: PROFILE
+        mEnabled: true
+        mMaxAllowed: -1
+        mMaxAllowedPerParent: 2
+        mDefaultUserInfoFlags: 0
+        mLabel: 0
+        UserProperties:
+            mPropertiesPresent=11111111111
+            mShowInLauncher=0
+            mStartWithParent=false
+            mShowInSettings=0
+            mInheritDevicePolicy=0
+            mUseParentsContacts=false
+            mUpdateCrossProfileIntentFiltersOnOTA=false
+            mCrossProfileIntentFilterAccessControl=0
+            mCrossProfileIntentResolutionStrategy=0
+            mMediaSharedWithParent=false
+            mCredentialShareableWithParent=false
+            mDeleteAppWithParent=false
+        mDefaultRestrictions: 
+            no_fun
+        mIconBadge: 17302897
+        mBadgePlain: 17302895
+        mBadgeNoBackground: 17302896
+        mBadgeLabels.length: 3
+        mBadgeColors.length: 3
+        mDarkThemeBadgeColors.length: 3
+    android.os.usertype.profile.CLONE: 
+        mName: android.os.usertype.profile.CLONE
+        mBaseType: PROFILE
+        mEnabled: false
+        mMaxAllowed: -1
+        mMaxAllowedPerParent: 1
+        mDefaultUserInfoFlags: 0
+        mLabel: 0
+        UserProperties:
+            mPropertiesPresent=11111111111
+            mShowInLauncher=0
+            mStartWithParent=true
+            mShowInSettings=0
+            mInheritDevicePolicy=1
+            mUseParentsContacts=true
+            mUpdateCrossProfileIntentFiltersOnOTA=true
+            mCrossProfileIntentFilterAccessControl=10
+            mCrossProfileIntentResolutionStrategy=1
+            mMediaSharedWithParent=true
+            mCredentialShareableWithParent=true
+            mDeleteAppWithParent=true
+        mDefaultRestrictions: 
+            null
+        mIconBadge: 17302392
+        mBadgePlain: 17302391
+        mBadgeNoBackground: 17302391
+        mBadgeLabels.length: 1
+        mBadgeColors.length: 1
+        mDarkThemeBadgeColors.length: 1
+
+Whitelisted packages per user type
+  Mode: 5 (enforced) (implicit)
+  Legend
+    0 -> android.os.usertype.full.DEMO
+    1 -> android.os.usertype.full.GUEST
+    2 -> android.os.usertype.full.RESTRICTED
+    3 -> android.os.usertype.full.SECONDARY
+    4 -> android.os.usertype.full.SYSTEM
+    5 -> android.os.usertype.profile.CLONE
+    6 -> android.os.usertype.profile.MANAGED
+    7 -> android.os.usertype.profile.TEST
+    8 -> android.os.usertype.system.HEADLESS
+  294 packages:
+    com.google.android.networkstack.tethering: 0 1 2 3 4 8 
+    com.android.cts.priv.ctsshim: 0 1 2 3 4 8 
+    com.android.car.companiondevicesupport: 0 1 2 3 4 8 
+    com.android.uwb.resources: 0 1 2 3 4 8 
+    com.android.car.messenger: 0 1 2 3 4 8 
+    com.android.theme.icon_pack.circular.android: 0 1 2 3 4 5 6 7 
+  No errors
+  181 warnings
+    com.android.car.companiondevicesupport is allowlisted but not present.
+    com.android.uwb.resources is allowlisted but not present.
+    com.google.android.car.uxr.sample is allowlisted but not present.

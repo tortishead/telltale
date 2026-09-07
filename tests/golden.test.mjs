@@ -28,6 +28,8 @@ const CASES = [
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
   { name: 'car-service-sample', parse: 'parseCarServiceDump' },
+  { name: 'user-sample', parse: 'parseUserDump' },
+  { name: 'binder-sample', parse: 'parseBinderCallsStatsDump' },
 ];
 
 /* Every fixture is `tests/fixtures/<name>.txt` and every golden is
@@ -63,6 +65,7 @@ const OWN = {
   parseSurfaceFlingerDump: ['sf-sample'],
   parsePackageDump: ['package-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
+  parseBinderCallsStatsDump: ['binder-sample'],
 };
 
 test('each parser recognises its own dumps and no others', () => {

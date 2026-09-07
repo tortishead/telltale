@@ -11,9 +11,12 @@ import { fileURLToPath } from 'node:url';
 
 import {
   parseWindowDump, parseSurfaceFlingerDump, parsePackageDump, parseAnrDump,
-  parseCarServiceDump,
+  parseCarServiceDump, parseUserDump,
   indentOf, deriveFrame, shortType, sfFlagNames, anrLock,
-  carHeadName, carPairs, carFields, carRuns, carEntries, carPropNames, TYPE_INTS,
+  carHeadName, carPairs, lineFields, blockRuns, blockEntries, carPropNames,
+  userFlagNames, userListUnder, TYPE_INTS,
+  parseBinderCallsStatsDump,
+  binderCaller, binderCall, binderTxn, binderTime, binderBytes,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -376,8 +379,8 @@ test('versions come off the dump rather than out of a section', () => {
   assert.match(versions.get('Car Version'), /^CarVersion\[/);
 });
 
-test('carFields splits on the commas between fields, not the ones inside them', () => {
-  const f = carFields('event count:1, lastEvent: Property:0x11410a00, int32Values: [0, 0], string: ');
+test('lineFields splits on the commas between fields, not the ones inside them', () => {
+  const f = lineFields('event count:1, lastEvent: Property:0x11410a00, int32Values: [0, 0], string: ');
   assert.deepEqual(f, [
     ['event count', '1', ':'],
     ['lastEvent', 'Property:0x11410a00', ':'],
@@ -386,18 +389,18 @@ test('carFields splits on the commas between fields, not the ones inside them', 
   ], 'each field comes back with the separator it was written with');
 
   // prose is not a record, and neither is a line only part of which is one
-  assert.equal(carFields('There are 8 clients using CarPropertyService.'), null);
-  assert.equal(carFields('mCurrentState: CpmsState, and then some prose'), null);
+  assert.equal(lineFields('There are 8 clients using CarPropertyService.'), null);
+  assert.equal(lineFields('mCurrentState: CpmsState, and then some prose'), null);
 
   // a line whose fields disagree about the separator is still fields here;
-  // whether that means several attributes is carEntries' question, below
-  assert.deepEqual(carFields('mCurrentState: CpmsState canPostpone=false, CpmsState=ON(1)'),
+  // whether that means several attributes is blockEntries' question, below
+  assert.deepEqual(lineFields('mCurrentState: CpmsState canPostpone=false, CpmsState=ON(1)'),
     [['mCurrentState', 'CpmsState canPostpone=false', ':'], ['CpmsState', 'ON(1)', '=']]);
 });
 
 test('a run of lines printed to one shape becomes a table, a short run does not', () => {
   const prop = (id) => `Property:${id}, Property name:INFO_VIN, access:0x1`;
-  const runs = carRuns([
+  const runs = blockRuns([
     'There are 8 clients using CarPropertyService.',
     prop('0x1'), prop('0x2'), prop('0x3'),
     'Properties changed: ',
@@ -409,8 +412,8 @@ test('a run of lines printed to one shape becomes a table, a short run does not'
   assert.deepEqual(runs[1].rows[0].cells, ['0x1', 'INFO_VIN', '0x1']);
 
   // two of a shape is not a table, and a one-field run is a list, not a column
-  assert.deepEqual(carRuns([prop('0x1'), prop('0x2')]).map((r) => r.kind), ['text']);
-  assert.deepEqual(carRuns([
+  assert.deepEqual(blockRuns([prop('0x1'), prop('0x2')]).map((r) => r.kind), ['text']);
+  assert.deepEqual(blockRuns([
     'propId: 0x11200402 is registered by 1 client(s).',
     'propId: 0x11200407 is registered by 1 client(s).',
     'propId: 0x11400400 is registered by 2 client(s).',
@@ -432,7 +435,7 @@ test('property ids are named from the two tables the dump names them in', () => 
 test('a section carries the lines it printed, for the pane that reads them', () => {
   const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
   const props = s.nodes.find((n) => n.title === 'All properties');
-  const runs = carRuns(props.body);
+  const runs = blockRuns(props.body);
 
   assert.equal(runs.length, 1);
   assert.equal(runs[0].kind, 'table');
@@ -440,7 +443,7 @@ test('a section carries the lines it printed, for the pane that reads them', () 
 });
 
 test('a line printed under a row stays with that row instead of ending the table', () => {
-  const runs = carRuns([
+  const runs = blockRuns([
     '  Property:0x1, Property name:A, access:0x1',
     '  Property:0x2, Property name:B, access:0x1',
     '        areaId:0x0, f min:0.000000, i max:3',
@@ -453,8 +456,8 @@ test('a line printed under a row stays with that row instead of ending the table
   assert.deepEqual(runs[0].rows[0].under, []);
 });
 
-test('carEntries reads a section as the tree its indenting says it is', () => {
-  const entries = carEntries([
+test('blockEntries reads a section as the tree its indenting says it is', () => {
+  const entries = blockEntries([
     '  mCurrentPowerPolicyId: system_power_policy_all_on',
     '  mIsPowerPolicyLocked=false',
     '  Power components state:',
@@ -473,7 +476,7 @@ test('carEntries reads a section as the tree its indenting says it is', () => {
 });
 
 test('a line that is not a name and a value is an entry with no value', () => {
-  const entries = carEntries([
+  const entries = blockEntries([
     '  Registered power policies:',
     '    system_power_policy_all_on(enabledComponents: AUDIO, CPU | disabledComponents: )',
     '  03-21 16:50:36 CarDrivingStateService Boot: changed from -1 to 0',
@@ -490,7 +493,7 @@ test('a line that is not a name and a value is an entry with no value', () => {
 test('an entry knows the line it was printed on', () => {
   const s = parseCarServiceDump(read('fixtures/car-service-sample.txt'));
   const power = s.nodes.find((n) => n.title === 'CarPropertyService');
-  const entries = carEntries(power.body);
+  const entries = blockEntries(power.body);
   const first = entries[0];
 
   assert.equal(power.body[first.at], power.body[0], 'at indexes into the body it came from');
@@ -502,7 +505,7 @@ test('an entry knows the line it was printed on', () => {
 
 test('several names and values on one line are several attributes', () => {
   // *Power HAL* prints all three of its answers on one line
-  const entries = carEntries(['  isPowerStateSupported:true, isDeepSleepAllowed:false, isHibernationAllowed:false']);
+  const entries = blockEntries(['  isPowerStateSupported:true, isDeepSleepAllowed:false, isHibernationAllowed:false']);
 
   assert.deepEqual(entries.map((e) => [e.key, e.value]), [
     ['isPowerStateSupported', 'true'],
@@ -515,7 +518,7 @@ test('several names and values on one line are several attributes', () => {
 test('a name followed by something with fields of its own stays one attribute', () => {
   // the first separator is a colon and the rest are equals: this is
   // `mCurrentState: <a CpmsState>`, not four things printed side by side
-  const entries = carEntries([
+  const entries = blockEntries([
     '  mCurrentState: CpmsState canPostpone=false, carPowerStateListenerState=6, CpmsState=ON(1)',
   ]);
 
@@ -525,7 +528,7 @@ test('a name followed by something with fields of its own stays one attribute', 
 });
 
 test('what a split line printed under it belongs to the last of its fields', () => {
-  const entries = carEntries([
+  const entries = blockEntries([
     '  a:1, b:2',
     '    under: here',
   ]);
@@ -533,4 +536,262 @@ test('what a split line printed under it belongs to the last of its fields', () 
   assert.deepEqual(entries.map((e) => e.key), ['a', 'b']);
   assert.deepEqual(entries[0].children, []);
   assert.deepEqual(entries[1].children.map((c) => c.key), ['under']);
+});
+
+/* ---------------- dumpsys user ---------------- */
+
+test('userFlagNames reads the spelling, not the int in front of it', () => {
+  assert.deepEqual(userFlagNames('    Flags: 2067 (ADMIN|INITIALIZED|PRIMARY|SYSTEM)'),
+    ['ADMIN', 'INITIALIZED', 'PRIMARY', 'SYSTEM']);
+  assert.deepEqual(userFlagNames('    Flags: 0 ()'), []);
+  assert.deepEqual(userFlagNames('    State: RUNNING_UNLOCKED'), []);
+});
+
+test('userListUnder takes the list under a label and not the label after it', () => {
+  const body = [
+    '    Restrictions:',
+    '      no_record_audio',
+    '      no_modify_accounts',
+    '    Device policy restrictions:',
+    '      null',
+    '    Effective restrictions:',
+    '      none',
+  ];
+
+  assert.deepEqual(userListUnder(body, 'Restrictions'), ['no_record_audio', 'no_modify_accounts']);
+  // `null` and `none` are the dump saying there are none, not the name of one
+  assert.deepEqual(userListUnder(body, 'Device policy restrictions'), []);
+  assert.deepEqual(userListUnder(body, 'Effective restrictions'), []);
+  assert.deepEqual(userListUnder(body, 'Not a label here'), []);
+});
+
+test('the user sample finds its users, their type and what they are barred from', () => {
+  const s = parseUserDump(read('fixtures/user-sample.txt'));
+  const users = s.nodes.filter((n) => n.user);
+
+  assert.deepEqual(users.map((u) => u.userId), [0, 10]);
+  assert.equal(s.globals.current, 10);
+
+  const system = users[0];
+  assert.equal(system.title, 'user 0', 'a user with no name is its id and nothing else');
+  assert.equal(system.base, 'system');
+  assert.equal(system.state, 'RUNNING_UNLOCKED');
+  assert.deepEqual(system.flags, ['ADMIN', 'INITIALIZED', 'PRIMARY', 'SYSTEM']);
+  assert.deepEqual(system.restrictions, ['no_record_audio', 'no_modify_accounts']);
+  assert.deepEqual(system.badges, [['2 restricted', 'badge-comp']]);
+
+  const driver = users[1];
+  assert.equal(driver.title, 'user 10 · Driver');
+  assert.equal(driver.current, true);
+  assert.deepEqual(driver.badges, [['current', 'badge-focus']]);
+});
+
+test('a section holds the things printed inside it, and nothing else does', () => {
+  const s = parseUserDump(read('fixtures/user-sample.txt'));
+  const at = (title) => s.nodes.find((n) => n.title === title);
+
+  assert.equal(at('Users').subCount, 2);
+  assert.equal(at('user 0').parentHash, at('Users').hash);
+  assert.equal(at('profile.CLONE').parentHash, at('User types (9 types)').hash);
+
+  // a section that lists nothing is still a section, and keeps its own lines
+  const props = at('Device properties');
+  assert.equal(props.subCount, 0);
+  assert.ok(props.body.some((l) => /Guest restrictions:/.test(l)));
+});
+
+test('a user type says what it is and whether it is switched on', () => {
+  const s = parseUserDump(read('fixtures/user-sample.txt'));
+  const clone = s.nodes.find((n) => n.title === 'profile.CLONE');
+
+  assert.equal(clone.base, 'PROFILE');
+  assert.equal(clone.enabled, false);
+  assert.deepEqual(clone.badges, [['disabled', 'badge-exit']]);
+});
+
+test('two things printed with the same name are still two things', () => {
+  // the dump prints one block per type, but a truncated one can repeat a head
+  const doubled = read('fixtures/user-sample.txt').replace(
+    'User types (9 types):', 'User types (9 types):\n    android.os.usertype.profile.CLONE: \n        mBaseType: PROFILE');
+  const s = parseUserDump(doubled);
+  const clones = s.nodes.filter((n) => n.title === 'profile.CLONE');
+
+  assert.equal(clones.length, 2);
+  assert.notEqual(clones[0].hash, clones[1].hash, 'or one of them could never be picked');
+});
+
+/* ---------------- binder_calls_stats ---------------- */
+
+test('binderCaller splits a caller into the uid and the user it ran as', () => {
+  const app = binderCaller('com.android.systemui/u0a210');
+  assert.equal(app.label, 'com.android.systemui');
+  assert.equal(app.user, 0);
+  assert.equal(app.uid, 10210);
+  assert.equal(app.shared, false);
+
+  // the same app for the driver is a different uid, and the dump prints both
+  const driver = binderCaller('shared:com.google.uid.shared/u10a198');
+  assert.equal(driver.label, 'com.google.uid.shared');
+  assert.equal(driver.user, 10);
+  assert.equal(driver.uid, 1010198);
+  assert.equal(driver.shared, true);
+
+  // a bare number is a platform uid, and the number is not what it is called
+  assert.equal(binderCaller('0').label, 'root');
+  assert.equal(binderCaller('shared:android.uid.phone/1001').user, 0);
+  assert.equal(binderCaller('9876').label, 'uid 9876', 'one with no name keeps its number');
+});
+
+test('binderTxn unpacks the codes that belong to binder rather than the interface', () => {
+  // the dumpsys call this dump was taken with is itself a row in it
+  assert.equal(binderTxn(1598311760), '_DMP');
+  assert.equal(binderTxn(1599098439), '_PNG');
+  assert.equal(binderTxn(1598968902), '_NTF');
+  assert.equal(binderTxn(21), null, 'a method index is a method index');
+});
+
+test('binderCall reads the interface, and says so when the method is not named', () => {
+  const named = binderCall('com.android.server.am.ActivityManagerService#startService');
+  assert.equal(named.service, 'ActivityManagerService');
+  assert.equal(named.method, 'startService');
+  assert.equal(named.named, true);
+
+  // detailed tracking off, or a method the collector could not name
+  const nul = binderCall('com.android.server.pm.PackageManagerService$IPackageManagerImpl#null');
+  assert.equal(nul.named, false);
+  assert.equal(nul.method, null);
+  assert.equal(nul.inner, 'IPackageManagerImpl', 'the impl is kept, but the service names the row');
+  assert.equal(nul.title, 'PackageManagerService#?');
+
+  assert.equal(binderCall('com.android.server.BinderCallsStatsService#1598311760').method, 'dump');
+  assert.equal(binderCall('com.android.server.connectivity.NetdEventListenerService#5').method,
+    'transaction 5');
+});
+
+test('the sample groups its callers by user and hangs their methods under them', () => {
+  const s = parseBinderCallsStatsDump(read('fixtures/binder-sample.txt'));
+
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 10]);
+  const gms = s.nodes.filter((n) => n.caller && n.title === 'com.google.uid.shared');
+  assert.equal(gms.length, 2, 'the same shared uid runs once per user');
+  assert.deepEqual(gms.map((n) => n.displayId), [0, 10]);
+
+  const kids = s.nodes.filter((n) => n.parentHash === gms[0].hash);
+  assert.equal(kids.length, gms[0].methods);
+  assert.ok(kids.every((n) => n.displayId === 0));
+});
+
+test('the columns are read by the names the header prints, not by position', () => {
+  const text = read('fixtures/binder-sample.txt');
+  // a build that drops a column it used to print must not shift every number
+  const dropped = text
+    .replace('package/uid, worksource, call_desc', 'package/uid, call_desc')
+    .replace(/^( +)(\S+?),\2,/gm, '$1$2,');
+  const s = parseBinderCallsStatsDump(dropped);
+  const call = s.nodes.find((n) => n.title === 'ActivityManagerService#startService');
+
+  assert.equal(call.calls, 89);
+  assert.equal(call.cpu, 13992);
+});
+
+test('a row that threw is coloured and badged for it', () => {
+  const s = parseBinderCallsStatsDump(read('fixtures/binder-sample.txt'));
+  const threw = s.nodes.filter((n) => n.call && n.exceptions);
+
+  assert.equal(threw.length, 5, 'as many rows as the tally at the end counts');
+  assert.equal(s.globals.threw, 5);
+  assert.ok(threw.every((n) => n.family === 'binder-threw'));
+  assert.deepEqual(threw[0].badges[0], ['1 threw', 'badge-focus']);
+  assert.deepEqual(s.globals.exceptions,
+    [[3, 'java.lang.SecurityException'], [2, 'java.lang.IllegalArgumentException']]);
+});
+
+test('the summary is what a caller totals, because the table drops rows', () => {
+  const s = parseBinderCallsStatsDump(read('fixtures/binder-sample.txt'));
+  const gms = s.nodes.find((n) => n.caller && n.displayId === 0
+    && n.title === 'com.google.uid.shared');
+
+  assert.equal(gms.calls, 1462, 'the summary counted every call');
+  assert.ok(gms.rowsCalls < gms.calls, 'the table printed only the top of them');
+  assert.equal(gms.trimmed, true);
+  assert.equal(gms.pct, 23);
+
+  // a caller under the summary's cut still has the rows it was printed on
+  const system = s.nodes.find((n) => n.caller && n.title === 'android.uid.system');
+  assert.equal(system.pct, null);
+  assert.equal(system.calls, 8);
+});
+
+test('a caller that is only in the summary is still a caller', () => {
+  // the table keeps the top 90% by cpu time; the summary below it keeps all
+  const text = read('fixtures/binder-sample.txt')
+    .replace(/^ {4}com\.android\.car\.carlauncher.*\n/gm, '');
+  const s = parseBinderCallsStatsDump(text);
+  const launcher = s.nodes.find((n) => n.title === 'com.android.car.carlauncher');
+
+  assert.ok(launcher, 'the table dropped its rows, the summary did not drop it');
+  assert.equal(launcher.methods, 0);
+  assert.equal(launcher.calls, 35);
+  assert.equal(launcher.trimmed, false, 'nothing was trimmed off nothing');
+});
+
+/* The two ways this dump comes back saying nothing, both of which are about
+   how it was taken rather than about the device. */
+test('a dump taken while charging is empty, and says which of the two it is', () => {
+  // what the dump looks like when the collector never ran: the headings, the
+  // column names, and no rows under any of them
+  const text = [
+    'Start time: 2026-09-07 00:03:19',
+    'On battery time (ms): 0',
+    'Sampling interval period: 1000',
+    'Sharding modulo: 1',
+    read('fixtures/binder-sample.txt').split('\n')[4],
+    '',
+    'Per-UID Summary (top 90% by cpu time) (cpu_time, % of total cpu_time, ' +
+      'recorded_call_count, call_count, package/uid):',
+    '',
+    '  Summary: total_cpu_time=0, calls_count=0, avg_call_cpu_time=NaN',
+    '',
+    'Exceptions thrown (exception_count, class_name):',
+    '',
+  ].join('\n');
+  const s = parseBinderCallsStatsDump(text);
+
+  assert.equal(s.ok, true, 'an empty table is still this dump, and the reason is in it');
+  assert.equal(s.nodes.length, 0);
+  assert.equal(s.globals.recording, false);
+  assert.equal(s.displays.length, 1, 'there is still a group for the pane that explains it');
+});
+
+test('a dump taken without detailed tracking says the method names are missing', () => {
+  const text = read('fixtures/binder-sample.txt').replace(/#[\w$]+,false,/g, '#null,false,');
+  const s = parseBinderCallsStatsDump(text);
+
+  assert.equal(s.globals.detailed, false);
+  assert.ok(s.nodes.filter((n) => n.call).every((n) => n.family === 'binder-unnamed'
+    || n.family === 'binder-threw'));
+  assert.equal(parseBinderCallsStatsDump(read('fixtures/binder-sample.txt')).globals.detailed, true);
+});
+
+test('the sampling interval is carried through, because it scales every time', () => {
+  const text = read('fixtures/binder-sample.txt')
+    .replace('Sampling interval period: 1', 'Sampling interval period: 1000');
+  assert.equal(parseBinderCallsStatsDump(text).globals.sampling, 1000);
+  assert.equal(parseBinderCallsStatsDump(read('fixtures/binder-sample.txt')).globals.sampling, 1);
+});
+
+test('times and sizes are read in the unit that keeps them to three figures', () => {
+  assert.equal(binderTime(303), '303 µs');
+  assert.equal(binderTime(33066), '33 ms');
+  assert.equal(binderTime(1200), '1.2 ms');
+  assert.equal(binderTime(2500000), '2.5 s');
+  assert.equal(binderBytes(804), '804 B');
+  assert.equal(binderBytes(67972), '66 kB');
+});
+
+test('this parser says no to every other dump it is shown', () => {
+  for (const name of ['window-sample', 'sf-sample', 'package-sample', 'anr-sample',
+                      'car-service-sample', 'user-sample']) {
+    assert.equal(parseBinderCallsStatsDump(read(`fixtures/${name}.txt`)).ok, false, name);
+  }
 });
