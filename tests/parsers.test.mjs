@@ -863,6 +863,38 @@ test('the input sample parses to the two displays it dispatches to', () => {
   assert.deepEqual(d0.map((n) => n.index), [0, 1, 2, 3, 4, 5, 6, 7, 8]);
 });
 
+/* Android 16 stopped quoting the window name the dispatcher prints. A dump in
+   that spelling has to read the same as one in the old spelling, or the sheet
+   opens with a display and no windows on it. */
+test('a window line is read with or without quotes around its name', () => {
+  const bare = [
+    'Input Dispatcher State:',
+    '  FocusedWindows:',
+    "    displayId=0, name='dc9de94 com.example/com.example.Main'",
+    '  Display: 0',
+    '    Windows:',
+    '      0: name=PointerEventDispatcherOverlay0, id=40, displayId=0,'
+      + ' inputConfig=NOT_FOCUSABLE | TRUSTED_OVERLAY | SPY, alpha=1, frame=[0,0][0,0],'
+      + ' touchableRegion=[0,0][1080,2400], ownerPid=1854, ownerUid=1000,'
+      + ' touchOcclusionMode=BLOCK_UNTRUSTED',
+    '      1: name=dc9de94 com.example/com.example.Main, id=108, displayId=0,'
+      + ' inputConfig=TRUSTED_OVERLAY, alpha=1, frame=[0,0][1080,2400],'
+      + ' touchableRegion=[0,0][1080,2400], ownerPid=2786, ownerUid=1010077,'
+      + ' touchOcclusionMode=BLOCK_UNTRUSTED',
+  ].join('\n');
+
+  const s = parseInputDump(bare);
+  assert.equal(s.ok, true);
+  const wins = s.nodes.filter((n) => !n.monitor);
+  assert.deepEqual(wins.map((n) => n.index), [0, 1]);
+  assert.equal(wins[0].title, 'PointerEventDispatcherOverlay0');
+  assert.equal(wins[0].spy, true);
+  assert.equal(wins[1].handle, 'dc9de94', 'the handle is still split off the bare name');
+  assert.equal(wins[1].title, 'com.example/com.example.Main');
+  assert.deepEqual(wins[1].frame, { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.equal(wins[1].focused, true, 'and focus still joins by that handle');
+});
+
 test('focus and the touch in progress are joined to the windows they name', () => {
   const s = parseInputDump(read('fixtures/input-sample.txt'));
   const focused = s.nodes.filter((n) => n.focused);

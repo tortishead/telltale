@@ -49,6 +49,11 @@
      the page — the selected row, the focus badge, workspace one — stays the
      colour it was. */
   --mark:#3ddc84;
+  /* Where a window actually takes touch, on both sheets. Its own colour, not
+     the window's tint and not the redline: the frame is what the node is and
+     the region is what it does with it, and the two are read against each
+     other. Light green, so it lifts off the dark paper on its own. */
+  --touch:#7fe6a8;
   --placeholder:#5a6874;
   --amber:#b08a3e;
   --ok:#5fa87a;
@@ -80,6 +85,7 @@
   --fg-strong:#16211a;
   --redline:#c2124f;
   --mark:#0f9d58;       /* taken down to hold on the light bar */
+  --touch:#3aa86a;      /* the same green, dark enough to read on paper */
   --placeholder:#8b968c;
   --amber:#8a6420;
   --ok:#3d7a53;          /* darker than the dark theme's, to hold on paper */
@@ -595,14 +601,20 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 .pw-stroke{fill:none; stroke:currentColor; stroke-width:1.25}
 /* A second rect inside the frame: filled, so a region smaller than the window
    it belongs to reads as the part of it that is live. */
-.pw-region{fill:currentColor; fill-opacity:.2; stroke:currentColor; stroke-width:1; stroke-dasharray:4 3}
+.pw-region{fill:var(--touch); fill-opacity:.22; stroke:var(--touch); stroke-width:1;
+  stroke-dasharray:4 3}
 .pw-dim{opacity:.34}
 .pw-hit{fill:transparent; stroke:none; cursor:pointer}
 .pw-sel{fill:none; stroke:var(--redline); stroke-width:2}
-/* The live part of the selected node: the redline again, dashed and lighter,
-   so it reads as a note on the frame rather than a second frame. */
-.pw-sel-region{fill:var(--redline); fill-opacity:.1; stroke:var(--redline);
-  stroke-width:1.25; stroke-dasharray:6 4}
+/* The live part of the selected node: the same green, drawn heavier than the
+   one an unselected window gets, so it reads as a note on the redline frame
+   rather than a second frame. */
+.pw-sel-region{fill:var(--touch); fill-opacity:.28; stroke:var(--touch);
+  stroke-width:1.5; stroke-dasharray:6 4}
+/* One rect out of the several a region is made of, picked from the drawing or
+   from its row. Solid and heavier than its neighbours: the dashes say `this is
+   the live part`, and no dashes say `this is the one you asked about`. */
+.pw-sel-region.is-pick{fill-opacity:.5; stroke-width:2.5; stroke-dasharray:none}
 .pw-lead{fill:none; stroke:var(--redline); stroke-width:1}
 .pw-label{fill:var(--redline); stroke:none; font-family:var(--mono); font-size:var(--fs)}
 .pw-note{fill:var(--graphite); font-size:calc(var(--fs) * 0.85)}
@@ -620,6 +632,15 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 .dp-face{fill:currentColor; fill-opacity:.3; stroke:currentColor; stroke-width:1.25;
   stroke-linejoin:round; vector-effect:non-scaling-stroke}
 .dp-face.is-hidden{fill-opacity:.05; stroke-dasharray:6 5}
+/* The live part of a face, on the face: a window whose touchable region is not
+   its frame is drawn as the rects it actually takes touch in, so the two are
+   told apart in the stack the same way they are in the plan. */
+.dp-region{fill:var(--touch); fill-opacity:.3; stroke:var(--touch); stroke-width:1;
+  stroke-dasharray:4 3; stroke-linejoin:round; vector-effect:non-scaling-stroke}
+.dp-sel-region{fill:var(--touch); fill-opacity:.38; stroke:var(--touch);
+  stroke-width:1.5; stroke-dasharray:6 4; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke}
+.dp-sel-region.is-pick{fill-opacity:.62; stroke-width:2.5; stroke-dasharray:none}
 .dp-base{fill:var(--paper); fill-opacity:.5; stroke:var(--graphite); stroke-width:1;
   stroke-linejoin:round; vector-effect:non-scaling-stroke}
 .dp-lead{fill:none; stroke:var(--graphite); stroke-width:1; vector-effect:non-scaling-stroke}
@@ -658,6 +679,13 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 .dl{display:grid; grid-template-columns:minmax(88px,45%) 1fr; gap:3px 12px; margin:0}
 .dl dt{color:var(--dim); font-size:12px; overflow-wrap:anywhere}
 .dl dd{margin:0; color:var(--fg-strong); font-size:12px; overflow-wrap:anywhere}
+/* A row that picks a rect on the sheet. It is a control, so it says so on
+   hover and takes focus; picked, it carries the same green the rect does. */
+.dl .pick-region{cursor:pointer; border-radius:2px; padding:1px 3px; margin:-1px -3px}
+.dl .pick-region:hover{background:color-mix(in srgb, var(--touch) 18%, transparent)}
+.dl .pick-region.is-pick{background:color-mix(in srgb, var(--touch) 28%, transparent);
+  color:var(--fg-strong)}
+.dl .pick-region:focus-visible{outline:2px solid var(--touch); outline-offset:0}
 .chips{display:flex; flex-wrap:wrap; gap:4px}
 .ins{padding:3px 0; border-bottom:1px solid var(--rule-soft); overflow-wrap:anywhere}
 .ins:last-child{border-bottom:none}
@@ -4149,7 +4177,9 @@ function inputSection(lines, headRe) {
 /* A window line, and nothing else that happens to start with a number: the
    touch state lists its windows in the same shape and the monitors list its
    channels in another, and neither of them states a frame. */
-const INPUT_WIN_RE = /^(\s*)(\d+)\s*:\s*name='(.*?)',(.*\bframe=\[.*)$/;
+/* The name is quoted through Android 15 and printed bare from 16 on, so the
+   quotes are optional and the bare form simply ends at its comma. */
+const INPUT_WIN_RE = /^(\s*)(\d+)\s*:\s*name='?(.*?)'?,(.*\bframe=\[.*)$/;
 const INPUT_DISPLAY_RE = /^\s*Display:\s*(-?\d+)\s*$/;
 const INPUT_MON_HEAD_RE = /^(\s*)(?:Global monitors on display\s+(-?\d+)|displayId=(-?\d+),\s*gesture monitors)/;
 const INPUT_MON_RE = /^\s*(?:monitor\s+)?(\d+)\s*:\s*'([^']*)'(.*)$/;
@@ -4262,7 +4292,7 @@ function parseInputDump(input) {
     /* The windows a touch is going to right now are listed under the state
        that owns them, in the same `n: name=` shape a window line has and with
        no frame on them, so they are picked up here rather than above. */
-    const tw = touchAt && line.match(/^\s*\d+\s*:\s*name='(.*?)',\s*pointerIds=/);
+    const tw = touchAt && line.match(/^\s*\d+\s*:\s*name='?(.*?)'?,\s*pointerIds=/);
     if (tw) touchAt.windows.push(inputWindowName(tw[1]).hash || tw[1]);
   }
 
@@ -5039,8 +5069,8 @@ for(const key of ['docs', 'docId']){
    line of the section is being asked about, and what is being looked for
    inside it. They sit here with the rest of what a document remembers, so two
    tabs off the same dump keep their own place in it. */
-const DOC_STATE = { toolId:null, displayId:null, selected:null, filter:'',
-                    show:'all', dim:true, view:'depth', collapsed:null,
+const DOC_STATE = { toolId:null, displayId:null, selected:null, region:null,
+                    filter:'', show:'all', dim:true, view:'depth', collapsed:null,
                     attr:null, attrFilter:'', ...VIEW0 };
 for(const key of Object.keys(DOC_STATE)){
   Object.defineProperty(S, key, {
@@ -6205,8 +6235,9 @@ function emptyNote(shownCount, x, y){
          22, ' pw-note');
 }
 
-const hitShape = (w, shape) =>
-  `<${shape} class="pw-hit" data-hash="${esc(w.hash)}" `;
+const hitShape = (w, shape, region) =>
+  `<${shape} class="pw-hit" data-hash="${esc(w.hash)}"${
+    region === undefined ? '' : ` data-region="${region}"`} `;
 
 function sheetSvg({ vb, label, parts, fit }){
   $('sheet').innerHTML =
@@ -6243,8 +6274,9 @@ function renderDepth(){
 
   const base = quad({l:0,t:0,r:W,b:H}, 0);
   const faces = stack.map((w, i) => {
-    const q = quad(w.frame, (i + 1) * step);
-    return { w, q, a: q.reduce((m,p) => p[0] > m[0] ? p : m, q[0]) };   // right-most corner
+    const z = (i + 1) * step;
+    const q = quad(w.frame, z);
+    return { w, q, z, a: q.reduce((m,p) => p[0] > m[0] ? p : m, q[0]) };   // right-most corner
   });
   // Rows follow where each window landed on the sheet, not its rank, so the
   // leaders never cross. The rank is on the row, which is what carries z.
@@ -6267,16 +6299,32 @@ function renderDepth(){
   const parts = [];
   parts.push(`<polygon class="dp-base" points="${pts(base)}"/>`);
 
-  for(const { w, q } of faces){
+  for(const { w, q, z } of faces){
+    /* The face is the frame. Where the node also states which part of itself
+       takes touch, each of those rects is drawn on the face at the same
+       height, so a window that is live in two places reads as two places
+       rather than as one box with a count next to it. */
+    const regions = S.tool.regions ? S.tool.regions(w, false) : null;
     parts.push(`<polygon class="dp-face${w.visible ? '' : ' is-hidden'}${dimClass(w)}"
-      style="color:${tintFor(w)}" points="${pts(q)}"/>`);
+      style="color:${tintFor(w)}" points="${pts(q)}"/>` +
+      (regions || []).map(({ rc }) =>
+        `<polygon class="dp-region${dimClass(w)}" points="${pts(quad(rc, z))}"/>`).join(''));
   }
 
   const labelClass = (w) => (b) =>
     b + (w.hash === S.selected ? ' is-sel' : '') + (w.visible ? '' : ' is-hidden') + dimClass(w);
 
-  for(const { w, q } of faces){
-    if(w.hash === S.selected) parts.push(`<polygon class="dp-sel" points="${pts(q)}"/>`);
+  for(const { w, q, z } of faces){
+    if(w.hash !== S.selected) continue;
+    parts.push(`<polygon class="dp-sel" points="${pts(q)}"/>`);
+    /* Picking a window marks every rect it takes touch in, including the one
+       that is the frame again — the point of picking it is to be shown what
+       it takes, not only where it differs. */
+    const selRegions = S.tool.regions ? S.tool.regions(w, true) : null;
+    for(const { rc, i } of selRegions || []){
+      parts.push(`<polygon class="dp-sel-region${i === S.region ? ' is-pick' : ''}"
+        points="${pts(quad(rc, z))}"/>`);
+    }
   }
 
   // Every leader before any name: a leader drawn afterwards would cross the
@@ -6298,8 +6346,12 @@ function renderDepth(){
   if(!faces.length) parts.push(emptyNote(shownCount, 0, 0));
 
   // Hit targets last, bottom-up, so the window on top takes the click.
-  for(const { w, q } of faces){
+  for(const { w, q, z } of faces){
     parts.push(hitShape(w, 'polygon') + `points="${pts(q)}"><title>${esc(w.title)}</title></polygon>`);
+    for(const { rc, i } of (S.tool.regions ? S.tool.regions(w, true) : [])){
+      parts.push(hitShape(w, 'polygon', i) + `points="${pts(quad(rc, z))}"><title>${
+        esc(w.title)} — touch rect ${i + 1}</title></polygon>`);
+    }
   }
   // The name on the right is the easier thing to aim at, so give each row its
   // own target rather than leaving only the glyphs clickable.
@@ -6390,7 +6442,7 @@ function renderFlat(){
       `<g style="color:${tintFor(w)}" class="${dimClass(w).trim()}">` +
       (w.visible ? `<rect class="pw-fill" ${rectAttrs(w.frame)}/>` : '') +
       `<rect class="pw-stroke"${dash} ${rectAttrs(w.frame)}/>` +
-      (regions || []).map(rc => `<rect class="pw-region" ${rectAttrs(rc)}/>`).join('') +
+      (regions || []).map(({ rc }) => `<rect class="pw-region" ${rectAttrs(rc)}/>`).join('') +
       `</g>`
     );
   }
@@ -6418,8 +6470,9 @@ function renderFlat(){
        of itself that is live, that is marked too, so picking a window says
        both where it is and where it can be touched. */
     const selRegions = S.tool.regions ? S.tool.regions(sel, true) : null;
-    for(const rc of selRegions || []){
-      parts.push(`<rect class="pw-sel-region" ${rectAttrs(rc)}/>`);
+    for(const { rc, i } of selRegions || []){
+      parts.push(`<rect class="pw-sel-region${i === S.region ? ' is-pick' : ''}"
+        ${rectAttrs(rc)}/>`);
     }
     parts.push(
       `<path class="pw-lead" d="M${f.l} ${ly}L${f.r} ${ly}M${f.l} ${ly-off*0.5}L${f.l} ${ly+off*0.5}M${f.r} ${ly-off*0.5}L${f.r} ${ly+off*0.5}"/>` +
@@ -6436,6 +6489,10 @@ function renderFlat(){
   // the fills: the topmost window ends up on top and takes the click.
   for(const w of paint){
     parts.push(hitShape(w, 'rect') + `${rectAttrs(w.frame)}><title>${esc(w.title)}</title></rect>`);
+    for(const { rc, i } of (S.tool.regions ? S.tool.regions(w, true) : [])){
+      parts.push(hitShape(w, 'rect', i) + `${rectAttrs(rc)}><title>${
+        esc(w.title)} — touch rect ${i + 1}</title></rect>`);
+    }
   }
 
   sheetSvg({ vb, parts, label: `Window layout for display ${d.id}` });
@@ -6454,7 +6511,11 @@ function scaleLabels(){
 }
 
 /* ---------------- render: the details pane ---------------- */
-const dl = (rows) => `<dl class="dl">${rows.filter(Boolean).map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+/* A row is `[term, value]`, and `[term, value, attrs]` where the row is also
+   something to pick: the attributes go on both halves, so a click anywhere
+   along the row is the same click. */
+const dl = (rows) => `<dl class="dl">${rows.filter(Boolean).map(([k,v,at]) =>
+  `<dt${at ? ' ' + at : ''}>${k}</dt><dd${at ? ' ' + at : ''}>${v}</dd>`).join('')}</dl>`;
 const r = (rc) => `[${rc.l},${rc.t}][${rc.r},${rc.b}] &nbsp;<span style="color:var(--dim)">${rectW(rc)}×${rectH(rc)}</span>`;
 const yn = (v) => v === null ? '<span style="color:var(--dim)">unknown</span>' : v ? '<span class="yes">yes</span>' : '<span class="no">no</span>';
 const winName = (s) => s ? esc(s.replace(/^\w+\{\S+\s+u\d+\s+/,'').replace(/\}$/,'')) : null;
@@ -7612,9 +7673,13 @@ function inputRegionRows(n){
                     && rc.r === n.frame.r && rc.b === n.frame.b;
   const head = n.regions.length === 1 ? 'touchable region'
     : `touchable region ${dim('×' + n.regions.length)}`;
+  /* Each rect is pickable from here: the row and the rect on the sheet are one
+     pick, so reading a number and seeing where it is are the same act. */
   return n.regions.map((rc, i) => [
     i ? dim('&nbsp;') : head,
-    `${r(rc)}${same(rc) ? ' ' + dim('· the whole frame') : ''}`]);
+    `${r(rc)}${same(rc) ? ' ' + dim('· the whole frame') : ''}`,
+    `class="pick-region${i === S.region ? ' is-pick' : ''}" data-region="${i}"`
+      + ` role="button" tabindex="0" aria-pressed="${i === S.region}"`]);
 }
 
 function inputDetail(n){
@@ -8261,9 +8326,9 @@ const TOOLS = [
        twice; the selected window is marked with all of its rects, because the
        point of picking one is to be shown what it takes. */
     regions: (n, selected) => !n.regions || !n.frame ? []
-      : selected ? n.regions
-      : n.regions.filter(rc => rc.l !== n.frame.l || rc.t !== n.frame.t
-                            || rc.r !== n.frame.r || rc.b !== n.frame.b),
+      : n.regions.map((rc, i) => ({ rc, i })).filter(({ rc }) => selected
+          || rc.l !== n.frame.l || rc.t !== n.frame.t
+          || rc.r !== n.frame.r || rc.b !== n.frame.b),
     detect: (t) => (/^\s*Input Dispatcher State:/m.test(t) ? 3 : 0)
                  + (/^\s*Input Reader State/m.test(t) ? 2 : 0)
                  + (/INPUT MANAGER \(dumpsys input\)/.test(t) ? 2 : 0)
@@ -8379,11 +8444,16 @@ function syncDepthCtl(){
   $('rngSep').value = S.sep;
 }
 
-function select(hash){
+/* `region` is which of the node's own rects was picked — the touchable rect a
+   click landed in, or the row for it in the pane. Picking the node anywhere
+   else drops it: the rect is a part of that node and means nothing under the
+   next one. */
+function select(hash, region){
   // Picking a section is a new thing to read; whatever was picked in the last
   // one is not in this one.
   if(hash !== S.selected) S.attr = null;
   S.selected = hash;
+  S.region = region === undefined || region === null ? null : +region;
   revealAncestors(hash);
   renderList(); renderPlan(); renderDetail();
   if(window.matchMedia && window.matchMedia('(max-width:1080px)').matches) document.body.classList.add('show-detail');
@@ -8623,6 +8693,7 @@ $('sheet').addEventListener('pointerdown', (e) => {
   orbit.x = e.clientX; orbit.y = e.clientY;
   orbit.live = false;
   orbit.hash = hit ? hit.dataset.hash : null;
+  orbit.region = hit && hit.dataset.region !== undefined ? hit.dataset.region : null;
   if(S.view === 'depth') $('sheet').setPointerCapture(e.pointerId);
 });
 
@@ -8633,6 +8704,7 @@ $('sheet').addEventListener('pointermove', (e) => {
     if(Math.hypot(dx, dy) < TURN_SLOP) return;
     orbit.live = true;
     orbit.hash = null;              // this is a turn; nothing gets picked
+    orbit.region = null;
     $('sheet').classList.add('is-turning');
   }
   orbit.x = e.clientX; orbit.y = e.clientY;
@@ -8644,16 +8716,16 @@ $('sheet').addEventListener('pointermove', (e) => {
 
 $('sheet').addEventListener('pointerup', (e) => {
   if(orbit.id !== e.pointerId || !drawingSheet()) return;
-  const { live, hash } = orbit;
-  orbit.id = null; orbit.live = false; orbit.hash = null;
+  const { live, hash, region } = orbit;
+  orbit.id = null; orbit.live = false; orbit.hash = null; orbit.region = null;
   $('sheet').classList.remove('is-turning');
   if(live) return;
-  if(hash) select(hash); else { S.selected = null; renderAll(); }
+  if(hash) select(hash, region); else { S.selected = null; S.region = null; renderAll(); }
 });
 
 $('sheet').addEventListener('pointercancel', (e) => {
   if(orbit.id !== e.pointerId) return;
-  orbit.id = null; orbit.live = false; orbit.hash = null;
+  orbit.id = null; orbit.live = false; orbit.hash = null; orbit.region = null;
   $('sheet').classList.remove('is-turning');
 });
 $('legend').addEventListener('click', (e) => {
@@ -8733,7 +8805,7 @@ document.addEventListener('pointerdown', (e) => {
 for(const id of ['displayTabs', 'listTabs']){
   $(id).addEventListener('click', (e) => {
     const t = e.target.closest('[data-did]'); if(!t) return;
-    S.displayId = +t.dataset.did; S.selected = null;
+    S.displayId = +t.dataset.did; S.selected = null; S.region = null;
     renderTabs(); renderAll();
   });
 }
@@ -8844,8 +8916,27 @@ function hideTip(){
 }
 
 $('detail').addEventListener('click', (e) => {
+  /* A rect's row and the rect on the sheet are the same pick seen from two
+     sides, so clicking the row marks the rect — and clicking the marked row
+     again puts the drawing back to the whole node. */
+  const row = e.target.closest('[data-region]');
+  if(row){
+    const i = +row.dataset.region;
+    S.region = S.region === i ? null : i;
+    return void (renderPlan(), renderDetail());
+  }
   const b = e.target.closest('button[data-hash]');
   if(b) select(b.dataset.hash);
+});
+/* The row is a button, so the keys a button answers to work on it. */
+$('detail').addEventListener('keydown', (e) => {
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const row = e.target.closest && e.target.closest('[data-region]');
+  if(!row) return;
+  e.preventDefault();
+  const i = +row.dataset.region;
+  S.region = S.region === i ? null : i;
+  renderPlan(); renderDetail();
 });
 $('detail').addEventListener('pointerover', (e) => {
   const c = e.target.closest('[data-flag]');
@@ -9010,7 +9101,7 @@ document.addEventListener('keydown', (e) => {
     if(armedClose !== null) disarmClose();
     else if(!$('empty').hidden && S.docs.length) openDoc(currentDoc() || S.docs[S.docs.length - 1]);
     else if(document.body.classList.contains('show-detail')) document.body.classList.remove('show-detail');
-    else if(S.selected){ S.selected = null; renderAll(); }
+    else if(S.selected){ S.selected = null; S.region = null; renderAll(); }
   }
   if(e.key === '/' && !$('app').hidden && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
     e.preventDefault(); $('filter').focus();
