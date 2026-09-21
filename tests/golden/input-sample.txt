@@ -1,0 +1,36 @@
+tool: input
+displays: 2
+nodes: 12
+
+display 0  name=Internal  size=1080x2400  rot=0  focus=2f04c1a com.android.settings/com.android.settings.homepage.SettingsHomepageActivity
+    1  input-monitor   —                         —           vis=y                                             sees every touch            PointerEventDispatcher0
+    2  input-untouchable  [0,0][1080,2400]          input window  vis=y                                             -                           ShellDropTarget
+    3  input-untouchable  [0,0][1080,2400]          input window  vis=n                                             not visible                 NotificationShade
+    4  input-window    [0,0][1080,136]           input window  vis=y                                             -                           StatusBar
+    5  input-window    [0,2256][1080,2400]       input window  vis=y                                             -                           NavigationBar0
+    6  input-window    [0,136][1080,2256]        input window  vis=y                                             untrusted overlay           com.example.tracker.Overlay
+    7  input-window    [0,136][1080,2256]        input window  vis=y  focus                                      focus,being touched,covered  com.android.settings/com.android.settings.homepage.SettingsHomepageActivity
+    8  input-untouchable  [0,1704][1080,2400]       input window  vis=n                                             not visible                 InputMethod
+    9  input-untouchable  [0,0][1080,2400]          input window  vis=y                                             no channel                  com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher
+   10  input-wallpaper  [0,0][1080,2400]          input window  vis=y                                             -                           com.android.systemui.wallpapers.ImageWallpaper
+
+display 2  name=External  size=1920x1080  rot=0  focus=9d1b077 com.android.car.cluster/com.android.car.cluster.ClusterActivity
+    1  input-spy       [0,0][1920,1080]          input window  vis=y                                             spy                         Cluster spy
+    2  input-window    [0,0][1920,1080]          input window  vis=y  focus                                      focus,drops if obscured     com.android.car.cluster/com.android.car.cluster.ClusterActivity
+
+globals:
+  dispatchEnabled: true
+  dispatchFrozen: false
+  inputFilter: false
+  focusedDisplay: 0
+  interactive: true
+  showTouches: false
+  pointerCapture: disabled, seq=0
+  pointerSpeed: 0
+  appSwitch: not pending
+  keyRepeatTimeout: 500.0ms
+  keyRepeatDelay: 50.0ms
+  windows: 11
+  monitors: 1
+  viewports: 2
+  named: true

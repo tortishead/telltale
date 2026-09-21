@@ -1,0 +1,26 @@
+tool: inputdev
+displays: 2
+nodes: 8
+
+display -1  label=no display  size=0x0
+    meta: 3 devices · keyboard, pointer
+    1  input-key       vis=y                                             -                           Virtual
+    2  input-mapper    vis=y         ^input:dev:-1                       -                           Keyboard
+    3  input-key       vis=y                                             -                           gpio-keys
+    4  input-mapper    vis=y         ^input:dev:3                        -                           Keyboard
+    5  input-pointer   vis=y                                             external                    Logitech USB Receiver Mouse
+    6  input-mapper    vis=y         ^input:dev:7                        -                           Cursor
+
+display 0  name=Internal  size=1080x2400
+    meta: 1 device · touchscreen
+    1  input-touch     vis=y                                             display 0                   goodix_ts
+    2  input-mapper    vis=y         ^input:dev:4                        -                           Touch
+
+globals:
+  devices: 4
+  mappers: 4
+  external: 1
+  builtInKeyboard: -2
+  excluded: []
+  viewports: 2
+  hub: 4

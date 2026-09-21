@@ -589,12 +589,20 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 .lg-sw button[aria-pressed="true"]{outline:2px solid var(--redline); outline-offset:1px}
 .lg-n{color:var(--graphite)}
 /* Strokes are kept at constant screen width so a 4K display dump stays legible. */
-.pw-stroke,.pw-sel,.pw-lead,.pw-crop,.pw-screen{vector-effect:non-scaling-stroke}
+.pw-stroke,.pw-sel,.pw-lead,.pw-crop,.pw-screen,.pw-region,
+.pw-sel-region{vector-effect:non-scaling-stroke}
 .pw-fill{fill:currentColor; fill-opacity:.13; stroke:none}
 .pw-stroke{fill:none; stroke:currentColor; stroke-width:1.25}
+/* A second rect inside the frame: filled, so a region smaller than the window
+   it belongs to reads as the part of it that is live. */
+.pw-region{fill:currentColor; fill-opacity:.2; stroke:currentColor; stroke-width:1; stroke-dasharray:4 3}
 .pw-dim{opacity:.34}
 .pw-hit{fill:transparent; stroke:none; cursor:pointer}
 .pw-sel{fill:none; stroke:var(--redline); stroke-width:2}
+/* The live part of the selected node: the redline again, dashed and lighter,
+   so it reads as a note on the frame rather than a second frame. */
+.pw-sel-region{fill:var(--redline); fill-opacity:.1; stroke:var(--redline);
+  stroke-width:1.25; stroke-dasharray:6 4}
 .pw-lead{fill:none; stroke:var(--redline); stroke-width:1}
 .pw-label{fill:var(--redline); stroke:none; font-family:var(--mono); font-size:var(--fs)}
 .pw-note{fill:var(--graphite); font-size:calc(var(--fs) * 0.85)}
@@ -801,6 +809,64 @@ body.layout-list .pane-plan > .sheet-foot{display:none}
 /* The groups are a short list of short names and the details pane is doing
    all the drawing, so the room goes to the middle and the right. */
 body.layout-list main{--w-stack:280px; --w-detail:460px}
+
+/* ---------- search across the workspace ---------- */
+/* The filter above the list is about the dump you are reading. This is about
+   the desk: it comes up over the page, holds every match in every dump open in
+   the workspace, and drops you into the one you pick with the query already
+   on. It is a card rather than a pane because it is a way through the work,
+   not part of it — it goes away as soon as it has answered. */
+.find{
+  position:fixed; inset:0; z-index:60; display:flex; justify-content:center;
+  /* Start rather than stretch: the card is as tall as what it found, and only
+     grows to the room it has when that is more. */
+  align-items:flex-start;
+  padding:8vh 16px 16px; background:rgba(0,0,0,.45);
+}
+:root[data-theme="light"] .find{background:rgba(31,41,34,.28)}
+.find-card{
+  width:min(720px,100%); max-height:calc(100vh - 8vh - 32px); display:flex; flex-direction:column;
+  background:var(--ink-2); border:1px solid var(--rule); border-radius:4px;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.find-box{
+  flex:none; width:100%; padding:12px 14px; font-size:14px;
+  background:var(--ink); border:none; border-bottom:1px solid var(--rule);
+  color:var(--fg-strong);
+}
+.find-box::placeholder{color:var(--placeholder)}
+.find-box:focus{outline:none}
+.find-results{flex:1; min-height:0; overflow:auto; padding:4px 0}
+.find-group{padding:2px 0 6px}
+/* Which dump and which reader a run of hits came out of. It sticks because a
+   long run of matches off one dump otherwise scrolls its own heading away. */
+.find-src{
+  margin:0; padding:7px 14px 4px; font-size:11.5px; color:var(--dim);
+  position:sticky; top:0; background:var(--ink-2);
+}
+.find-src b{color:var(--fg); font-weight:600}
+.find-hit{
+  display:block; width:100%; text-align:left; cursor:pointer;
+  padding:5px 14px; background:none; border:none; color:inherit; font:inherit;
+  border-left:2px solid transparent;
+}
+.find-hit:hover{background-color:var(--ink-3)}
+.find-hit[aria-selected="true"]{background-color:var(--ink-3); border-left-color:var(--mark)}
+.find-title{
+  display:block; color:var(--fg-strong);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.find-meta{
+  display:block; font-size:11.5px; color:var(--dim);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.find-more{margin:2px 0 0; padding:0 14px; font-size:11.5px; color:var(--graphite)}
+.find-empty{margin:0; padding:22px 14px; color:var(--dim); font-size:12.5px}
+.find-empty b{color:var(--fg-strong)}
+.find-foot{
+  flex:none; padding:7px 14px; border-top:1px solid var(--rule);
+  color:var(--graphite); font-size:11.5px;
+}
 </style>
 </head>
 <body>
@@ -814,6 +880,8 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
       <button class="tab" id="tabStack" type="button" aria-pressed="false">Stack</button>
       <button class="tab" id="tabPlan" type="button" aria-pressed="true">Layout</button>
     </div>
+    <button class="btn btn-quiet" id="btnFind" type="button" hidden
+            title="Search every dump in this workspace (⌘K / Ctrl+K)">Search</button>
     <button class="btn btn-quiet" id="btnTheme" type="button">system</button>
     <button class="btn btn-quiet" id="btnNew" type="button" hidden>Load another dump</button>
   </div>
@@ -836,8 +904,9 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
     <div class="sheet-blank">
       <h1>Drop an AOSP dump here</h1>
       <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>,
-      <code>user</code>, <code>car_service</code> and <code>binder_calls_stats</code>,
-      ANR traces, and whole bugreports. The file never leaves your browser.</p>
+      <code>user</code>, <code>input</code>, <code>car_service</code> and
+      <code>binder_calls_stats</code>, ANR traces, and whole bugreports.
+      The file never leaves your browser.</p>
       <div class="empty-actions">
         <button class="btn-paper btn-paper-key" id="btnPick" type="button">Choose a file</button>
         <button class="btn-paper" id="btnPaste" type="button">Paste text</button>
@@ -850,6 +919,7 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
 adb shell dumpsys SurfaceFlinger  &gt; sf.txt
 adb shell dumpsys package         &gt; packages.txt
 adb shell dumpsys user            &gt; users.txt
+adb shell dumpsys input           &gt; input.txt
 adb shell dumpsys car_service     &gt; car.txt
 adb pull /data/anr/traces.txt
 
@@ -933,6 +1003,16 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
 </main>
 
 <input type="file" id="file" accept=".txt,.log,.dump,.out,text/plain" hidden>
+
+<div class="find" id="find" hidden>
+  <div class="find-card" role="dialog" aria-modal="true" aria-label="Search this workspace">
+    <input class="find-box" id="findBox" type="search" spellcheck="false" autocomplete="off"
+           placeholder="Search every dump in this workspace"
+           aria-label="Search every dump in this workspace">
+    <div class="find-results" id="findResults" role="listbox" aria-label="Matches"></div>
+    <div class="find-foot" id="findFoot"></div>
+  </div>
+</div>
 
 <div class="tip" id="tip" role="tooltip" hidden></div>
 
@@ -3887,6 +3967,724 @@ function parseBinderCallsStatsDump(input) {
   return scene;
 }
 
+/* ================ parse: dumpsys input ================ */
+
+/* `dumpsys input` is three dumps printed one after another: what the manager
+   itself is set to, the devices the reader found, and the windows the
+   dispatcher hands events to. The windows sit on a display, carry a frame and
+   stack in an order, so they are drawn; a device sits nowhere, so it is read.
+   That is two scenes out of one text, and the page already knows how to hold
+   several readers for one dump, so this file registers two rather than
+   inventing a third kind of pane.
+
+   The dispatcher's window line has been rewritten twice. Android 12 and
+   earlier printed `flags=`, `type=` and `inputFeatures=` as hex, Android 13
+   replaced all three with the `inputConfig=` name list, and both spellings
+   turn up in the bugreports people still open. Everything below reads the
+   older spelling into the newer names, so one vocabulary reaches the panes and
+   an old dump answers the same questions as a new one. */
+
+/* The source of an event is a bitmask whose low bits are the class of device
+   it came from, and a dump prints it either as those names or as the raw hex.
+   The class bits are part of every source that contains them, so a source is
+   only present when all of its bits are. */
+const INPUT_SOURCES = [
+  ['KEYBOARD', 0x00000101], ['DPAD', 0x00000201], ['GAMEPAD', 0x00000401],
+  ['TOUCHSCREEN', 0x00001002], ['MOUSE', 0x00002002], ['STYLUS', 0x00004002],
+  ['BLUETOOTH_STYLUS', 0x0000c002], ['TRACKBALL', 0x00010004],
+  ['MOUSE_RELATIVE', 0x00020004], ['TOUCHPAD', 0x00100008],
+  ['TOUCH_NAVIGATION', 0x00200000], ['ROTARY_ENCODER', 0x00400000],
+  ['JOYSTICK', 0x01000010], ['HDMI', 0x02000001], ['SENSOR', 0x04000000],
+];
+
+/* What a device is for, in the order a device that answers to several should
+   be called: a stylus-capable touchscreen is a touchscreen. */
+const INPUT_KINDS = [
+  [/TOUCHSCREEN/, 'touchscreen', 'input-touch'],
+  [/TOUCHPAD|TOUCH_NAVIGATION/, 'touchpad', 'input-touch'],
+  [/MOUSE|TRACKBALL/, 'pointer', 'input-pointer'],
+  [/JOYSTICK|GAMEPAD/, 'joystick', 'input-stick'],
+  [/ROTARY_ENCODER/, 'rotary', 'input-stick'],
+  [/STYLUS/, 'stylus', 'input-touch'],
+  [/SENSOR/, 'sensor', 'input-sensor'],
+  [/KEYBOARD|DPAD/, 'keyboard', 'input-key'],
+];
+
+const INPUT_KEYBOARD_TYPES = { 0:'none', 1:'non-alphabetic', 2:'alphabetic', 3:'alphabetic' };
+
+/* `INTERNAL` is how a viewport names itself and `Internal` is how a display
+   picker reads. The render layer has its own `cap`, which the parse layer is
+   not allowed to reach forward into. */
+const inputCap = (s) => (s ? s[0].toUpperCase() + s.slice(1).toLowerCase() : s);
+
+function inputSources(field) {
+  const raw = String(field == null ? '' : field).trim();
+  const hex = raw.match(/^0x([0-9a-fA-F]+)$/);
+  if (!hex) {
+    const names = raw.split(/\s*\|\s*/).map((s) => s.trim()).filter(Boolean);
+    return { names, mask: null, raw };
+  }
+  const mask = parseInt(hex[1], 16);
+  const names = INPUT_SOURCES.filter(([, bits]) => bits && (mask & bits) === bits)
+    .map(([name]) => name);
+  return { names, mask, raw };
+}
+
+function inputKind(names) {
+  const hay = names.join(' ');
+  for (const [re, label, family] of INPUT_KINDS) {
+    if (re.test(hay)) return { label, family };
+  }
+  return { label: names.length ? 'other' : 'unknown', family: 'input-device' };
+}
+
+/* `Window{9a1b2c3 u0 StatusBar}` on the older builds, `9a1b2c3 StatusBar` on
+   the newer ones. Either way the leading word is the handle the rest of the
+   dump names this window by, which is what selection and the focus line join
+   on, so it is worth pulling out of the title rather than left in it. */
+function inputWindowName(name) {
+  const s = String(name == null ? '' : name).trim();
+  const brace = s.match(/^\w+\{(\S+)(?:\s+(u\d+))?\s+(.*)\}$/);
+  if (brace) return { hash: brace[1], user: brace[2] || null, title: brace[3] };
+  const bare = s.match(/^([0-9a-f]{4,10})\s+(.+)$/);
+  if (bare) return { hash: bare[1], user: null, title: bare[2] };
+  return { hash: null, user: null, title: s };
+}
+
+/* A touchable region is printed as the rects it is made of, joined by bars, or
+   as `<empty>` when the window takes no touches at all. */
+function inputRegion(field) {
+  const s = String(field == null ? '' : field);
+  if (!s || /<empty>/.test(s)) return [];
+  const out = [];
+  const re = /\[(-?\d+),\s*(-?\d+)\]\[(-?\d+),\s*(-?\d+)\]/g;
+  let m;
+  while ((m = re.exec(s)) !== null) out.push(rectFrom(m, 1));
+  return out;
+}
+
+/* The three older fields, read into the names the newer dump prints. Only the
+   bits that decide whether an event reaches the window are translated: the
+   rest of `flags` is a WindowManager concern the window reader already tells
+   you about, and repeating half of it here under a different name would be
+   worse than leaving it out. */
+const INPUT_OLD_FLAGS = [[0x8, 'NOT_FOCUSABLE'], [0x10, 'NOT_TOUCHABLE'],
+                         [0x40000, 'WATCH_OUTSIDE_TOUCH']];
+const INPUT_OLD_FEATURES = [[0x1, 'NO_INPUT_CHANNEL'], [0x2, 'DISABLE_USER_ACTIVITY'],
+                            [0x4, 'SPY']];
+
+function inputConfigOf(line) {
+  const named = line.match(/inputConfig=([^,]*)/);
+  if (named) {
+    return named[1].trim().split(/\s*\|\s*/).map((s) => s.trim()).filter(Boolean);
+  }
+  const out = [];
+  const bits = (re, table) => {
+    const m = line.match(re);
+    if (!m) return;
+    const v = parseInt(m[1], 16);
+    if (!Number.isFinite(v)) return;
+    for (const [bit, name] of table) if (v & bit) out.push(name);
+  };
+  bits(/(?:^|[\s,])flags=0x([0-9a-fA-F]+)/, INPUT_OLD_FLAGS);
+  bits(/inputFeatures=0x([0-9a-fA-F]+)/, INPUT_OLD_FEATURES);
+  const vis = line.match(/\b(?:is)?[Vv]isible=(true|false)/);
+  if (vis && vis[1] === 'false') out.push('NOT_VISIBLE');
+  return out;
+}
+
+/* Viewports are the only place in the whole dump that states how big a display
+   is, so they are what the sheet draws its screen from. A dump taken without
+   them still draws — the displays fall back to how far their own windows
+   reach — but it draws a screen the size of the windows on it. */
+const INPUT_VIEWPORT_RE =
+  /Viewport\s+(\w+):\s*displayId=(-?\d+)(?:,\s*uniqueId=(\S*?))?,[^\n]*?orientation=(-?\d+)[^\n]*?logicalFrame=\[(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)\]/g;
+
+function inputViewports(text) {
+  const out = new Map();
+  let m;
+  INPUT_VIEWPORT_RE.lastIndex = 0;
+  while ((m = INPUT_VIEWPORT_RE.exec(text)) !== null) {
+    const id = +m[2];
+    if (out.has(id)) continue;
+    const l = +m[5], t = +m[6], r = +m[7], b = +m[8];
+    out.set(id, {
+      id,
+      type: m[1],
+      uniqueId: m[3] && m[3] !== ',' ? m[3].replace(/,$/, '') : null,
+      rotation: String(+m[4]),
+      size: r > l && b > t ? { w: r - l, h: b - t } : null,
+    });
+  }
+  return out;
+}
+
+/* A bugreport is every dumpsys one after another in one file, and this parser
+   is handed all of it. So each half of `dumpsys input` is read inside its own
+   section rather than by scanning to the end of the file, where another
+   service's `Device 3: ...` would be read as one of the reader's. A section
+   ends at the next thing that is plainly a heading: a sibling of its own, a
+   bugreport rule, or the line naming the next service. */
+const INPUT_SECTION_END = new RegExp(
+  '^(?:\\s*(?:Input Dispatcher State|Input Reader State|Input Manager State'
+  + '|Event Hub State|Input Manager Service)\\b|-{3,}|={3,}|DUMP OF SERVICE\\b'
+  + '|\\S.*\\(dumpsys \\S+\\)\\s*$)');
+
+function inputSection(lines, headRe) {
+  const start = lines.findIndex((l) => headRe.test(l));
+  if (start < 0) return null;
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (INPUT_SECTION_END.test(lines[i])) { end = i; break; }
+  }
+  return { start, end };
+}
+
+/* A window line, and nothing else that happens to start with a number: the
+   touch state lists its windows in the same shape and the monitors list its
+   channels in another, and neither of them states a frame. */
+const INPUT_WIN_RE = /^(\s*)(\d+)\s*:\s*name='(.*?)',(.*\bframe=\[.*)$/;
+const INPUT_DISPLAY_RE = /^\s*Display:\s*(-?\d+)\s*$/;
+const INPUT_MON_HEAD_RE = /^(\s*)(?:Global monitors on display\s+(-?\d+)|displayId=(-?\d+),\s*gesture monitors)/;
+const INPUT_MON_RE = /^\s*(?:monitor\s+)?(\d+)\s*:\s*'([^']*)'(.*)$/;
+
+const INPUT_BIG_ALPHA = 0.001;   // what SurfaceFlinger still calls opaque enough to block a touch
+
+function inputContains(a, b) {
+  return a.l <= b.l && a.t <= b.t && a.r >= b.r && a.b >= b.b;
+}
+
+/* The question this dump gets opened with is why a touch went somewhere other
+   than where it was aimed. A window that can take touch, sitting under one
+   whose touchable region covers all of it, is the answer often enough to be
+   worth saying on the row rather than leaving to be worked out from eight
+   rects. A spy sees a touch without consuming it, so it never covers. */
+function inputCoverage(nodes) {
+  const eats = (n) => n.touchable && !n.spy && n.regions.length;
+  for (const n of nodes) {
+    if (!eats(n)) continue;
+    const above = nodes.filter((m) => m !== n && m.displayId === n.displayId
+                                   && m.z > n.z && eats(m));
+    n.coveredBy = above.find((m) =>
+      n.regions.every((rc) => m.regions.some((mr) => inputContains(mr, rc)))) || null;
+  }
+}
+
+/* An untrusted overlay in front of a window is the state a window asking for
+   DROP_INPUT_IF_OBSCURED is guarding against, so which windows are in that
+   state is worked out rather than left as a flag that might mean nothing. */
+function inputObscured(nodes) {
+  const overlaps = (a, b) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+  for (const n of nodes) {
+    if (!n.dropsIfObscured || !n.frame) continue;
+    n.obscuredBy = nodes.find((m) => m !== n && m.displayId === n.displayId
+      && m.z > n.z && m.occludes && m.frame && overlaps(m.frame, n.frame)) || null;
+  }
+}
+
+function parseInputDump(input) {
+  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const lines = text.split('\n');
+  const viewports = inputViewports(text);
+
+  const nodes = [];
+  const focusByDisplay = new Map();
+  const appByDisplay = new Map();
+  const touchByDisplay = new Map();
+
+  /* Which display a window is on is on the window's own line; the `Display:`
+     heading above it is there for the builds that print the heading and leave
+     the field off the line. */
+  let head = null, monDisplay = null, monIndent = -1, touchAt = null;
+  const monitors = [];
+
+  /* Where the dispatcher's own section is. A dump pasted without its heading
+     is still read — the window line is specific enough to find on its own —
+     but a file that has the heading is read only between its bounds. */
+  const span = inputSection(lines, /^\s*Input Dispatcher State\b/)
+            || { start: -1, end: lines.length };
+
+  for (let i = span.start + 1; i < span.end; i++) {
+    const line = lines[i];
+    const dm = line.match(INPUT_DISPLAY_RE);
+    if (dm) { head = +dm[1]; touchAt = null; continue; }
+
+    const mh = line.match(INPUT_MON_HEAD_RE);
+    if (mh) {
+      monDisplay = +(mh[2] !== undefined ? mh[2] : mh[3]);
+      monIndent = mh[1].length;
+      touchAt = null;
+      continue;
+    }
+    if (monDisplay !== null && line.trim() && indentOf(line) <= monIndent) monDisplay = null;
+
+    const wm = line.match(INPUT_WIN_RE);
+    if (wm) {
+      nodes.push(inputWindowNode(wm, i + 1, head, lines));
+      continue;
+    }
+
+    if (monDisplay !== null) {
+      const mm = line.match(INPUT_MON_RE);
+      if (mm) {
+        monitors.push({ display: monDisplay, index: +mm[1], name: mm[2],
+                        tail: mm[3] || '', at: i + 1, raw: line.trim() });
+      }
+      continue;
+    }
+
+    const fw = line.match(/^\s*displayId=(-?\d+),\s*name='(.*)'\s*$/);
+    if (fw) { focusByDisplay.set(+fw[1], fw[2]); continue; }
+
+    const fa = line.match(/^\s*displayId=(-?\d+),\s*name='(.*)',\s*dispatchingTimeout=(\S+)\s*$/);
+    if (fa) { appByDisplay.set(+fa[1], { name: fa[2], timeout: fa[3] }); continue; }
+
+    const ts = line.match(/^\s*displayId=(-?\d+),\s*down=(\w+)(.*)$/);
+    if (ts) {
+      const tail = ts[3];
+      touchAt = {
+        down: ts[2] === 'true',
+        split: /split=true/.test(tail),
+        deviceId: (tail.match(/deviceId=(-?\d+)/) || [])[1] || null,
+        source: (tail.match(/source=(\S+?)(?:,|$)/) || [])[1] || null,
+        windows: [],
+      };
+      touchByDisplay.set(+ts[1], touchAt);
+      continue;
+    }
+
+    /* The windows a touch is going to right now are listed under the state
+       that owns them, in the same `n: name=` shape a window line has and with
+       no frame on them, so they are picked up here rather than above. */
+    const tw = touchAt && line.match(/^\s*\d+\s*:\s*name='(.*?)',\s*pointerIds=/);
+    if (tw) touchAt.windows.push(inputWindowName(tw[1]).hash || tw[1]);
+  }
+
+  for (const m of monitors) {
+    nodes.push({
+      hash: `input:mon:${m.display}:${m.index}`,
+      title: m.name,
+      displayId: m.display,
+      frame: null, frameSource: null,
+      /* A global monitor is handed every touch on its display before any
+         window sees it, so it belongs above all of them. */
+      z: 1e6 - m.index,
+      family: 'input-monitor', typeLabel: 'global monitor',
+      badges: [['sees every touch', 'badge-comp']],
+      search: `${m.name} monitor ${m.raw}`.toLowerCase(),
+      raw: m.raw, at: m.at,
+      visible: true, focused: false,
+      monitor: true, index: m.index,
+      config: [], regions: [], touchable: true, spy: false,
+      ownerPid: (m.tail.match(/ownerPid=(?:Pid\{)?(-?\d+)/) || [])[1] || null,
+      ownerUid: (m.tail.match(/ownerUid=(?:Uid\{)?(-?\d+)/) || [])[1] || null,
+    });
+  }
+
+  /* Focus is stated by name, once per display, and the name is the one the
+     window's own line carries, so the join is on the handle in it. */
+  const focusHash = new Map();
+  for (const [id, name] of focusByDisplay) focusHash.set(id, inputWindowName(name).hash || name);
+  for (const n of nodes) {
+    const want = focusHash.get(n.displayId);
+    n.focused = !!want && !n.monitor && (n.handle ? n.handle === want : n.title === want);
+  }
+
+  inputCoverage(nodes);
+  inputObscured(nodes);
+
+  for (const n of nodes) {
+    if (n.monitor) continue;
+    const touching = (touchByDisplay.get(n.displayId) || { windows: [] }).windows;
+    n.touched = !!n.handle && touching.includes(n.handle);
+    inputClassify(n);
+    n.badges = inputBadges(n);
+  }
+
+  const sizeHints = new Map();
+  for (const [id, v] of viewports) if (v.size) sizeHints.set(id, v.size);
+
+  const blocks = [];
+  for (const [id, v] of viewports) {
+    /* A viewport with no window on it is still a display the dispatcher knows
+       about, and a display with nothing to dispatch to is itself an answer. */
+    blocks.push({
+      id, name: v.type ? inputCap(v.type) : null,
+      size: v.size, rotation: v.rotation, uniqueId: v.uniqueId,
+      viewportType: v.type, insets: [], raw: '',
+    });
+  }
+  const byId = buildDisplays(blocks, nodes, sizeHints);
+  for (const d of byId.values()) {
+    d.focus = focusByDisplay.get(d.id) || null;
+    d.focusedApp = (appByDisplay.get(d.id) || {}).name || null;
+    d.dispatchTimeout = (appByDisplay.get(d.id) || {}).timeout || null;
+    d.touch = touchByDisplay.get(d.id) || null;
+  }
+
+  const one = (re) => { const m = text.match(re); return m ? m[1].trim() : null; };
+  const bool = (re) => { const v = one(re); return v === null ? null : /^(true|1)$/i.test(v); };
+  const globals = {
+    dispatchEnabled: bool(/^\s*DispatchEnabled:\s*(\S+)\s*$/m),
+    dispatchFrozen: bool(/^\s*DispatchFrozen:\s*(\S+)\s*$/m),
+    inputFilter: bool(/^\s*InputFilterEnabled:\s*(\S+)\s*$/m),
+    focusedDisplay: one(/^\s*FocusedDisplayId:\s*(-?\d+)\s*$/m),
+    interactive: bool(/^\s*Interactive:\s*(\S+)\s*$/m),
+    showTouches: bool(/^\s*Show Touches:\s*(\S+)\s*$/m),
+    pointerCapture: one(/^\s*Pointer Capture:\s*(.+)$/m),
+    pointerSpeed: one(/^\s*Pointer Speed:\s*(-?\d+)\s*$/m),
+    appSwitch: one(/^\s*AppSwitch:\s*(.+)$/m),
+    keyRepeatTimeout: one(/^\s*KeyRepeatTimeout:\s*(\S+)\s*$/m),
+    keyRepeatDelay: one(/^\s*KeyRepeatDelay:\s*(\S+)\s*$/m),
+    windows: nodes.filter((n) => !n.monitor).length,
+    monitors: monitors.length,
+    viewports: viewports.size,
+    /* Whether this dump's windows were printed in the newer vocabulary, which
+       is what decides how much of a window's behaviour it can be asked. */
+    named: nodes.some((n) => n.config && n.config.length && !n.monitor),
+  };
+
+  return finaliseScene('input', [...byId.values()], nodes, globals);
+}
+
+/* One window, out of the line that states it and the transform printed under
+   it. The line is one long list of `key=value`, so the fields are picked out
+   by name and the ones a build does not print are simply absent. */
+function inputWindowNode(m, at, headDisplay, lines) {
+  const line = m[0];
+  const tail = m[4];
+  const named = inputWindowName(m[3]);
+  const config = inputConfigOf(line);
+  const has = (f) => config.includes(f);
+
+  const num = (re) => { const v = line.match(re); return v ? +v[1] : null; };
+  const str = (re) => { const v = line.match(re); return v && v[1].trim() ? v[1].trim() : null; };
+
+  const displayId = num(/[\s,]displayId=(-?\d+)/) ?? (headDisplay === null ? 0 : headDisplay);
+  const frame = (tail.match(/\bframe=\[(-?\d+),\s*(-?\d+)\]\[(-?\d+),\s*(-?\d+)\]/) || null);
+  const rect = frame ? rectFrom(frame, 1) : null;
+  const regionText = (tail.match(/touchableRegion=(<empty>|(?:\[-?\d+,\s*-?\d+\]\[-?\d+,\s*-?\d+\]\|?)+)/) || [])[1];
+  const regions = inputRegion(regionText);
+  const alpha = num(/\balpha=([\d.]+)/);
+  const occlusion = str(/touchOcclusionMode=(\w+)/);
+  const visible = !has('NOT_VISIBLE');
+  const touchable = !has('NOT_TOUCHABLE') && !has('NO_INPUT_CHANNEL') && visible
+                 && (regions.length > 0 || regionText === undefined);
+
+  const handle = named.hash;
+  const node = {
+    hash: `input:win:${displayId}:${handle || at}`,
+    handle,
+    title: named.title || m[3] || 'window',
+    user: named.user,
+    displayId,
+    index: +m[2],
+    frame: rectValid(rect) ? rect : null,
+    frameSource: 'input window',
+    z: -m[2],
+    visible,
+    focused: false,
+    at,
+    raw: [line.trim(), ...inputTransform(lines, at)].join('\n'),
+    config,
+    regions,
+    regionText: regionText === undefined ? null : regionText,
+    id: num(/\bid=(-?\d+)/),
+    ownerPid: num(/ownerPid=(?:Pid\{)?(-?\d+)/),
+    ownerUid: num(/ownerUid=(?:Uid\{)?(-?\d+)/),
+    appName: str(/applicationInfo\.name=([^,]*)/),
+    alpha,
+    globalScale: num(/globalScale=([\d.]+)/),
+    timeout: str(/dispatchingTimeout=(\S+?),/) || str(/dispatchingTimeout=(\S+)\s*$/),
+    hasToken: /hasToken=true/.test(line) ? true : /hasToken=false/.test(line) ? false : null,
+    occlusion,
+    touchable,
+    spy: has('SPY'),
+    wallpaper: has('IS_WALLPAPER'),
+    /* Two different things: one window is never delivered to, the other is
+       only not delivered to while something is in front of it. */
+    dropsAlways: has('DROP_INPUT'),
+    dropsIfObscured: has('DROP_INPUT_IF_OBSCURED'),
+    obscuredBy: null,
+    trusted: has('TRUSTED_OVERLAY'),
+    monitor: false,
+    coveredBy: null,
+    touched: false,
+  };
+
+  /* An overlay a third party put up, still opaque enough to be counted, is the
+     one thing in this dump that can stop a touch reaching the app under it
+     without appearing to do anything at all. */
+  node.occludes = occlusion === 'USE_OPACITY' && !node.trusted
+               && alpha !== null && alpha > INPUT_BIG_ALPHA;
+
+  node.search = `${node.title} ${handle || ''} ${node.appName || ''} ${config.join(' ')} ${
+    node.ownerUid === null ? '' : 'uid ' + node.ownerUid}`.toLowerCase();
+  node.badges = [];
+  /* What it is called and what colour it is drawn in wait for the pass that
+     knows about the other windows: whether this one is dropping its events
+     depends on whether anything is obscuring it. */
+  return node;
+}
+
+function inputClassify(n){
+  n.dropping = n.dropsAlways || (n.dropsIfObscured && !!n.obscuredBy);
+  n.family = n.spy ? 'input-spy'
+    : n.wallpaper ? 'input-wallpaper'
+    : n.dropping ? 'input-drop'
+    : !n.touchable ? 'input-untouchable'
+    : 'input-window';
+  n.typeLabel = n.spy ? 'spy'
+    : n.wallpaper ? 'wallpaper'
+    : n.dropping ? 'drops input'
+    : !n.touchable ? 'not touchable'
+    : 'takes touch';
+}
+
+/* The transform printed under a window line, which is the only part of a
+   window's block that is not on the line itself. */
+function inputTransform(lines, at) {
+  const out = [];
+  for (let i = at; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim() || !/^\s*(?:transform|applicationInfo|windowToken)/.test(line)) break;
+    out.push(line.trim());
+  }
+  return out;
+}
+
+function inputBadges(n) {
+  return [
+    ...(n.focused ? [['focus', 'badge-focus']] : []),
+    ...(n.touched ? [['being touched', 'badge-focus']] : []),
+    ...(n.spy ? [['spy', 'badge-comp']] : []),
+    ...(n.occludes ? [['untrusted overlay', 'badge-exit']] : []),
+    ...(n.dropsAlways ? [['drops input', 'badge-exit']]
+      : n.obscuredBy ? [['dropping: obscured', 'badge-exit']]
+      : n.dropsIfObscured ? [['drops if obscured', 'badge-comp']] : []),
+    ...(n.coveredBy ? [['covered', 'badge-exit']] : []),
+    ...(!n.visible ? [['not visible', 'badge-comp']] : []),
+    ...(n.hasToken === false ? [['no channel', 'badge-comp']] : []),
+  ];
+}
+
+/* ================ parse: dumpsys input — the reader's devices ============ */
+
+/* The same text read for what is plugged in rather than for what is drawn. A
+   device is printed twice: once by the event hub, which knows what the kernel
+   says it is and which files configure it, and once by the reader, which knows
+   what Android made of that — the sources it publishes, the axes it reports
+   and the mappers it was given. Both are keyed by the device id, so they are
+   read as one device with two halves. */
+
+const INPUT_DEV_HEAD_RE = /^(\s*)Device\s+(-?\d+):\s*(.*)$/;
+const INPUT_HUB_DEV_RE = /^(\s*)(-?\d+):\s+(\S.*)$/;
+const INPUT_MAPPER_RE = /^(\s*)([A-Z][\w ]*?(?:Input Mapper|InputMapper))\s*(\([^)]*\))?\s*:\s*$/;
+const INPUT_RANGE_RE = /^\s*([A-Z_]+):\s*source=(\S+?),\s*min=(\S+?),\s*max=(\S+?),\s*flat=(\S+?),\s*fuzz=(\S+?),\s*resolution=(\S+?)\s*$/;
+
+/* The lines of a device block that are worth a row of their own in the pane.
+   Anything else the block prints is still in the raw text under it. */
+function inputDevFields(block) {
+  const out = {};
+  for (const line of block.split('\n')) {
+    const m = line.match(/^\s*([A-Za-z][\w .]*?):\s*(.*?)\s*$/);
+    if (!m) continue;
+    const key = m[1].trim();
+    if (key in out) continue;
+    out[key] = m[2];
+  }
+  return out;
+}
+
+function parseInputDevicesDump(input) {
+  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const lines = text.split('\n');
+
+  /* The event hub's half, which is a list of `id: name` under `Devices:`
+     inside its own section. Read on its own pass so the far looser head shape
+     never gets a look at the rest of the dump. */
+  const hub = new Map();
+  const hubSpan = inputSection(lines, /^\s*Event Hub State\b/);
+  if (hubSpan) {
+    const listAt = lines.findIndex((l, i) =>
+      i > hubSpan.start && i < hubSpan.end && /^\s*Devices:\s*$/.test(l));
+    if (listAt >= 0) {
+      const end = hubSpan.end;
+      for (let i = listAt + 1; i < end; ) {
+        const m = lines[i].match(INPUT_HUB_DEV_RE);
+        if (!m) { i++; continue; }
+        const { text: block, next } = takeBlock(lines, i, m[1].length);
+        hub.set(+m[2], { name: m[3].trim(), fields: inputDevFields(block), raw: block, at: i + 1 });
+        i = next;
+      }
+    }
+  }
+
+  const devices = [];
+  const readerSpan = inputSection(lines, /^\s*Input Reader State\b/)
+                  || { start: -1, end: lines.length };
+  for (let i = readerSpan.start + 1; i < readerSpan.end; ) {
+    const m = lines[i].match(INPUT_DEV_HEAD_RE);
+    if (!m) { i++; continue; }
+    const { text: block, next } = takeBlock(lines, i, m[1].length);
+    const id = +m[2];
+    /* Some builds print the hub's devices in the reader's shape as well, so
+       the same device arrives twice. It is one device with two blocks. */
+    const had = devices.find((d) => d.id === id);
+    if (had) had.block += '\n' + block;
+    else devices.push({ id, name: m[3].trim(), block, at: i + 1, indent: m[1].length });
+    i = next;
+  }
+
+  /* A dump can hold the hub's half and not the reader's — a device the reader
+     has not configured yet is still a device that is plugged in. */
+  for (const [id, h] of hub) {
+    if (!devices.some((d) => d.id === id)) {
+      devices.push({ id, name: h.name, block: h.raw, at: h.at, indent: 0, hubOnly: true });
+    }
+  }
+  devices.sort((a, b) => a.id - b.id);
+
+  const nodes = [];
+  for (const dev of devices) {
+    const fields = inputDevFields(dev.block);
+    const h = hub.get(dev.id);
+    const hubFields = h ? h.fields : {};
+    const sources = inputSources(fields.Sources);
+    /* `EXTERNAL` is a class of its own, and `EXTERNAL_STYLUS` is a different
+       class that starts with the same word, so the classes are compared whole
+       rather than searched. */
+    const classes = String(hubFields.Classes || '').split(/\s*\|\s*/).map((c) => c.trim());
+    const kind = inputKind(sources.names.length ? sources.names : classes);
+    const external = fields.IsExternal === 'true' || classes.includes('EXTERNAL');
+    const enabled = hubFields.Enabled === undefined ? null : hubFields.Enabled === 'true';
+    const port = fields.AssociatedDisplayPort;
+    const viewport = dev.block.match(/Viewport:\s*displayId=(-?\d+)/)
+                  || dev.block.match(/AssociatedDisplay:\s*displayId=(-?\d+)/);
+    const displayId = viewport ? +viewport[1] : -1;
+
+    const ranges = [];
+    for (const line of dev.block.split('\n')) {
+      const r = line.match(INPUT_RANGE_RE);
+      if (r) ranges.push({ axis: r[1], source: r[2], min: r[3], max: r[4],
+                           flat: r[5], fuzz: r[6], resolution: r[7] });
+    }
+
+    const kb = fields.KeyboardType === undefined ? null : +fields.KeyboardType;
+    const hash = `input:dev:${dev.id}`;
+    const node = {
+      hash,
+      title: dev.name || `device ${dev.id}`,
+      displayId,
+      frame: null, frameSource: null,
+      z: -dev.id,
+      family: kind.family,
+      typeLabel: kind.label,
+      visible: enabled !== false,
+      focused: false,
+      at: dev.at,
+      raw: [dev.block, h && !dev.hubOnly ? h.raw : null].filter(Boolean).join('\n\n'),
+      search: `${dev.name} ${dev.id} ${sources.names.join(' ')} ${hubFields.Classes || ''} ${
+        hubFields.Path || ''} ${hubFields.Descriptor || ''}`.toLowerCase(),
+      device: true,
+      id: dev.id,
+      sources,
+      kind: kind.label,
+      external,
+      enabled,
+      keyboardType: kb,
+      keyboardLabel: kb === null ? null : (INPUT_KEYBOARD_TYPES[kb] || String(kb)),
+      generation: fields.Generation === undefined ? null : +fields.Generation,
+      hasMic: fields.HasMic === undefined ? null : fields.HasMic === 'true',
+      port: port === undefined || port === '<none>' ? null : port,
+      uniqueId: fields.AssociatedDisplayUniqueId === '<none>' ? null : fields.AssociatedDisplayUniqueId,
+      ranges,
+      hub: h ? hubFields : null,
+      fields,
+      badges: [
+        ...(enabled === false ? [['disabled', 'badge-exit']] : []),
+        ...(external ? [['external', 'badge-comp']] : []),
+        ...(displayId >= 0 ? [[`display ${displayId}`, 'badge-comp']] : []),
+        ...(dev.hubOnly ? [['not configured', 'badge-exit']] : []),
+      ],
+      parentHash: null,
+      ancestors: [],
+      subCount: 0,
+    };
+    nodes.push(node);
+
+    /* What the reader made of the device: one mapper per thing it decided the
+       device can do. They are the breakdown of a device rather than devices of
+       their own, so they hang under it. */
+    const devLines = dev.block.split('\n');
+    const ancestors = [{ hash, title: node.title }];
+    let kids = 0;
+    for (let i = 0; i < devLines.length; ) {
+      const mm = devLines[i].match(INPUT_MAPPER_RE);
+      if (!mm) { i++; continue; }
+      const { text: body, next } = takeBlock(devLines, i, mm[1].length);
+      const mapperName = mm[2].replace(/\s*Input ?Mapper$/, '');
+      kids++;
+      nodes.push({
+        hash: `${hash}:mapper:${kids}`,
+        title: mapperName,
+        displayId, frame: null, frameSource: null,
+        z: -dev.id + 0.001 * -kids,
+        family: 'input-mapper', typeLabel: 'mapper',
+        visible: true, focused: false,
+        at: dev.at + i,
+        raw: body,
+        search: `${dev.name} ${mapperName} ${body}`.toLowerCase(),
+        mapper: true,
+        mode: mm[3] ? mm[3].replace(/^\(|\)$/g, '').replace(/^mode\s*-\s*/, '') : null,
+        fields: inputDevFields(body),
+        lines: body.split('\n').length,
+        badges: [],
+        parentHash: hash, ancestors,
+        subCount: 0,
+      });
+      i = next;
+    }
+    node.subCount = kids;
+    node.meta = [
+      sources.names.length ? sources.names.join(' · ') : sources.raw || null,
+      kids ? `${kids} mapper${kids === 1 ? '' : 's'}` : null,
+    ].filter(Boolean).join(' · ');
+  }
+
+  const viewports = inputViewports(text);
+  const ids = [...new Set(nodes.map((n) => n.displayId))].sort((a, b) => a - b);
+  const displays = (ids.length ? ids : [-1]).map((id) => {
+    const own = nodes.filter((n) => n.displayId === id && n.device);
+    const v = viewports.get(id);
+    return {
+      id,
+      label: id < 0 ? 'no display' : `display ${id}`,
+      name: v && v.type ? inputCap(v.type) : null,
+      size: v && v.size ? v.size : { w: 0, h: 0 },
+      viewport: v || null,
+      insets: [], raw: '',
+      devices: own.length,
+      meta: own.length
+        ? `${own.length} device${own.length === 1 ? '' : 's'} · ${
+            [...new Set(own.map((n) => n.kind))].join(', ')}`
+        : 'no devices',
+    };
+  });
+
+  const globals = {
+    devices: nodes.filter((n) => n.device).length,
+    mappers: nodes.filter((n) => n.mapper).length,
+    external: nodes.filter((n) => n.device && n.external).length,
+    builtInKeyboard: (text.match(/^\s*BuiltInKeyboardId:\s*(-?\d+)\s*$/m) || [])[1] || null,
+    excluded: (text.match(/^\s*ExcludedDeviceNames:\s*(.+)$/m) || [])[1] || null,
+    viewports: viewports.size,
+    hub: hub.size,
+  };
+
+  return finaliseScene('inputdev', displays, nodes, globals);
+}
+
 /* ================ state and shared helpers ================ */
 const VIEW0 = { yaw:34, pitch:19, sep:38 };   // the view Reset goes back to
 /* One dump loaded is one document. Everything the user does to a dump — which
@@ -3991,6 +4789,15 @@ const FAMILY_COLORS = {
      method the dump did not record, and everything else. */
   'binder-caller':'#6b5b95', 'binder-call':'#2f6f8f',
   'binder-threw':'#a3352f', 'binder-unnamed':'#55636f',
+  /* An input window is coloured by what it does to a touch: takes it, watches
+     it, drops it, or is not in its way at all. */
+  'input-window':'#2f6f8f', 'input-spy':'#6b5b95', 'input-monitor':'#6b5b95',
+  'input-drop':'#a3352f', 'input-untouchable':'#55636f',
+  'input-wallpaper':'#8a8f6f',
+  /* An input device is coloured by what kind of thing it is. */
+  'input-touch':'#2e7d5b', 'input-key':'#2f6f8f', 'input-pointer':'#b4622a',
+  'input-stick':'#6b5b95', 'input-sensor':'#8a8f6f', 'input-device':'#55636f',
+  'input-mapper':'#55636f',
 };
 function colorFor(n){ return FAMILY_COLORS[n.family] || FAMILY_COLORS.other; }
 
@@ -4057,7 +4864,8 @@ function load(text, prefer, label){
       ? 'That looks like a dump Telltale knows, but it could not be read. ' + broke.join('; ')
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
         + '`dumpsys SurfaceFlinger`, `dumpsys package`, `dumpsys user`, '
-        + '`dumpsys car_service` and `dumpsys binder_calls_stats` output and ART '
+        + '`dumpsys input`, `dumpsys car_service` and `dumpsys binder_calls_stats` '
+        + 'output and ART '
         + 'thread dumps (`/data/anr/traces.txt`), '
         + 'or a bugreport containing any of them.');
   }
@@ -4146,6 +4954,7 @@ function openDoc(doc){
   $('empty').hidden = true;
   $('app').hidden = false;
   $('btnNew').hidden = false;
+  $('btnFind').hidden = false;
   $('loaderBack').hidden = true;
   clampPanes();
   syncUi();
@@ -4235,6 +5044,9 @@ function showLoader(){
   $('err').hidden = true;
   $('btnNew').hidden = true;
   const back = $('loaderBack');
+  /* The loader is reached from a workspace that still holds dumps as well as
+     from an empty one, and where it holds them they are still worth searching. */
+  $('btnFind').hidden = !S.docs.length;
   back.hidden = !S.docs.length;
   if(!back.hidden){
     const doc = currentDoc() || S.docs[S.docs.length - 1];
@@ -4295,6 +5107,8 @@ function reset(){
   $('app').hidden = true;
   $('empty').hidden = false;
   $('btnNew').hidden = true;
+  $('btnFind').hidden = true;
+  closeFind();
   $('err').hidden = true;
   document.body.classList.remove('show-detail','show-stack');
 }
@@ -4581,6 +5395,16 @@ function renderShow(){
        aria-pressed="${key === S.show}">${label}</button>`).join('');
 }
 
+/* The line under a row's name. Size and z rank are what a drawn dump puts
+   there; a tool with neither says what belongs there instead. The search
+   results want the same line under the same name, so it is spelled once. */
+function rowMeta(tool, w){
+  if(tool.rowMeta) return tool.rowMeta(w);
+  const f = w.frame;
+  const size = f ? `${rectW(f)}×${rectH(f)}${w.frameDerived ? '*' : ''}` : 'no frame';
+  return `${esc(w.typeLabel)} · ${size} · z ${w.zRank+1}/${w.zCount}`;
+}
+
 function renderList(){
   const list = $('wlist');
   const items = listItems();
@@ -4600,12 +5424,7 @@ function renderList(){
     return;
   }
   list.innerHTML = items.map(({ node: w, depth, context, kids, open, hiding }) => {
-    const f = w.frame;
-    const size = f ? `${rectW(f)}×${rectH(f)}${w.frameDerived ? '*' : ''}` : 'no frame';
-    /* Size and z rank are what a drawn dump puts on the row; a tool with
-       neither says what belongs there instead. */
-    const meta = S.tool.rowMeta ? S.tool.rowMeta(w)
-      : `${esc(w.typeLabel)} · ${size} · z ${w.zRank+1}/${w.zCount}`;
+    const meta = rowMeta(S.tool, w);
     /* Badges lead the row. A title is ellipsised when it does not fit — and
        the long ones are exactly the ones worth badging — so anything trailing
        the title is the first thing to disappear. Visibility goes first of all:
@@ -5093,10 +5912,17 @@ function renderFlat(){
 
   for(const w of paint){
     const dash = w.visible ? '' : ' stroke-dasharray="6 5"';
+    /* Some dumps state a second set of rects per node that is the point of
+       reading them — the part of an input window that actually takes touch.
+       Under the frame only the ones that are not simply the frame again are
+       worth drawing; the selected node gets all of them, in the redline,
+       below. */
+    const regions = S.tool.regions ? S.tool.regions(w, false) : null;
     parts.push(
       `<g style="color:${tintFor(w)}" class="${dimClass(w).trim()}">` +
       (w.visible ? `<rect class="pw-fill" ${rectAttrs(w.frame)}/>` : '') +
       `<rect class="pw-stroke"${dash} ${rectAttrs(w.frame)}/>` +
+      (regions || []).map(rc => `<rect class="pw-region" ${rectAttrs(rc)}/>`).join('') +
       `</g>`
     );
   }
@@ -5120,6 +5946,13 @@ function renderFlat(){
     const topLabelY = (f.t - off * 0.6 < vb.y + off) ? f.t + off * 1.1 : f.t - off * 0.6;
 
     parts.push(`<rect class="pw-sel" ${rectAttrs(f)}/>`);
+    /* The frame is marked in the redline; where the node also states the part
+       of itself that is live, that is marked too, so picking a window says
+       both where it is and where it can be touched. */
+    const selRegions = S.tool.regions ? S.tool.regions(sel, true) : null;
+    for(const rc of selRegions || []){
+      parts.push(`<rect class="pw-sel-region" ${rectAttrs(rc)}/>`);
+    }
     parts.push(
       `<path class="pw-lead" d="M${f.l} ${ly}L${f.r} ${ly}M${f.l} ${ly-off*0.5}L${f.l} ${ly+off*0.5}M${f.r} ${ly-off*0.5}L${f.r} ${ly+off*0.5}"/>` +
       `<text class="pw-label" x="${(f.l+f.r)/2}" y="${ly + (sy>0 ? off*1.2 : -off*0.5)}" text-anchor="middle">${rectW(f)}</text>` +
@@ -5168,6 +6001,7 @@ const dim = (t) => `<span style="color:var(--dim)">${t}</span>`;
 const DOC_SETS = {
   wm: { docs: () => FLAG_DOCS, src: 'WindowManager.LayoutParams' },
   sf: { docs: () => SF_FLAG_DOCS, src: 'layer_state_t' },
+  input: { docs: () => INPUT_CONFIG_DOCS, src: 'WindowInfo.InputConfig' },
 };
 const chip = (f, set) => DOC_SETS[set].docs()[f]
   ? `<span class="chip chip-doc" tabindex="0" data-flag="${esc(f)}" data-flagset="${set}">${esc(f)}</span>`
@@ -6249,6 +7083,330 @@ function binderUserDetail(d){
 }
 
 /* With nothing selected the pane is the place for the display itself. */
+/* ---------------- render: the details pane, input ---------------- */
+
+/* What each name in `inputConfig=` does to an event on its way to the window,
+   written from WindowInfo.InputConfig in AOSP. These are the whole of what the
+   dispatcher is told about a window, so a window behaving oddly is nearly
+   always one of them, and the names alone do not say enough: NOT_TOUCHABLE and
+   NO_INPUT_CHANNEL both mean no touches, for entirely different reasons. */
+const INPUT_CONFIG_DOCS = {
+  NO_INPUT_CHANNEL: { c: 'InputConfig.NO_INPUT_CHANNEL',
+    d: 'The window has no input channel, so nothing is ever delivered to it. It is in the dispatcher’s list for the area it covers, not for the events it takes.' },
+  NOT_VISIBLE: { c: 'InputConfig.NOT_VISIBLE',
+    d: 'The window is not visible, and an invisible window takes no input however it is otherwise configured.' },
+  NOT_FOCUSABLE: { c: 'InputConfig.NOT_FOCUSABLE',
+    d: 'The window can never hold focus, so it is never sent key events. Touches are a separate question — a bar is not focusable and still takes them.' },
+  NOT_TOUCHABLE: { c: 'InputConfig.NOT_TOUCHABLE',
+    d: 'The window takes no touch events. A touch inside it falls through to whatever is behind.' },
+  PREVENT_SPLITTING: { c: 'InputConfig.PREVENT_SPLITTING',
+    d: 'A multi-touch gesture is never split between this window and another: once this window has one pointer, it gets the rest of them too.' },
+  DUPLICATE_TOUCH_TO_WALLPAPER: { c: 'InputConfig.DUPLICATE_TOUCH_TO_WALLPAPER',
+    d: 'Touches delivered to this window are also copied to the wallpaper behind it.' },
+  IS_WALLPAPER: { c: 'InputConfig.IS_WALLPAPER',
+    d: 'The window is the wallpaper. It only sees touches another window duplicated to it.' },
+  PAUSE_DISPATCHING: { c: 'InputConfig.PAUSE_DISPATCHING',
+    d: 'Dispatching to this window is paused. Events queue up rather than being delivered, and the queue is what an ANR is eventually raised over.' },
+  TRUSTED_OVERLAY: { c: 'InputConfig.TRUSTED_OVERLAY',
+    d: 'The window is a trusted system overlay, so it is not counted when the dispatcher works out whether an untrusted window is obscuring a touch.' },
+  WATCH_OUTSIDE_TOUCH: { c: 'InputConfig.WATCH_OUTSIDE_TOUCH',
+    d: 'The window is told when a touch lands outside it, as an ACTION_OUTSIDE event carrying no coordinates.' },
+  SLIPPERY: { c: 'InputConfig.SLIPPERY',
+    d: 'A touch that starts here and moves off the window is handed to whatever it moved onto, instead of staying with this window for the rest of the gesture.' },
+  DISABLE_USER_ACTIVITY: { c: 'InputConfig.DISABLE_USER_ACTIVITY',
+    d: 'Input to this window does not count as user activity, so touching it does not keep the screen awake.' },
+  DROP_INPUT: { c: 'InputConfig.DROP_INPUT',
+    d: 'Every event aimed at this window is dropped. This is what the platform does to a window it has decided is unsafe to deliver to.' },
+  DROP_INPUT_IF_OBSCURED: { c: 'InputConfig.DROP_INPUT_IF_OBSCURED',
+    d: 'Events are dropped while any other window obscures this one, and delivered normally when nothing does.' },
+  SPY: { c: 'InputConfig.SPY',
+    d: 'The window is a spy: it is sent a copy of every touch on the display that it covers, and consumes none of them, so the window below still gets the touch.' },
+  INTERCEPTS_STYLUS: { c: 'InputConfig.INTERCEPTS_STYLUS',
+    d: 'The window takes stylus input that lands anywhere on the display, not only inside its own bounds.' },
+  CLONE: { c: 'InputConfig.CLONE',
+    d: 'The window is a clone of another one and mirrors what it shows.' },
+  GLOBAL_STYLUS_BLOCK_UNTRUSTED: { c: 'InputConfig.GLOBAL_STYLUS_BLOCK_UNTRUSTED',
+    d: 'Stylus input anywhere on the display is blocked from untrusted windows while this one is up.' },
+  SENSITIVE_FOR_PRIVACY: { c: 'InputConfig.SENSITIVE_FOR_PRIVACY',
+    d: 'The window shows something private, which is what screen capture and the input tracing both check before recording what happens in it.' },
+};
+
+/* Every rect the region is made of, written out. A region that comes to the
+   whole frame is still listed rather than summarised as `the frame again`: the
+   numbers are what gets compared against the window dump, and a pane that
+   hides them where they happen to agree is a pane you cannot compare from. */
+function inputRegionRows(n){
+  if(!n.regions.length){
+    return [['touchable region', n.regionText === null
+      ? dim('not printed') : `${none} ${dim('takes no touch')}`]];
+  }
+  const same = (rc) => n.frame && rc.l === n.frame.l && rc.t === n.frame.t
+                    && rc.r === n.frame.r && rc.b === n.frame.b;
+  const head = n.regions.length === 1 ? 'touchable region'
+    : `touchable region ${dim('×' + n.regions.length)}`;
+  return n.regions.map((rc, i) => [
+    i ? dim('&nbsp;') : head,
+    `${r(rc)}${same(rc) ? ' ' + dim('· the whole frame') : ''}`]);
+}
+
+function inputDetail(n){
+  const out = [];
+
+  if(n.monitor){
+    out.push(`<section class="dgroup"><h3>Global monitor</h3>${dl([
+      ['channel', esc(n.title)],
+      ['display', n.displayId],
+      n.ownerPid && ['owner pid', esc(n.ownerPid)],
+      n.ownerUid && ['owner uid', esc(n.ownerUid)],
+    ])}</section>`);
+    out.push(`<section class="dgroup"><h3>What it gets</h3>
+      <p style="margin:0">A global monitor is handed a copy of every touch on
+      its display before any window is considered, and it cannot consume one.
+      Nothing below it behaves differently for its being there — which is
+      why it is drawn nowhere and listed first.</p></section>`);
+    return out;
+  }
+
+  out.push(`<section class="dgroup"><h3>Identity</h3>${dl([
+    ['dispatch #', `${n.index} ${dim('(0 = topmost)')}`],
+    n.handle && ['handle', esc(n.handle)],
+    n.id !== null && ['window id', n.id],
+    n.appName && ['application', esc(n.appName)],
+    n.user && ['user', esc(n.user)],
+    n.ownerPid !== null && ['owner pid', n.ownerPid],
+    n.ownerUid !== null && ['owner uid', n.ownerUid],
+    ['display', n.displayId],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Geometry</h3>${dl([
+    n.frame && ['frame', r(n.frame)],
+    ...inputRegionRows(n),
+    n.globalScale !== null && n.globalScale !== 1 && ['global scale', n.globalScale],
+    n.alpha !== null && ['alpha', n.alpha],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Dispatch</h3>${dl([
+    ['takes touch', yn(n.touchable)],
+    ['takes keys', yn(!n.config.includes('NOT_FOCUSABLE') && n.visible)],
+    ['focused', yn(n.focused)],
+    ['being touched', yn(n.touched)],
+    ['visible', yn(n.visible)],
+    ['has a channel', yn(n.hasToken === null ? !n.config.includes('NO_INPUT_CHANNEL') : n.hasToken)],
+    n.timeout && ['dispatching timeout', esc(n.timeout)],
+    n.occlusion && ['touch occlusion', esc(n.occlusion)],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Input config</h3>${
+    n.config.length ? chips(n.config, 'input')
+      : `<p style="margin:0;color:var(--dim)">Nothing set: this window is
+         focusable, touchable and takes its events normally.</p>`}</section>`);
+
+  /* The two answers this dump is opened for. Both are about a window other
+     than the one being read, so both name it and go to it. */
+  if(n.coveredBy){
+    out.push(`<section class="dgroup"><h3>Covered</h3>
+      <p style="margin:0 0 6px">Every rect this window takes touch in sits
+      inside the touchable region of a window above it, so a touch aimed here
+      is delivered there instead.</p>
+      ${docLink(n.coveredBy.hash, n.coveredBy.title)}</section>`);
+  }
+  if(n.dropsIfObscured){
+    out.push(`<section class="dgroup"><h3>${n.obscuredBy ? 'Dropping its input' : 'Drops input if obscured'}</h3>
+      <p style="margin:0${n.obscuredBy ? ' 0 6px' : ''}">This window asked for
+      <b>DROP_INPUT_IF_OBSCURED</b>, so nothing is delivered to it while another
+      window the dispatcher counts as obscuring it is up.${n.obscuredBy
+        ? ' One is:' : ' Nothing in this dump is, so it is being delivered to normally.'}</p>
+      ${n.obscuredBy ? docLink(n.obscuredBy.hash, n.obscuredBy.title) : ''}</section>`);
+  }
+  if(n.occludes){
+    out.push(`<section class="dgroup"><h3>Untrusted overlay</h3>
+      <p style="margin:0">This window is not a trusted overlay, is
+      <b>${n.alpha}</b> opaque and asks for <b>USE_OPACITY</b>, so the
+      dispatcher counts it as obscuring what is under it. A window below that
+      asked for <b>DROP_INPUT_IF_OBSCURED</b>, or an app calling
+      <code>setFilterTouchesWhenObscured</code>, gets nothing while this is
+      up.</p></section>`);
+  }
+
+  return out;
+}
+
+function inputDisplayDetail(d){
+  const shown = d.nodes.filter(n => !n.monitor);
+  const takes = shown.filter(n => n.touchable);
+  const g = S.data.globals;
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>Display</h3>${dl([
+    ['size', d.size.w && d.size.h
+      ? `${d.size.w} × ${d.size.h} px${d.synthesised ? ' ' + dim('(inferred from the windows)') : ''}`
+      : dim('no viewport printed')],
+    d.viewportType && ['viewport', esc(d.viewportType)],
+    d.rotation !== null && d.rotation !== undefined && ['orientation', `${+d.rotation * 90}°`],
+    d.uniqueId && ['unique id', esc(d.uniqueId)],
+    ['windows', `${shown.length} ${dim(`· ${takes.length} take touch`)}`],
+    d.nodes.length - shown.length && ['global monitors', d.nodes.length - shown.length],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Focus</h3>${dl([
+    ['focused window', d.focus ? esc(d.focus) : none],
+    ['focused application', d.focusedApp ? esc(d.focusedApp) : none],
+    d.dispatchTimeout && ['dispatching timeout', esc(d.dispatchTimeout)],
+    g.focusedDisplay !== null && ['top display', `${esc(g.focusedDisplay)}${
+      String(d.id) === String(g.focusedDisplay) ? dim(' · this one') : ''}`],
+  ])}</section>`);
+
+  if(d.touch){
+    out.push(`<section class="dgroup"><h3>Touch in progress</h3>${dl([
+      ['down', yn(d.touch.down)],
+      ['split between windows', yn(d.touch.split)],
+      d.touch.deviceId && ['from device', esc(d.touch.deviceId)],
+      d.touch.source && ['source', esc(d.touch.source)],
+      d.touch.windows.length && ['going to', d.touch.windows.map(esc).join('<br>')],
+    ])}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>Dispatcher</h3>${dl([
+    ['dispatch enabled', yn(g.dispatchEnabled)],
+    ['dispatch frozen', yn(g.dispatchFrozen)],
+    ['input filter', yn(g.inputFilter)],
+    g.appSwitch && ['app switch', esc(g.appSwitch)],
+    g.interactive !== null && ['interactive', yn(g.interactive)],
+    g.keyRepeatTimeout && ['key repeat after', esc(g.keyRepeatTimeout)],
+    g.keyRepeatDelay && ['key repeat every', esc(g.keyRepeatDelay)],
+    g.pointerCapture && ['pointer capture', esc(g.pointerCapture)],
+    g.showTouches !== null && ['show touches', yn(g.showTouches)],
+  ])}</section>`);
+
+  if(g.dispatchFrozen || g.dispatchEnabled === false){
+    out.push(`<section class="dgroup"><h3>Nothing is being delivered</h3>
+      <p style="margin:0">The dispatcher is
+      ${g.dispatchFrozen ? '<b>frozen</b>' : '<b>disabled</b>'}, so every event
+      in this dump was queued rather than delivered, and no window below is
+      failing to handle anything. A freeze is normally the screen turning on or
+      a configuration change that has not finished.</p></section>`);
+  }
+  if(!g.named && g.windows){
+    out.push(`<section class="dgroup"><h3>An older dump</h3>
+      <p style="margin:0">This build printed <code>flags</code>,
+      <code>type</code> and <code>inputFeatures</code> as hex rather than the
+      <code>inputConfig</code> names. The bits that decide whether an event
+      reaches a window are read into those names, so the rows still read the
+      same; the ones that do not are left to the window reader, which has all
+      of them.</p></section>`);
+  }
+  return out;
+}
+
+/* ---------------- render: the details pane, input devices ---------------- */
+
+function inputDevDetail(n){
+  const out = [];
+
+  if(n.mapper){
+    const rows = Object.entries(n.fields)
+      .filter(([k]) => k !== n.title)
+      .slice(0, 24)
+      .map(([k, v]) => [esc(k), v ? esc(v) : dim('—')]);
+    out.push(`<section class="dgroup"><h3>${esc(n.title)} mapper</h3>${dl([
+      n.mode && ['mode', esc(n.mode)],
+      ...rows,
+    ])}</section>`);
+    out.push(`<section class="dgroup"><h3>Raw block</h3><pre class="raw">${esc(n.raw)}</pre></section>`);
+    return out;
+  }
+
+  const hub = n.hub || {};
+  out.push(`<section class="dgroup"><h3>Identity</h3>${dl([
+    ['device id', n.id],
+    ['name', esc(n.title)],
+    ['kind', `<span style="color:${tintFor(n)}">■</span> ${esc(n.typeLabel)}`],
+    ['external', yn(n.external)],
+    n.enabled !== null && ['enabled', yn(n.enabled)],
+    n.generation !== null && ['generation', n.generation],
+    hub.Descriptor && ['descriptor', esc(hub.Descriptor)],
+    hub.Path && ['path', esc(hub.Path)],
+    hub.Location && ['location', esc(hub.Location)],
+    hub.Identifier && ['identifier', esc(hub.Identifier)],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>What it reports</h3>${dl([
+    ['sources', n.sources.names.length
+      ? flatChips(n.sources.names)
+      : (n.sources.raw ? esc(n.sources.raw) : none)],
+    n.sources.mask !== null && ['source mask', `0x${n.sources.mask.toString(16).padStart(8, '0')}`],
+    n.keyboardLabel && ['keyboard', esc(n.keyboardLabel)],
+    n.hasMic !== null && ['microphone', yn(n.hasMic)],
+    n.ranges.length && ['axes', flatChips(n.ranges.map(a => a.axis))],
+  ])}</section>`);
+
+  if(n.ranges.length){
+    out.push(`<section class="dgroup"><h3>Motion ranges</h3>${dl(
+      n.ranges.map(a => [esc(a.axis),
+        `${esc(a.min)} … ${esc(a.max)} ${dim(`· ${esc(a.source)}`)}${
+          +a.resolution ? dim(` · ${esc(a.resolution)}/unit`) : ''}${
+          +a.fuzz ? dim(` · fuzz ${esc(a.fuzz)}`) : ''}`]))}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>Where it goes</h3>${dl([
+    ['display', n.displayId < 0
+      ? `${none} ${dim('every display, or wherever focus is')}`
+      : n.displayId],
+    n.port && ['associated port', esc(n.port)],
+    n.uniqueId && ['associated display', esc(n.uniqueId)],
+  ])}</section>`);
+
+  if(hub.KeyLayoutFile || hub.KeyCharacterMapFile || hub.ConfigurationFile){
+    out.push(`<section class="dgroup"><h3>Configured by</h3>${dl([
+      hub.KeyLayoutFile && ['key layout', esc(hub.KeyLayoutFile)],
+      hub.KeyCharacterMapFile && ['character map', esc(hub.KeyCharacterMapFile)],
+      hub.ConfigurationFile && ['idc', esc(hub.ConfigurationFile)],
+    ])}</section>`);
+  }
+
+  if(n.subCount){
+    out.push(`<section class="dgroup"><h3>Mappers</h3>
+      <p style="margin:0">${n.subCount} mapper${n.subCount === 1 ? '' : 's'} under
+      this device, one for each thing the reader decided it can do. They are the
+      rows under it in the list.</p></section>`);
+  }
+  return out;
+}
+
+function inputDevGroupDetail(d){
+  const devs = d.nodes.filter(n => n.device);
+  const g = S.data.globals;
+  const kinds = new Map();
+  for(const n of devs) kinds.set(n.typeLabel, (kinds.get(n.typeLabel) || 0) + 1);
+
+  const out = [];
+  out.push(`<section class="dgroup"><h3>${d.id < 0 ? 'Not tied to a display' : 'Display ' + d.id}</h3>${dl([
+    ['devices', devs.length],
+    kinds.size && ['kinds', [...kinds].map(([k, c]) =>
+      `${esc(k)}${c > 1 ? dim(' ×' + c) : ''}`).join(', ')],
+    d.viewport && d.viewport.size && ['viewport', `${d.viewport.size.w} × ${d.viewport.size.h} px`],
+    d.viewport && d.viewport.uniqueId && ['unique id', esc(d.viewport.uniqueId)],
+  ])}</section>`);
+
+  if(d.id < 0){
+    out.push(`<section class="dgroup"><h3>What that means</h3>
+      <p style="margin:0">These devices name no display. A key goes wherever
+      focus is, and a pointer to whichever display it was last on, so on a
+      one-screen device this is the normal place for everything that is not a
+      touchscreen.</p></section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>The reader</h3>${dl([
+    ['devices in this dump', g.devices],
+    g.external && ['external', g.external],
+    ['mappers', g.mappers],
+    g.builtInKeyboard && ['built-in keyboard id', esc(g.builtInKeyboard)],
+    g.excluded && ['excluded names', esc(g.excluded)],
+    g.viewports && ['viewports', g.viewports],
+  ])}</section>`);
+  return out;
+}
+
 function renderDisplayDetail(){
   const d = currentDisplay();
   const noun = S.tool.groupNoun || 'display';
@@ -6490,6 +7648,84 @@ const TOOLS = [
     detail: binderDetail,
     displayDetail: binderUserDetail,
   },
+  {
+    id: 'input',
+    name: 'Input windows',
+    /* The dispatcher's own list of what is on each display, in the order it
+       walks it. It is the window layout again, seen from the only place that
+       decides where a touch goes. */
+    layout: 'spatial',
+    noun: 'window', nouns: 'windows', groupNoun: 'display',
+    show: 'touchable',    // the question is where a touch goes, not what is up
+    filterHint: 'Filter by window, application, uid or config',
+    /* Half the windows in this list are not in a touch's way at all: the
+       wallpaper, a drop target, an invisible shade, a window with no channel.
+       They are the ones to bury, and `keys` is the other half of the same
+       question for a keyboard rather than a finger. */
+    shows: {
+      touchable: { label:'take touch', test:(n) => n.touchable },
+      keys:      { label:'take keys',  test:(n) => n.visible && !n.monitor
+                                                && !n.config.includes('NOT_FOCUSABLE') },
+      all:       { label:'all',        test:() => true },
+    },
+    /* Every window in this dump is one the dispatcher is considering, so a
+       green v on all of them says nothing; what is worth reading off a row is
+       whether it takes the touch, which is its colour and its badges. */
+    visBadge: false,
+    rowMeta: (n) => n.monitor
+      ? 'every touch on this display'
+      : [n.frame ? `${rectW(n.frame)}×${rectH(n.frame)}` : 'no frame',
+         n.touchable ? (n.regions.length > 1 ? `${n.regions.length} touch rects` : 'takes touch')
+                     : 'no touch',
+         n.config.length ? esc(n.config.join(' · ')) : null,
+        ].filter(Boolean).join(' \u00b7 '),
+    /* The sheet draws the frame; the region inside it is what the window
+       actually takes touch in, and where the two differ that difference is the
+       answer. Under the frame a region that is the frame again is not drawn
+       twice; the selected window is marked with all of its rects, because the
+       point of picking one is to be shown what it takes. */
+    regions: (n, selected) => !n.regions || !n.frame ? []
+      : selected ? n.regions
+      : n.regions.filter(rc => rc.l !== n.frame.l || rc.t !== n.frame.t
+                            || rc.r !== n.frame.r || rc.b !== n.frame.b),
+    detect: (t) => (/^\s*Input Dispatcher State:/m.test(t) ? 3 : 0)
+                 + (/^\s*Input Reader State/m.test(t) ? 2 : 0)
+                 + (/INPUT MANAGER \(dumpsys input\)/.test(t) ? 2 : 0)
+                 + (/\btouchableRegion=/.test(t) ? 1 : 0),
+    parse: parseInputDump,
+    detail: inputDetail,
+    displayDetail: inputDisplayDetail,
+  },
+  {
+    id: 'inputdev',
+    name: 'Input devices',
+    layout: 'list',        // a device is a thing plugged in, not a thing drawn
+    noun: 'device', nouns: 'devices', groupNoun: 'display',
+    show: 'devices',       // the mappers are the breakdown, not the list
+    visBadge: false,
+    filterHint: 'Filter by device, source, path or descriptor',
+    shows: {
+      devices:  { label:'devices',  test:(n) => n.device },
+      external: { label:'external', test:(n) => n.device && n.external },
+      all:      { label:'all',      test:() => true },
+    },
+    startCollapsed: (n) => !!n.device,
+    openOnShow: true,
+    rowMeta: (n) => n.mapper
+      ? [n.mode && esc(n.mode), `${n.lines} line${n.lines === 1 ? '' : 's'}`]
+          .filter(Boolean).join(' \u00b7 ')
+      : [`id ${n.id}`,
+         n.sources.names.length ? esc(n.sources.names.join(' · ')) : esc(n.sources.raw || 'no sources'),
+         n.keyboardLabel && n.keyboardLabel !== 'none' ? `${esc(n.keyboardLabel)} keys` : null,
+        ].filter(Boolean).join(' \u00b7 '),
+    detect: (t) => (/^\s*Input Reader State/m.test(t) ? 3 : 0)
+                 + (/^\s*Event Hub State:/m.test(t) ? 2 : 0)
+                 + (/INPUT MANAGER \(dumpsys input\)/.test(t) ? 2 : 0)
+                 + (/^\s*Motion Ranges:\s*$/m.test(t) ? 1 : 0),
+    parse: parseInputDevicesDump,
+    detail: inputDevDetail,
+    displayDetail: inputDevGroupDetail,
+  },
 ];
 
 /* What `blocking` keeps: main, the chain behind it, a deadlock, and anything
@@ -6535,6 +7771,154 @@ function select(hash){
   revealAncestors(hash);
   renderList(); renderPlan(); renderDetail();
   if(window.matchMedia && window.matchMedia('(max-width:1080px)').matches) document.body.classList.add('show-detail');
+}
+
+/* ---------------- search across the workspace ---------------- */
+
+/* The filter above the list searches the dump you are reading. This searches
+   the desk: every dump open in the workspace, every reader that recognised
+   each of them, and every display inside each reader — because what you are
+   after is often in the one you are not looking at. A bugreport read by four
+   parsers is four sets of names over the same text, and none of them is the
+   wrong place to look.
+
+   It matches the way the filter matches, on the same precomputed `search`
+   string a parser hangs on every node, so picking a result and typing the same
+   query into that dump's own filter list the same rows. That is what lets a
+   result be handed over as a filter rather than as a scroll position. */
+const FIND_PER_GROUP = 25;   // hits listed per reader per display
+let findFlat = [];           // every listed hit, in the order they are drawn
+let findAt = 0;              // which one the keyboard is on
+
+function findHits(q){
+  const needle = q.trim().toLowerCase();
+  const groups = [], flat = [];
+  let total = 0, capped = false;
+  if(!needle) return { groups, flat, total, capped, needle };
+  for(const doc of S.docs){
+    for(const entry of doc.found){
+      for(const display of entry.scene.displays){
+        const hits = [];
+        let n = 0;
+        for(const node of display.nodes){
+          if(!(node.search || '').includes(needle)) continue;
+          n++; total++;
+          /* A group is capped rather than dropped: a query that matches four
+             hundred packages should still say which dumps hold them. */
+          if(hits.length < FIND_PER_GROUP){
+            const hit = { doc, entry, display, node };
+            hits.push(hit); flat.push(hit);
+          }
+        }
+        if(!hits.length) continue;
+        if(n > hits.length) capped = true;
+        groups.push({ doc, entry, display, hits, more:n - hits.length });
+      }
+    }
+  }
+  return { groups, flat, total, capped, needle };
+}
+
+/* Where a run of hits came from: the dump's tab label, the reader that found
+   them, and — only where the reader found more than one — which display. */
+function findSrc(g){
+  const ds = g.entry.scene.displays;
+  const where = ds.length < 2 ? ''
+    : ' · ' + esc(g.display.label || `${g.entry.tool.groupNoun || 'display'} ${g.display.id}`);
+  return `<b>${esc(g.doc.label)}</b> · ${esc(g.entry.tool.name)}${where}`;
+}
+
+function renderFind(){
+  const res = findHits($('findBox').value);
+  findFlat = res.flat;
+  if(findAt >= findFlat.length) findAt = 0;
+  const box = $('findResults'), foot = $('findFoot');
+  const keys = '↑↓ to move · ⏎ to open · esc to close';
+
+  if(!res.needle){
+    const n = S.docs.length;
+    box.innerHTML = `<p class="find-empty">Type to search every dump in <b>${
+      esc(currentSpace().name)}</b>.</p>`;
+    foot.hidden = false;
+    foot.textContent = `${n} ${n === 1 ? 'dump' : 'dumps'} on this desk · ${keys}`;
+    return;
+  }
+  if(!findFlat.length){
+    box.innerHTML = `<p class="find-empty">Nothing in this workspace matches <b>${
+      esc(res.needle)}</b>.</p>`;
+    foot.hidden = true;
+    return;
+  }
+
+  let at = 0;
+  box.innerHTML = res.groups.map(g => {
+    const rows = g.hits.map(h => `<button class="find-hit" type="button" role="option"
+        data-at="${at++}" aria-selected="${at - 1 === findAt}">
+      <span class="find-title">${esc(h.node.title)}</span>
+      <span class="find-meta">${rowMeta(g.entry.tool, h.node)}</span>
+    </button>`).join('');
+    return `<div class="find-group"><p class="find-src">${findSrc(g)}</p>${rows}${
+      g.more ? `<p class="find-more">and ${g.more} more</p>` : ''}</div>`;
+  }).join('');
+
+  foot.hidden = false;
+  foot.textContent = `${res.total} ${res.total === 1 ? 'match' : 'matches'}${
+    res.capped ? ', the first few of each listed' : ''} · ${keys}`;
+  scrollFindIntoView();
+}
+
+function scrollFindIntoView(){
+  const el = $('findResults').querySelector('.find-hit[aria-selected="true"]');
+  if(el) el.scrollIntoView({ block:'nearest' });
+}
+
+/* Moving the pick repaints the attribute rather than the list: the results do
+   not change while you walk them, and a redraw would lose the scroll. */
+function moveFind(step){
+  if(!findFlat.length) return;
+  findAt = (findAt + step + findFlat.length) % findFlat.length;
+  for(const el of $('findResults').querySelectorAll('.find-hit')){
+    el.setAttribute('aria-selected', String(+el.dataset.at === findAt));
+  }
+  scrollFindIntoView();
+}
+
+function openFind(){
+  if(!S.docs.length) return;
+  findAt = 0;
+  $('find').hidden = false;
+  const box = $('findBox');
+  /* Whatever the open dump is already filtered by is the likeliest thing to
+     want across the rest of them. */
+  box.value = S.filter || '';
+  renderFind();
+  box.focus();
+  box.select();
+}
+
+function closeFind(){ $('find').hidden = true; }
+
+/* Picking a result is four moves in the order they have to happen: open the
+   dump, switch it to the reader that found the hit — which starts that reader
+   over, so the display and the filter can only be set after it — then select
+   the node. The query is left on as the dump's own filter, so what was found
+   is what is on screen rather than one row in two hundred. */
+function goToHit(hit){
+  const q = $('findBox').value.trim();
+  closeFind();
+  if(hit.doc.id !== S.docId) openDoc(hit.doc);
+  if(hit.doc.ui.toolId !== hit.entry.tool.id) showTool(hit.entry);
+  S.displayId = hit.display.id;
+  S.filter = q;
+  syncUi();
+  select(hit.node.hash);
+  revealRow(hit.node.hash);
+}
+
+/* A row can be found and still be below the fold. */
+function revealRow(hash){
+  const row = $('wlist').querySelector(`.wrow[data-hash="${CSS.escape(String(hash))}"]`);
+  if(row) row.scrollIntoView({ block:'nearest' });
 }
 
 /* ================ events ================ */
@@ -6978,7 +8362,38 @@ restorePanes();
 window.addEventListener('resize', refit);
 if(window.ResizeObserver) new ResizeObserver(refit).observe($('sheet'));
 
+$('btnFind').addEventListener('click', openFind);
+$('findBox').addEventListener('input', () => { findAt = 0; renderFind(); });
+$('findBox').addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowDown'){ e.preventDefault(); moveFind(1); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); moveFind(-1); }
+  else if(e.key === 'Enter'){
+    e.preventDefault();
+    const hit = findFlat[findAt];
+    if(hit) goToHit(hit);
+  }
+});
+$('findResults').addEventListener('click', (e) => {
+  const b = e.target.closest('.find-hit');
+  if(!b) return;
+  const hit = findFlat[+b.dataset.at];
+  if(hit) goToHit(hit);
+});
+/* Clicking the page behind the card is asking for the page back. On click
+   rather than mousedown: the backdrop is still what the release lands on, so
+   the same gesture cannot go on to pick a row underneath. */
+$('find').addEventListener('click', (e) => { if(e.target === $('find')) closeFind(); });
+
 document.addEventListener('keydown', (e) => {
+  /* While the card is up it owns the keyboard: nothing below it should be
+     stepping tabs or clearing selections under a search. */
+  if(!$('find').hidden){
+    if(e.key === 'Escape'){ e.preventDefault(); closeFind(); }
+    return;
+  }
+  if((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === 'k' || e.key === 'K')){
+    e.preventDefault(); openFind();
+  }
   if(e.key === 'Escape'){
     if(armedClose !== null) disarmClose();
     else if(!$('empty').hidden && S.docs.length) openDoc(currentDoc() || S.docs[S.docs.length - 1]);

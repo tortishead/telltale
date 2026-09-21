@@ -30,11 +30,16 @@ const CASES = [
   { name: 'car-service-sample', parse: 'parseCarServiceDump' },
   { name: 'user-sample', parse: 'parseUserDump' },
   { name: 'binder-sample', parse: 'parseBinderCallsStatsDump' },
+  /* One text, two readers: `dumpsys input` prints the dispatcher's windows
+     and the reader's devices one after the other, and each is its own scene.
+     A case names the fixture it reads when that is not its own name. */
+  { name: 'input-sample', parse: 'parseInputDump' },
+  { name: 'input-devices', file: 'input-sample', parse: 'parseInputDevicesDump' },
 ];
 
-/* Every fixture is `tests/fixtures/<name>.txt` and every golden is
-   `tests/golden/<name>.txt`, so a case is a name and a parser. */
-const fixture = (c) => dir(`fixtures/${c.name}.txt`);
+/* Every golden is `tests/golden/<name>.txt` and every fixture is
+   `tests/fixtures/<name>.txt` unless the case names another one. */
+const fixture = (c) => dir(`fixtures/${c.file || c.name}.txt`);
 
 if (UPDATE && !existsSync(dir('golden'))) mkdirSync(dir('golden'));
 
@@ -66,11 +71,13 @@ const OWN = {
   parsePackageDump: ['package-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],
+  parseInputDump: ['input-sample'],
+  parseInputDevicesDump: ['input-sample'],
 };
 
 test('each parser recognises its own dumps and no others', () => {
   const texts = Object.fromEntries(
-    CASES.map((c) => [c.name, readFileSync(fixture(c), 'utf8')]));
+    CASES.map((c) => [c.file || c.name, readFileSync(fixture(c), 'utf8')]));
 
   for (const [fn, own] of Object.entries(OWN)) {
     for (const [name, text] of Object.entries(texts)) {

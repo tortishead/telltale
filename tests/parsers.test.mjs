@@ -17,6 +17,8 @@ import {
   userFlagNames, userListUnder, TYPE_INTS,
   parseBinderCallsStatsDump,
   binderCaller, binderCall, binderTxn, binderTime, binderBytes,
+  parseInputDump, parseInputDevicesDump,
+  inputSources, inputWindowName, inputRegion, inputConfigOf, inputViewports,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -794,4 +796,229 @@ test('this parser says no to every other dump it is shown', () => {
                       'car-service-sample', 'user-sample']) {
     assert.equal(parseBinderCallsStatsDump(read(`fixtures/${name}.txt`)).ok, false, name);
   }
+});
+
+
+/* ---------------- dumpsys input: the dispatcher's windows ---------------- */
+
+test('a window name gives up its handle in either spelling', () => {
+  assert.deepEqual(inputWindowName('7f31ac0 StatusBar'),
+    { hash: '7f31ac0', user: null, title: 'StatusBar' });
+  assert.deepEqual(inputWindowName('Window{7f31ac0 u0 StatusBar}'),
+    { hash: '7f31ac0', user: 'u0', title: 'StatusBar' });
+  assert.deepEqual(inputWindowName('PointerEventDispatcher0'),
+    { hash: null, user: null, title: 'PointerEventDispatcher0' });
+});
+
+test('a touchable region is the rects it is made of, and empty is not none', () => {
+  assert.deepEqual(inputRegion('[0,0][1080,136]'), [{ l: 0, t: 0, r: 1080, b: 136 }]);
+  assert.equal(inputRegion('[0,0][960,1080]|[960,0][1920,540]').length, 2);
+  assert.deepEqual(inputRegion('<empty>'), []);
+  assert.deepEqual(inputRegion(undefined), []);
+});
+
+/* The older builds print three hex fields where the newer ones print one list
+   of names, and every pane below reads the names. */
+test('an older window line is read into the newer inputConfig names', () => {
+  const old = "    0: name='Window{7f31ac0 u0 StatusBar}', displayId=0, "
+    + 'visible=false, flags=0x00040018, type=0x000007d5, layer=21000, '
+    + 'frame=[0,0][1080,136], scale=1.000000, touchableRegion=[0,0][1080,136], '
+    + 'inputFeatures=0x00000004, ownerPid=1802, ownerUid=10045';
+  const got = inputConfigOf(old);
+  assert.ok(got.includes('NOT_FOCUSABLE'));
+  assert.ok(got.includes('NOT_TOUCHABLE'));
+  assert.ok(got.includes('WATCH_OUTSIDE_TOUCH'));
+  assert.ok(got.includes('SPY'), 'inputFeatures is where a spy used to be said');
+  assert.ok(got.includes('NOT_VISIBLE'), 'visible=false is the older NOT_VISIBLE');
+
+  // and a line that states the names is taken at its word, hex or not
+  assert.deepEqual(inputConfigOf("0: name='x', inputConfig=SPY | NOT_FOCUSABLE, frame=[0,0][1,1]"),
+    ['SPY', 'NOT_FOCUSABLE']);
+});
+
+test('viewports are where the display sizes come from', () => {
+  const v = inputViewports(read('fixtures/input-sample.txt'));
+  assert.deepEqual(v.get(0).size, { w: 1080, h: 2400 });
+  assert.deepEqual(v.get(2).size, { w: 1920, h: 1080 });
+  assert.equal(v.get(2).type, 'EXTERNAL');
+  assert.equal(v.get(0).uniqueId, 'local:4619827259835644672');
+});
+
+test('the input sample parses to the two displays it dispatches to', () => {
+  const s = parseInputDump(read('fixtures/input-sample.txt'));
+  assert.equal(s.ok, true);
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 2]);
+  assert.deepEqual(s.displays.map((d) => d.size), [{ w: 1080, h: 2400 }, { w: 1920, h: 1080 }]);
+
+  const win = (t) => s.nodes.find((n) => n.title.includes(t));
+  assert.equal(win('StatusBar').touchable, true);
+  assert.equal(win('ShellDropTarget').touchable, false, 'NOT_TOUCHABLE takes no touch');
+  assert.equal(win('QuickstepLauncher').touchable, false, 'nor does a window with no channel');
+  assert.equal(win('ImageWallpaper').family, 'input-wallpaper');
+  assert.equal(win('Cluster spy').spy, true);
+
+  // the dispatcher walks its list from the top, so index 0 is the topmost
+  const d0 = s.displays[0].nodes.filter((n) => !n.monitor);
+  assert.deepEqual(d0.map((n) => n.index), [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+});
+
+test('focus and the touch in progress are joined to the windows they name', () => {
+  const s = parseInputDump(read('fixtures/input-sample.txt'));
+  const focused = s.nodes.filter((n) => n.focused);
+  assert.equal(focused.length, 2, 'one per display, and the dump states both');
+  assert.ok(focused.every((n) => n.title.includes('Settings') || n.title.includes('Cluster')));
+  assert.equal(s.nodes.find((n) => n.touched).title.includes('Settings'), true);
+  assert.equal(s.displays[0].touch.down, true);
+});
+
+/* The answer this dump is opened for: a touch that went somewhere other than
+   where it was aimed. */
+test('a window whose touch area sits under another is reported covered', () => {
+  const s = parseInputDump(read('fixtures/input-sample.txt'));
+  const settings = s.nodes.find((n) => n.title.includes('SettingsHomepageActivity'));
+  assert.ok(settings.coveredBy, 'the overlay above it covers all of it');
+  assert.ok(settings.coveredBy.title.includes('tracker'));
+  assert.equal(settings.coveredBy.occludes, true, 'and it is not a trusted overlay');
+
+  // the bars are covered by nothing: nothing above them is in their way
+  assert.equal(s.nodes.find((n) => n.title === 'StatusBar').coveredBy, null);
+});
+
+test('a spy is not in the way, because a spy consumes nothing', () => {
+  const s = parseInputDump(read('fixtures/input-sample.txt'));
+  const cluster = s.nodes.find((n) => n.title.includes('ClusterActivity'));
+  assert.equal(cluster.coveredBy, null, 'the spy over it covers it and takes nothing');
+  assert.equal(cluster.regions.length, 2, 'and its own touch area is two rects');
+});
+
+/* DROP_INPUT_IF_OBSCURED says what happens under a condition, not what is
+   happening, so which of the two a window is in has to be worked out. */
+test('a window drops input if obscured only when something obscures it', () => {
+  const text = read('fixtures/input-sample.txt');
+  const quiet = parseInputDump(text).nodes.find((n) => n.title.includes('ClusterActivity'));
+  assert.equal(quiet.dropsIfObscured, true);
+  assert.equal(quiet.obscuredBy, null, 'the spy above it is a trusted overlay');
+  assert.equal(quiet.dropping, false);
+  assert.equal(quiet.family, 'input-window');
+
+  // the same window with an untrusted, still-visible overlay over it: the spy
+  // above it stops being a trusted overlay and starts counting as opaque
+  const untrusted = text.split('\n').map((l) => l.includes('Cluster spy')
+    ? l.replace(' | TRUSTED_OVERLAY', '')
+       .replace('alpha=1.00', 'alpha=0.50')
+       .replace('touchOcclusionMode=BLOCK_UNTRUSTED', 'touchOcclusionMode=USE_OPACITY')
+    : l).join('\n');
+  const covered = parseInputDump(untrusted)
+    .nodes.find((n) => n.title.includes('ClusterActivity'));
+  assert.ok(covered.obscuredBy, 'now something untrusted is in front of it');
+  assert.equal(covered.obscuredBy.title, 'Cluster spy');
+  assert.equal(covered.dropping, true);
+  assert.equal(covered.family, 'input-drop');
+});
+
+test('a global monitor is listed, drawn nowhere, and sits above the windows', () => {
+  const s = parseInputDump(read('fixtures/input-sample.txt'));
+  const mon = s.nodes.find((n) => n.monitor);
+  assert.equal(mon.title, 'PointerEventDispatcher0');
+  assert.equal(mon.frame, null);
+  assert.equal(mon.zRank, 0, 'it sees a touch before any window does');
+  assert.equal(s.globals.monitors, 1);
+});
+
+test('a dispatcher that is frozen or off is reported as such', () => {
+  const text = read('fixtures/input-sample.txt').replace('DispatchFrozen: false', 'DispatchFrozen: true');
+  assert.equal(parseInputDump(text).globals.dispatchFrozen, true);
+  assert.equal(parseInputDump(read('fixtures/input-sample.txt')).globals.dispatchFrozen, false);
+});
+
+/* ---------------- dumpsys input: the reader's devices ---------------- */
+
+test('a source mask is read into the sources it holds', () => {
+  assert.deepEqual(inputSources('0x00001002').names, ['TOUCHSCREEN']);
+  assert.deepEqual(inputSources('0x00000301').names, ['KEYBOARD', 'DPAD']);
+  assert.equal(inputSources('0x00001002').mask, 0x1002);
+  // a build that prints the names is taken at its word
+  assert.deepEqual(inputSources('MOUSE | MOUSE_RELATIVE').names, ['MOUSE', 'MOUSE_RELATIVE']);
+});
+
+test('the devices are the two halves of each one, joined on the device id', () => {
+  const s = parseInputDevicesDump(read('fixtures/input-sample.txt'));
+  assert.equal(s.ok, true);
+  const devs = s.nodes.filter((n) => n.device);
+  assert.deepEqual(devs.map((n) => n.id), [-1, 3, 4, 7]);
+
+  const touch = devs.find((n) => n.id === 4);
+  assert.equal(touch.kind, 'touchscreen');
+  assert.equal(touch.hub.Path, '/dev/input/event4', 'the hub half');
+  assert.equal(touch.hub.ConfigurationFile, '/vendor/usr/idc/goodix_ts.idc');
+  assert.deepEqual(touch.sources.names, ['TOUCHSCREEN', 'STYLUS'], 'the reader half');
+  assert.equal(touch.ranges.length, 5);
+  assert.equal(touch.ranges[0].axis, 'X');
+  assert.equal(touch.ranges[0].max, '1079.000');
+});
+
+test('EXTERNAL_STYLUS is a class of its own, not a device that is external', () => {
+  const s = parseInputDevicesDump(read('fixtures/input-sample.txt'));
+  const touch = s.nodes.find((n) => n.id === 4);
+  assert.equal(touch.external, false, 'its classes say EXTERNAL_STYLUS, not EXTERNAL');
+  assert.equal(s.nodes.find((n) => n.id === 7).external, true);
+});
+
+test('a device that names a display is grouped under it, and the rest are not', () => {
+  const s = parseInputDevicesDump(read('fixtures/input-sample.txt'));
+  assert.deepEqual(s.displays.map((d) => d.id), [-1, 0]);
+  assert.equal(s.displays[0].label, 'no display');
+  assert.deepEqual(s.displays[1].nodes.filter((n) => n.device).map((n) => n.id), [4]);
+});
+
+test('the mappers hang under the device the reader gave them to', () => {
+  const s = parseInputDevicesDump(read('fixtures/input-sample.txt'));
+  const mappers = s.nodes.filter((n) => n.mapper);
+  assert.equal(mappers.length, 4);
+  const touch = mappers.find((n) => n.title === 'Touch');
+  assert.equal(touch.parentHash, 'input:dev:4');
+  assert.equal(touch.mode, 'direct');
+  assert.equal(touch.fields.DeviceType, 'touchScreen');
+});
+
+test('both input readers say no to every other dump they are shown', () => {
+  for (const name of ['window-sample', 'sf-sample', 'package-sample', 'anr-sample',
+                      'car-service-sample', 'user-sample', 'binder-sample']) {
+    assert.equal(parseInputDump(read(`fixtures/${name}.txt`)).ok, false, name);
+    assert.equal(parseInputDevicesDump(read(`fixtures/${name}.txt`)).ok, false, name);
+  }
+});
+
+/* The way these dumps actually arrive: every service in one file, one after
+   another. A reader that scans to the end of the file rather than to the end
+   of its own section reads the next service's lines as its own. */
+test('both input readers read their own section of a bugreport, and no more', () => {
+  const own = read('fixtures/input-sample.txt');
+  const bugreport = [
+    '========================================================',
+    '== dumpstate: 2026-09-21 11:02:33',
+    '========================================================',
+    '------ WINDOW MANAGER WINDOWS (dumpsys window windows) ------',
+    read('fixtures/window-sample.txt'),
+    '--------- 0.421s was the duration of dumpsys window',
+    '------ INPUT (dumpsys input) ------',
+    own,
+    '--------- 0.102s was the duration of dumpsys input',
+    '------ PACKAGE MANAGER (dumpsys package) ------',
+    read('fixtures/package-sample.txt'),
+    '--------- 1.882s was the duration of dumpsys package',
+  ].join('\n');
+
+  const alone = parseInputDump(own);
+  const inside = parseInputDump(bugreport);
+  assert.equal(inside.nodes.length, alone.nodes.length);
+  assert.deepEqual(inside.displays.map((d) => d.id), alone.displays.map((d) => d.id));
+
+  const devsAlone = parseInputDevicesDump(own).nodes.filter((n) => n.device);
+  const devsInside = parseInputDevicesDump(bugreport).nodes.filter((n) => n.device);
+  assert.deepEqual(devsInside.map((n) => n.id), devsAlone.map((n) => n.id));
+
+  // and the readers either side of it still see their own dumps whole
+  assert.equal(parseWindowDump(bugreport).nodes.length, parseWindowDump(read('fixtures/window-sample.txt')).nodes.length);
+  assert.equal(parsePackageDump(bugreport).ok, true);
 });

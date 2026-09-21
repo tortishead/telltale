@@ -1,0 +1,212 @@
+INPUT MANAGER (dumpsys input)
+
+Input Manager State:
+  Interactive: true
+  System UI Lights Out: false
+  Pointer Speed: 0
+  Pointer Gestures Enabled: true
+  Show Touches: false
+  Pointer Capture: disabled, seq=0
+Event Hub State:
+  BuiltInKeyboardId: -2
+  Devices:
+    -1: Virtual
+      Classes: KEYBOARD | DPAD | VIRTUAL
+      Path: <virtual>
+      Enabled: true
+      Descriptor: a718a782d34e41c9ccc22d18e12d5b1b
+      Location: 
+      ControllerNumber: 0
+      UniqueId: 
+      Identifier: bus=0x0000, vendor=0x0000, product=0x0000, version=0x0000
+      KeyLayoutFile: /system/usr/keylayout/Generic.kl
+      KeyCharacterMapFile: /system/usr/keychars/Virtual.kcm
+      ConfigurationFile: 
+      VideoDevice: <none>
+    3: gpio-keys
+      Classes: KEYBOARD
+      Path: /dev/input/event1
+      Enabled: true
+      Descriptor: 9ba1c8a44b5d0cbb27b1ef5f0a35f4c1
+      Location: gpio-keys/input0
+      ControllerNumber: 0
+      UniqueId: 
+      Identifier: bus=0x0019, vendor=0x0001, product=0x0001, version=0x0100
+      KeyLayoutFile: /vendor/usr/keylayout/gpio-keys.kl
+      KeyCharacterMapFile: /system/usr/keychars/Generic.kcm
+      ConfigurationFile: 
+      VideoDevice: <none>
+    4: goodix_ts
+      Classes: TOUCH | TOUCH_MT | EXTERNAL_STYLUS
+      Path: /dev/input/event4
+      Enabled: true
+      Descriptor: 4f2ac6e9a1d37b5c9be0b7c0be6b6a02
+      Location: goodix_ts/input0
+      ControllerNumber: 0
+      UniqueId: 
+      Identifier: bus=0x0018, vendor=0x27c6, product=0x0111, version=0x0000
+      KeyLayoutFile: 
+      KeyCharacterMapFile: 
+      ConfigurationFile: /vendor/usr/idc/goodix_ts.idc
+      VideoDevice: <none>
+    7: Logitech USB Receiver Mouse
+      Classes: CURSOR | EXTERNAL
+      Path: /dev/input/event7
+      Enabled: true
+      Descriptor: 8b6e1dd2e3f1cbb2a1a2dd77a2be4501
+      Location: usb-xhci-hcd.0.auto-1.2/input1
+      ControllerNumber: 0
+      UniqueId: 
+      Identifier: bus=0x0003, vendor=0x046d, product=0xc52b, version=0x0111
+      KeyLayoutFile: /system/usr/keylayout/Generic.kl
+      KeyCharacterMapFile: /system/usr/keychars/Generic.kcm
+      ConfigurationFile: 
+      VideoDevice: <none>
+Input Reader State:
+  Device -1: Virtual
+    Generation: 2
+    IsExternal: false
+    AssociatedDisplayPort: <none>
+    AssociatedDisplayUniqueId: <none>
+    HasMic:     false
+    Sources: 0x00000301
+    KeyboardType: 3
+    Keyboard Input Mapper:
+      Parameters:
+        OrientationAware: false
+        HandlesKeyRepeat: false
+      KeyboardType: 3
+      Orientation: 0
+      KeyDowns: 0 keys currently down
+      MetaState: 0x0
+      DownTime: 0
+  Device 3: gpio-keys
+    Generation: 4
+    IsExternal: false
+    AssociatedDisplayPort: <none>
+    AssociatedDisplayUniqueId: <none>
+    HasMic:     false
+    Sources: KEYBOARD
+    KeyboardType: 1
+    Keyboard Input Mapper:
+      Parameters:
+        OrientationAware: false
+        HandlesKeyRepeat: true
+      KeyboardType: 1
+      Orientation: 0
+      KeyDowns: 0 keys currently down
+      MetaState: 0x0
+      DownTime: 0
+  Device 4: goodix_ts
+    Generation: 6
+    IsExternal: false
+    AssociatedDisplayPort: 0
+    AssociatedDisplayUniqueId: <none>
+    HasMic:     false
+    Sources: TOUCHSCREEN | STYLUS
+    KeyboardType: 0
+    Motion Ranges:
+      X: source=TOUCHSCREEN, min=0.000, max=1079.000, flat=0.000, fuzz=0.000, resolution=4.000
+      Y: source=TOUCHSCREEN, min=0.000, max=2399.000, flat=0.000, fuzz=0.000, resolution=4.000
+      PRESSURE: source=TOUCHSCREEN, min=0.000, max=1.000, flat=0.000, fuzz=0.000, resolution=0.000
+      SIZE: source=TOUCHSCREEN, min=0.000, max=1.000, flat=0.000, fuzz=0.000, resolution=0.000
+      TOOL_MAJOR: source=TOUCHSCREEN, min=0.000, max=255.000, flat=0.000, fuzz=0.000, resolution=0.000
+    Touch Input Mapper (mode - direct):
+      Parameters:
+        GestureMode: multi-touch
+        DeviceType: touchScreen
+        AssociatedDisplay: displayId=0, isExternal=false
+        OrientationAware: true
+      Raw Touch Axes:
+        X: min=0, max=1079, flat=0, fuzz=0, resolution=4
+        Y: min=0, max=2399, flat=0, fuzz=0, resolution=4
+        Pressure: min=0, max=255, flat=0, fuzz=0, resolution=0
+      Viewport: displayId=0, orientation=0, logicalFrame=[0, 0, 1080, 2400], physicalFrame=[0, 0, 1080, 2400], deviceSize=[1080, 2400]
+      SurfaceWidth: 1080px
+      SurfaceHeight: 2400px
+      Translation and Scaling Factors:
+        XScale: 1.000
+        YScale: 1.000
+      Last Cooked Button State: 0x00000000
+      CurrentMotionAborted: false
+  Device 7: Logitech USB Receiver Mouse
+    Generation: 9
+    IsExternal: true
+    AssociatedDisplayPort: <none>
+    AssociatedDisplayUniqueId: <none>
+    HasMic:     false
+    Sources: MOUSE | MOUSE_RELATIVE
+    KeyboardType: 0
+    Motion Ranges:
+      X: source=MOUSE, min=0.000, max=1919.000, flat=0.000, fuzz=0.000, resolution=0.000
+      Y: source=MOUSE, min=0.000, max=1079.000, flat=0.000, fuzz=0.000, resolution=0.000
+    Cursor Input Mapper:
+      Parameters:
+        HasAssociatedDisplay: true
+        Mode: pointer
+        OrientationAware: false
+      Orientation: 0
+      ButtonState: 0x00000000
+      Down: false
+      DownTime: 0
+  Configuration:
+    ExcludedDeviceNames: []
+    VirtualKeyQuietTime: 0.0ms
+    PointerVelocityControlParameters: scale=1.000, lowThreshold=500.000, highThreshold=3000.000, acceleration=3.000
+    PointerGesture:
+      Enabled: true
+      QuietInterval: 100.0ms
+      DragMinSwitchSpeed: 50.0px/s
+    Viewports:
+      Viewport INTERNAL: displayId=0, uniqueId=local:4619827259835644672, port=0, orientation=0, logicalFrame=[0, 0, 1080, 2400], physicalFrame=[0, 0, 1080, 2400], deviceSize=[1080, 2400], isActive=[1]
+      Viewport EXTERNAL: displayId=2, uniqueId=local:4619827551948147201, port=1, orientation=0, logicalFrame=[0, 0, 1920, 1080], physicalFrame=[0, 0, 1920, 1080], deviceSize=[1920, 1080], isActive=[1]
+Input Dispatcher State:
+  DispatchEnabled: true
+  DispatchFrozen: false
+  InputFilterEnabled: false
+  FocusedDisplayId: 0
+  FocusedApplications:
+    displayId=0, name='ActivityRecord{2b7b0e0 u0 com.android.settings/.homepage.SettingsHomepageActivity t42}', dispatchingTimeout=5000.000ms
+    displayId=2, name='ActivityRecord{c41e9a2 u0 com.android.car.cluster/.ClusterActivity t11}', dispatchingTimeout=5000.000ms
+  FocusedWindows:
+    displayId=0, name='2f04c1a com.android.settings/com.android.settings.homepage.SettingsHomepageActivity'
+    displayId=2, name='9d1b077 com.android.car.cluster/com.android.car.cluster.ClusterActivity'
+  TouchStatesByDisplay:
+    displayId=0, down=true, split=true, deviceId=4, source=0x00001002
+      Windows:
+        0 : name='2f04c1a com.android.settings/com.android.settings.homepage.SettingsHomepageActivity', pointerIds=0x1, targetFlags=FOREGROUND | DISPATCH_AS_IS
+  Display: 0
+    Windows:
+      0: name='6b1d33e ShellDropTarget', id=61, displayId=0, inputConfig=NOT_FOCUSABLE | NOT_TOUCHABLE, alpha=1.00, frame=[0,0][1080,2400], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=<empty>, ownerPid=1802, ownerUid=10045, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      1: name='a0c9f21 NotificationShade', id=57, displayId=0, inputConfig=NOT_VISIBLE | NOT_FOCUSABLE | NOT_TOUCHABLE | PREVENT_SPLITTING, alpha=1.00, frame=[0,0][1080,2400], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=<empty>, ownerPid=1802, ownerUid=10045, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      2: name='7f31ac0 StatusBar', id=55, displayId=0, inputConfig=NOT_FOCUSABLE | PREVENT_SPLITTING, alpha=1.00, frame=[0,0][1080,136], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=[0,0][1080,136], ownerPid=1802, ownerUid=10045, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      3: name='d5a7e14 NavigationBar0', id=58, displayId=0, inputConfig=NOT_FOCUSABLE, alpha=1.00, frame=[0,2256][1080,2400], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=[0,2256][1080,2400], ownerPid=1802, ownerUid=10045, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      4: name='3e0aa55 com.example.tracker.Overlay', id=71, displayId=0, inputConfig=NOT_FOCUSABLE | WATCH_OUTSIDE_TOUCH, alpha=0.01, frame=[0,136][1080,2256], globalScale=1.000000, applicationInfo.name=com.example.tracker, applicationInfo.token=<null>, touchableRegion=[0,136][1080,2256], ownerPid=4471, ownerUid=10233, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=USE_OPACITY
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      5: name='2f04c1a com.android.settings/com.android.settings.homepage.SettingsHomepageActivity', id=64, displayId=0, inputConfig=DUPLICATE_TOUCH_TO_WALLPAPER, alpha=1.00, frame=[0,136][1080,2256], globalScale=1.000000, applicationInfo.name=com.android.settings/com.android.settings.homepage.SettingsHomepageActivity, applicationInfo.token=<null>, touchableRegion=[0,136][1080,2256], ownerPid=5210, ownerUid=1000, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      6: name='b77c802 InputMethod', id=66, displayId=0, inputConfig=NOT_VISIBLE | NOT_FOCUSABLE, alpha=1.00, frame=[0,1704][1080,2400], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=<empty>, ownerPid=6023, ownerUid=10122, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      7: name='4a91b60 com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher', id=44, displayId=0, inputConfig=NO_INPUT_CHANNEL | NOT_FOCUSABLE | NOT_TOUCHABLE, alpha=1.00, frame=[0,0][1080,2400], globalScale=1.000000, applicationInfo.name=com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher, applicationInfo.token=<null>, touchableRegion=<empty>, ownerPid=3311, ownerUid=10144, dispatchingTimeout=5000ms, hasToken=false, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      8: name='c0a4d19 com.android.systemui.wallpapers.ImageWallpaper', id=31, displayId=0, inputConfig=NOT_FOCUSABLE | NOT_TOUCHABLE | IS_WALLPAPER, alpha=1.00, frame=[0,0][1080,2400], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=<empty>, ownerPid=1802, ownerUid=10045, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+  Display: 2
+    Windows:
+      0: name='5c2e109 Cluster spy', id=88, displayId=2, inputConfig=NOT_FOCUSABLE | SPY | TRUSTED_OVERLAY, alpha=1.00, frame=[0,0][1920,1080], globalScale=1.000000, applicationInfo.name=, applicationInfo.token=<null>, touchableRegion=[0,0][1920,1080], ownerPid=1802, ownerUid=1000, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+      1: name='9d1b077 com.android.car.cluster/com.android.car.cluster.ClusterActivity', id=90, displayId=2, inputConfig=DROP_INPUT_IF_OBSCURED, alpha=1.00, frame=[0,0][1920,1080], globalScale=1.000000, applicationInfo.name=com.android.car.cluster/com.android.car.cluster.ClusterActivity, applicationInfo.token=<null>, touchableRegion=[0,0][960,1080]|[960,0][1920,540], ownerPid=7710, ownerUid=10188, dispatchingTimeout=5000ms, hasToken=true, touchOcclusionMode=BLOCK_UNTRUSTED
+        transform=(1.00, 0.00, 0.00) (0.00, 1.00, 0.00)
+  Global monitors on display 0:
+    monitor 0: 'PointerEventDispatcher0', ownerPid=1631, ownerUid=1000
+  ReplacedKeys: <empty>
+  InboundQueue: <empty>
+  OutboundQueue: <empty>
+  AppSwitch: not pending
+  Configuration:
+    KeyRepeatDelay: 50.0ms
+    KeyRepeatTimeout: 500.0ms
