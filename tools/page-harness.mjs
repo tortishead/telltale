@@ -86,6 +86,15 @@ return {
      of it — the one piece of the page that decides which rows exist. */
   match: (q, asRegex) => textMatcher(q, asRegex),
   filter: (q, asRegex) => { S.filter = q; S.regex = !!asRegex; return visibleNodes(); },
+  /* The desk-wide search: what it finds across every tab, and what opening one
+     of those hits does to the page. Both are the page's own functions, called
+     the way the page calls them, box and regex switch included. */
+  find: (q, asRegex) => { findRegex = !!asRegex; return findHits(q); },
+  goTo: (hit, q, asRegex) => {
+    findRegex = !!asRegex;
+    document.getElementById('findBox').value = q === undefined ? '' : q;
+    goToHit(hit);
+  },
   error: () => { const e = document.getElementById('err'); return e.hidden ? null : e.textContent; },
   note: () => { const e = document.getElementById('loaderNote'); return e.hidden ? null : e.textContent; },
 };
@@ -102,6 +111,9 @@ export function openPage(){
     matchMedia: win.matchMedia, getComputedStyle: () => ({ getPropertyValue: () => '' }),
     ResizeObserver: class { observe(){} unobserve(){} disconnect(){} },
     location: win.location, history: win.history,
+    /* Browser-only, and the page uses it to build the selector that finds a
+       row again after the desk-wide search jumps to one. */
+    CSS: { escape: (s) => String(s).replace(/[^\w-]/g, (c) => '\\' + c) },
     addEventListener: () => {}, removeEventListener: () => {},
     alert: () => {},
   };

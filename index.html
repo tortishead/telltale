@@ -3421,11 +3421,35 @@ function carNode(h, parent, ancestors, hashOf, lines, z) {
   };
 }
 
+/* What opens this dump: the heading the car service dumper writes before
+   anything else. A bugreport is every dumpsys one after another in one file,
+   and a heading here is a line between stars — which SurfaceFlinger prints
+   for every layer (`* Layer 0x...`), so unscoped, a phone's layers become a
+   couple of thousand car services. The dump is read inside its own part of
+   the file, the way the input and user readers read theirs. */
+const CAR_SECTION_START = /^\s*\*+\s*Dump (?:car service|versions?|all services)\s*\*+\s*$/i;
+const CAR_SECTION_END = /^(?:-{3,}|={3,}|DUMP OF SERVICE\b|\S.*\(dumpsys \S+\)\s*$)/;
+
+function carSection(lines) {
+  const start = lines.findIndex((l) => CAR_SECTION_START.test(l));
+  /* Nothing said where it starts, so all of it is the dump — a pasted
+     `dumpsys car_service` of one service prints no such heading. */
+  if (start < 0) return { start: 0, end: lines.length };
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (CAR_SECTION_END.test(lines[i])) { end = i; break; }
+  }
+  return { start, end };
+}
+
 function parseCarServiceDump(input) {
   const lines = String(input || '').replace(/\r\n?/g, '\n').split('\n');
+  /* Indices stay the file's own, so a section still says which line of the
+     bugreport it came off; only the span being read is narrowed. */
+  const { start: from, end: to } = carSection(lines);
 
   const heads = [];
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = from; i < to; i++) {
     const m = lines[i].match(CAR_HEAD_RE);
     if (!m) continue;
     const { name, trail } = carHeadName(m[3]);
@@ -3436,7 +3460,7 @@ function parseCarServiceDump(input) {
   /* A section holds what it printed before the next heading started, so a
      service's own block is its preamble and its subsections are theirs. */
   heads.forEach((h, i) => {
-    const end = i + 1 < heads.length ? heads[i + 1].line : lines.length;
+    const end = i + 1 < heads.length ? heads[i + 1].line : to;
     h.body = (h.trail ? [h.trail] : []).concat(lines.slice(h.line + 1, end));
     h.raw = lines.slice(h.line, end).join('\n').replace(/\n+$/, '');
     h.own = end - h.line;
@@ -3466,11 +3490,11 @@ function parseCarServiceDump(input) {
   const versions = heads.find((h) => /^dump versions?$/i.test(h.name));
   const globals = {
     versions: versions ? carPairs(versions.body) : [],
-    propNames: carPropNames(lines.join('\n')),
+    propNames: carPropNames(lines.slice(from, to).join('\n')),
     services: nodes.filter((n) => !n.parentHash).length,
     sections: nodes.length,
     failed: nodes.filter((n) => n.failed).map((n) => n.hash),
-    lines: lines.length,
+    lines: to - from,
   };
 
   /* Nothing in a car_service dump belongs to a display or a user, so there is
@@ -3548,22 +3572,54 @@ function userNode(head, body, opts) {
   };
 }
 
+/* A bugreport is every dumpsys one after another in one file, and this parser
+   is handed all of it. This dump marks its sections with nothing but a line at
+   no indent, which every other dump in the file has too — so unscoped, a
+   SurfaceFlinger layer and a package become sections of `dumpsys user`. The
+   dump is therefore read inside its own part of the file, the way the input
+   reader reads its two halves: from the first line this dump prints to the
+   next thing that is plainly a heading — a bugreport rule, or the line naming
+   the next service.
+
+   The two openers are matched at no indent only. `Current user:` is printed
+   indented by other services, and `Users:` by the package dump; neither of
+   those is this dump starting. */
+const USER_SECTION_START = /^(?:Current user:\s*-?\d+\s*|Users:\s*)$/;
+const USER_SECTION_END = /^(?:-{3,}|={3,}|DUMP OF SERVICE\b|\S.*\(dumpsys \S+\)\s*$)/;
+
+function userSection(lines) {
+  const start = lines.findIndex((l) => USER_SECTION_START.test(l));
+  /* A dump that opens with neither is not a bugreport's; read all of it, which
+     is what a pasted `dumpsys user` wants. */
+  if (start < 0) return { start: 0, end: lines.length };
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (USER_SECTION_END.test(lines[i])) { end = i; break; }
+  }
+  return { start, end };
+}
+
 function parseUserDump(input) {
   const lines = String(input || '').replace(/\r\n?/g, '\n').split('\n');
+  /* Indices stay the file's own throughout, so a row still says which line of
+     the bugreport it came off; only the span being read is narrowed. */
+  const { start: from, end: to } = userSection(lines);
+  const text = lines.slice(from, to).join('\n');
   const current = (() => {
-    const m = lines.join('\n').match(/^\s*Current user:\s*(-?\d+)/m);
+    const m = text.match(/^\s*Current user:\s*(-?\d+)/m);
     return m ? +m[1] : null;
   })();
 
   /* The sections are the lines at no indent. Each one holds what is indented
      under it, up to the next. */
   const heads = [];
-  lines.forEach((line, i) => {
+  for (let i = from; i < to; i++) {
+    const line = lines[i];
     if (line.trim() && indentOf(line) === 0) heads.push({ at: i, title: line.trim() });
-  });
+  }
   if (!heads.length) return finaliseScene('user', [], [], {});
   heads.forEach((h, i) => {
-    const end = i + 1 < heads.length ? heads[i + 1].at : lines.length;
+    const end = i + 1 < heads.length ? heads[i + 1].at : to;
     h.body = lines.slice(h.at + 1, end);
   });
 
@@ -3616,7 +3672,6 @@ function parseUserDump(input) {
 
   const users = nodes.filter((n) => n.user);
   const types = nodes.filter((n) => n.userType);
-  const text = lines.join('\n');
   const one = (re) => { const m = text.match(re); return m ? m[1].trim() : null; };
   const globals = {
     current,
@@ -3630,7 +3685,7 @@ function parseUserDump(input) {
     deviceManaged: one(/^\s*Device managed:\s*(\S+)/m),
     visible: one(/^\s*Visible users:\s*(.+)$/m),
     warnings: one(/^\s*(\d+) warnings\s*$/m),
-    lines: lines.length,
+    lines: to - from,
   };
 
   const display = {

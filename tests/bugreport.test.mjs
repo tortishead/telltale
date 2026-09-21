@@ -232,3 +232,173 @@ test('the .* switch reads the box as a pattern without the slashes', async () =>
   const m = page.match('[', true);
   assert.equal(m.ok, false, 'and a pattern that will not compile still says so');
 });
+
+/* ---------- the desk-wide search ---------- */
+
+/* The filter above the list searches the dump being read; Search in the top
+   bar searches the whole desk. On a bugreport that is the difference between
+   one reader's answer and ten of them, which is the only reason the feature
+   exists — the thing being looked for is usually in the tab that is not open.
+   These are the page's own `findHits` and `goToHit`, so what is asserted is
+   what ⌘K does. */
+
+async function desk() {
+  const page = openPage();
+  const { text, label, from } = await page.readDump(zipFile());
+  await page.load(text, null, from, label);
+  return page;
+}
+
+test('the search walks every tab on the desk, not the one in front', async () => {
+  const page = await desk();
+  assert.equal(page.docs().length, EXPECTED.length, 'ten tabs to search');
+
+  const res = page.find('system');
+  assert.ok(res.total > 0);
+  assert.ok(res.groups.length > 1, 'the hits came out of more than one tab');
+
+  /* A group says which tab, which reader and — where the reader found more
+     than one — which display, so two groups can share a tab. */
+  const readers = new Set(res.groups.map((g) => g.entry.tool.id));
+  assert.ok(readers.size > 1, 'and out of more than one reader');
+  assert.ok([...readers].every((id) => EXPECTED.includes(id)));
+
+  assert.ok(res.flat.every((h) => /system/i.test(h.node.search)),
+    'every listed hit matches, on the same text the filter matches on');
+  assert.equal(res.flat.length,
+    res.groups.reduce((n, g) => n + g.hits.length, 0),
+    'the flat list the keyboard walks is the groups, in the order they are drawn');
+});
+
+test('a group is capped rather than dropped, and the count says so', async () => {
+  const page = await desk();
+  /* Matches everything a parser hung any text on, which is far past the cap in
+     at least one reader. */
+  const res = page.find('/./');
+  assert.ok(res.capped, 'some group had more than it listed');
+  assert.ok(res.groups.some((g) => g.more > 0));
+  assert.ok(res.total > res.flat.length,
+    'the total counts what was found, not what was listed');
+  for (const g of res.groups) assert.ok(g.hits.length <= 25);
+});
+
+test('the search reads a pattern the way the filter does', async () => {
+  const page = await desk();
+
+  assert.equal(page.find('activity.*', false).total, 0,
+    'off, the dots and the star are themselves');
+  assert.ok(page.find('activity.*', true).total > 0, 'on, it is a pattern');
+  assert.ok(page.find('/^activity/').total > 0, 'and slashes need no switch');
+
+  const bad = page.find('(', true);
+  assert.equal(bad.total, 0);
+  assert.ok(bad.bad && /Unterminated group/.test(bad.bad.error),
+    'a pattern that will not compile says what is wrong with it');
+});
+
+test('opening a hit lands on its tab, its display, and leaves the query on', async () => {
+  const page = await desk();
+  const res = page.find('system');
+  const hit = res.flat.find((h) => h.doc.id !== page.S.docId);
+  assert.ok(hit, 'something was found in a tab that is not the open one');
+
+  page.goTo(hit, 'system', false);
+  assert.equal(page.S.docId, hit.doc.id, 'that tab is open');
+  assert.equal(page.S.toolId, hit.entry.tool.id, 'showing the reader that found it');
+  assert.equal(page.S.displayId, hit.display.id, 'on the display it came from');
+  assert.equal(page.S.selected, hit.node.hash, 'with the row selected');
+  assert.equal(page.S.filter, 'system', 'and the query left on as that tab filter');
+  assert.equal(page.S.regex, false);
+
+  /* A query read as a pattern has to keep being read as one on the way over,
+     or the tab lands filtered to nothing by the thing that was just found. */
+  const pat = page.find('/^activity/', false);
+  const p = pat.flat[0];
+  page.goTo(p, '/^activity/', false);
+  assert.equal(page.S.filter, '/^activity/');
+  assert.ok(page.filter(page.S.filter, page.S.regex).some((n) => n.hash === p.node.hash),
+    'and the row that was found is one of the rows the filter leaves');
+});
+
+/* ---------- a reader stays inside its own section ---------- */
+
+/* Every parser is handed the whole bugreport, so one that marks its sections
+   with something another dump also prints will read that other dump as its
+   own. Two did: `dumpsys user` calls any line at no indent a section, which is
+   every heading in the file; `dumpsys car_service` calls any line between
+   stars a service, which is every SurfaceFlinger layer (`* Layer 0x...`). A
+   phone's bugreport then opened the Users tab on nine thousand sections of
+   SurfaceFlinger and package. Both now read inside their own part of the file,
+   and these say so by the line numbers the rows came off. */
+
+/* Where a `------ NAME (dumpsys x) ------` section runs from and to. Taken out
+   of the fixture rather than written down, so editing the fixture cannot leave
+   the bounds behind. */
+function section(text, head) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => l.includes(head));
+  assert.ok(start >= 0, `the fixture has a ${head} section`);
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^-{3,}/.test(lines[i])) { end = i; break; }
+  }
+  return { start: start + 1, end: end + 1 };   // 1-based, the way a row counts
+}
+
+async function tabOf(id) {
+  const page = openPage();
+  const { text, label, from } = await page.readDump(zipFile());
+  await page.load(text, null, from, label);
+  const doc = page.docs().find((d) => d.found[0].tool.id === id);
+  assert.ok(doc, `${id} opened a tab`);
+  return { page, text, scene: doc.found[0].scene };
+}
+
+test('the user dump is read inside its own section, not the whole bugreport', async () => {
+  const { text, scene } = await tabOf('user');
+  const { start, end } = section(text, '------ USERS (dumpsys user)');
+
+  assert.ok(scene.nodes.length > 0);
+  for (const n of scene.nodes) {
+    assert.ok(n.at >= start && n.at <= end,
+      `${n.title} came off line ${n.at}, outside the users section ${start}-${end}`);
+  }
+
+  const titles = scene.nodes.map((n) => n.title);
+  assert.ok(titles.includes('Users'));
+  assert.ok(titles.some((t) => t.startsWith('user 0')), 'the users are in there');
+  assert.ok(titles.some((t) => /^User types/.test(t)), 'and so are the types');
+  assert.ok(!titles.some((t) => /Layer |DisplayDevice|Hardware Composer|WINDOW MANAGER/.test(t)),
+    'and nothing another dump printed');
+
+  assert.equal(scene.globals.current, 10, 'the current user is this section own');
+  assert.ok(scene.globals.lines < 400, 'and the dump is as long as the section, not the file');
+});
+
+test('the car dump is read inside its own section, not every line between stars', async () => {
+  const { text, scene } = await tabOf('car');
+  const { start, end } = section(text, '------ CAR SERVICE (dumpsys car_service)');
+
+  assert.ok(scene.nodes.length > 0);
+  for (const n of scene.nodes) {
+    assert.ok(n.at >= start && n.at <= end,
+      `${n.title} came off line ${n.at}, outside the car section ${start}-${end}`);
+  }
+  assert.ok(!scene.nodes.some((n) => /^Layer 0x|^BufferStateLayer|^EffectLayer/.test(n.title)),
+    'a SurfaceFlinger layer is not a car service');
+});
+
+/* A dump pasted on its own carries none of a bugreport's headings, and has to
+   go on being read from its first line to its last. */
+test('a dump on its own is still read whole', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/user-sample.txt'), 'utf8'), 'user', 'user.txt');
+  const users = page.docs()[0].found[0].scene;
+  assert.equal(users.nodes[0].at, 3, 'the first section is the one the file opens with');
+  assert.ok(users.nodes.some((n) => n.title === 'Whitelisted packages per user type'),
+    'and the last one is still read');
+
+  const car = openPage();
+  await car.load(readFileSync(dir('fixtures/car-service-sample.txt'), 'utf8'), 'car', 'car.txt');
+  assert.ok(car.docs()[0].found[0].scene.nodes.length > 5);
+});

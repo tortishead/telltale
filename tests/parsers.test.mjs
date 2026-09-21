@@ -1160,3 +1160,90 @@ test('this parser says no to every dump that is not a log', () => {
     assert.equal(parseLogcatDump(read(`fixtures/${name}.txt`)).ok, false, name);
   }
 });
+
+/* ---------------- a reader stays inside its own section ---------------- */
+
+/* Both of these parsers mark their sections with something another dump in a
+   bugreport also prints, and both are handed the whole file. A car heading is
+   a line between stars, which is what SurfaceFlinger prints for every layer;
+   a user section is a line at no indent, which is every heading there is. So
+   each reads within its own part of the file, from the heading that opens it
+   to the next bugreport rule or the line naming the next service. */
+
+const BUGREPORT_BEFORE = [
+  '------ SURFACEFLINGER (dumpsys SurfaceFlinger) ------',
+  'Display 0 (HWC display 0): powerMode=2',
+  '* Layer 0xb4000071ecf94170 (Display 0 name="Built-in Screen"#3)',
+  '  Region transparentRegion (this=0 count=1)',
+  '* Layer 0xb4000071ecf96f00 (StatusBar#8)',
+  '  z= 1, mDrawingParent=none',
+  'Hardware Composer state (version 2.4)',
+  '--------- 0.2s was the duration of surfaceflinger',
+].join('\n');
+
+test('a SurfaceFlinger layer in the same file is not a car service', () => {
+  const own = read('fixtures/car-service-sample.txt');
+  const s = parseCarServiceDump(`${BUGREPORT_BEFORE}\n${own}`);
+
+  assert.ok(!s.nodes.some((n) => /^Layer 0x/.test(n.title)),
+    'the layers above it are another dump');
+  assert.ok(s.nodes.some((n) => n.title === 'CarPropertyService'),
+    'and its own services are still read');
+
+  /* The same services, off the same lines, as the dump read on its own — only
+     shifted by the section that now sits above it. */
+  const alone = parseCarServiceDump(own);
+  const shift = BUGREPORT_BEFORE.split('\n').length;
+  assert.deepEqual(s.nodes.map((n) => n.title), alone.nodes.map((n) => n.title));
+  assert.deepEqual(s.nodes.map((n) => n.at), alone.nodes.map((n) => n.at + shift),
+    'and a row still says which line of the whole file it came off');
+});
+
+test('another dump heading in the same file is not a user section', () => {
+  const own = read('fixtures/user-sample.txt');
+  const before = [
+    '------ PACKAGE MANAGER (dumpsys package) ------',
+    'Packages:',
+    '  Package [com.example.player] (1a2b3c):',
+    '    userId=10233',
+    'Hidden system packages:',
+    '  Package [com.android.oem] (4d5e6f):',
+    '--------- 0.2s was the duration of package manager',
+  ].join('\n');
+  const after = [
+    '--------- 0.2s was the duration of users',
+    '------ INPUT (dumpsys input) ------',
+    'Input Manager State:',
+    '  Interceptor: nothing',
+  ].join('\n');
+
+  const s = parseUserDump(`${before}\n${own}\n${after}`);
+  assert.ok(!s.nodes.some((n) => /^Packages|^Hidden system packages|^Input Manager State/.test(n.title)),
+    'neither the dump above it nor the one below');
+
+  const alone = parseUserDump(own);
+  const shift = before.split('\n').length;
+  assert.deepEqual(s.nodes.map((n) => n.title), alone.nodes.map((n) => n.title));
+  assert.deepEqual(s.nodes.map((n) => n.at), alone.nodes.map((n) => n.at + shift));
+  assert.equal(s.globals.current, alone.globals.current);
+  assert.equal(s.globals.lines, own.split('\n').length,
+    'and the dump is as long as its section, not as the file');
+});
+
+/* `Current user:` is printed indented by other services and `Users:` by the
+   package dump; an opener is only an opener at no indent. */
+test('an indented Current user or Users line does not open the user dump', () => {
+  const own = read('fixtures/user-sample.txt');
+  const before = [
+    '------ ACTIVITY MANAGER (dumpsys activity) ------',
+    'ACTIVITY MANAGER USERS:',
+    '    Current user: 0',
+    '  Users:',
+    '    UserInfo{0:null:813}',
+    '--------- 0.2s was the duration of activity manager',
+  ].join('\n');
+
+  const s = parseUserDump(`${before}\n${own}`);
+  assert.ok(!s.nodes.some((n) => n.title === 'ACTIVITY MANAGER USERS'));
+  assert.equal(s.nodes[0].at, parseUserDump(own).nodes[0].at + before.split('\n').length);
+});
