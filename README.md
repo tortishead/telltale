@@ -25,15 +25,27 @@ or point it at a URL.
 | `adb shell dumpsys input` | input windows | `input` | Every window the input dispatcher will consider on its display, drawn to scale in the order it walks them, with the part of each one that actually takes touch drawn inside its frame where the two differ. Says which window has focus, which one a touch is going to right now, and — the question this dump gets opened with — which windows are covered by another window's touch area or are dropping their input because something untrusted is over them. Opens on the windows that take touch. |
 | `adb shell dumpsys input` | input devices | `inputdev` | Every device the reader found, grouped by the display it drives, with what the kernel says it is and what Android made of that: its sources, its axes and their ranges, the key layout and IDC files configuring it, and the mappers the reader gave it. |
 | `adb shell dumpsys binder_calls_stats` | calls | `binder` | Every binder call the system server handled, grouped by the Android user the caller ran as, then by the caller, then by the method it called — with the cpu it cost, its share of the total, the worst latency, the largest reply, and how many of the calls came back with an exception instead. Says whether the dump was worth taking: it records nothing while the device is charging, and samples one call in a thousand unless told not to. |
+| `adb logcat -d`, or any bugreport | log lines | `logcat` | Every log the bugreport carries — system, events, radio, crash, kernel — as one group each. The list is not the lines but the tags, each standing for its own lines with the levels it printed counted on the row, so eighty thousand lines read as two hundred tags; opening a tag opens its lines. Opens on the tags that logged an error, and badges the one holding a crash. |
 
-`adb bugreport` holds all of these but car_service, which needs an automotive
-build, and binder_calls_stats, which has to be switched on first. Every reader
-gets a look at whatever you load and each one that recognises something keeps
-its result, so a bugreport opens with a switch in the top bar between them.
+## Bugreports
+
+`adb bugreport <dir>` writes a **zip**, and that is what Telltale opens: drop
+the archive in as it came off the device. The entry dumpstate named in
+`main_entry.txt` is the one read, inflated in the browser — no upload, no
+unzipping first, nothing installed. A flat `bugreport.txt` works the same way,
+and so does a URL pointing at either.
+
+Every reader that recognises a section of it opens as its own tab — ten of
+them on the sample in `tests/fixtures`, left to right in the order of the
+table above, with `?tool=` deciding which one is in front. A phone's bugreport
+holds all of these but car_service, which needs an automotive build, and
+binder_calls_stats, which has to be switched on first. Each tab is named for
+the reader; the file it came out of is on the tab when more than one file is
+open, and in its tooltip always.
 
 One `dumpsys input` is two of those rows: the dispatcher's windows and the
-reader's devices are different questions about the same text, so both readers
-recognise it and the switch in the top bar moves between them. A dump from
+reader's devices are different questions about the same text, so it opens two
+tabs. A dump from
 Android 12 or earlier printed `flags`, `type` and `inputFeatures` as hex where
 a newer one prints the `inputConfig` names; the bits that decide whether an
 event reaches a window are read into those names, so an old dump reads the same
@@ -66,10 +78,9 @@ works.
 The filter above the list searches the dump you are reading. **Search** in the
 top bar — or `⌘K` / `Ctrl+K` — searches every dump open in the workspace, every
 reader that recognised each of them, and every display inside each reader.
-Results are grouped by the dump and the reader they came out of; `↑` `↓` walk
-them and `⏎` opens one, which switches to that dump, to that reader, to that
-display, and leaves the query on as the dump's own filter so the thing you
-found is the thing on screen.
+Results are grouped by the tab they came out of; `↑` `↓` walk them and `⏎`
+opens one, which switches to that tab, to that display, and leaves the query
+on as that tab's own filter so the thing you found is the thing on screen.
 
 ## Host it
 

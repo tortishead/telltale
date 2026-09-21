@@ -1,0 +1,54 @@
+========================================================
+== dumpstate: 2026-09-21 11:04:02
+========================================================
+
+Build: TQ3A.230901.001
+Build fingerprint: 'google/panther/panther:14/UQ1A.240105.004/11129216:user/release-keys'
+Bootloader: cloudripper-1.3
+Radio: g5300g-230915
+Network: Vodafone
+Kernel: Linux version 5.10.177-android13
+
+------ SYSTEM LOG (logcat -b all -v threadtime -v printable -v uid -d *:v) ------
+--------- beginning of main
+09-21 11:02:31.088  1000  1631  1631 I SystemServer: Enabled StrictMode for system server main thread.
+09-21 11:02:31.402  1000  1631  1668 I ActivityManager: Start proc 5210:com.android.settings/1000 for activity {com.android.settings/.homepage.SettingsHomepageActivity}
+09-21 11:02:31.455 10045  1802  1802 D StatusBar: onConfigurationChanged: newConfig={1.0 ?mcc?mnc [en_GB] ldltr sw411dp w411dp h847dp 420dpi}
+09-21 11:02:31.661 10045  1802  1839 W SurfaceControl: Attempted to set dimming on a layer that is not a surface
+09-21 11:02:31.663  1000  1631  1668 I WindowManager: Focus moved to Window{2f04c1a u0 com.android.settings/com.android.settings.homepage.SettingsHomepageActivity}
+09-21 11:02:31.902 10233  4471  4471 W TrackerOverlay: addView with TYPE_APPLICATION_OVERLAY, alpha=0.01
+09-21 11:02:32.014  1000  1631  1668 E ActivityManager: Unable to launch app com.example.tracker/10233 for broadcast Intent { act=android.intent.action.SCREEN_ON }: process is bad
+09-21 11:02:32.117  1000  1631  1668 E ActivityManager: Skipping duplicate broadcast to com.example.tracker
+09-21 11:02:32.400  1000  1631  1710 I InputDispatcher: Window went away: Window{b77c802 u0 InputMethod}
+09-21 11:02:32.551 10122  6023  6023 D InputMethodManager: showSoftInput() view=android.widget.EditText flags=0 reason=SHOW_SOFT_INPUT
+09-21 11:02:33.004  1000  1631  1668 W ActivityManager: Slow operation: 152ms so far, now at startProcess: done updating battery stats
+09-21 11:02:33.208  1000   704   704 E SurfaceFlinger: Failed to acquire buffer for layer com.android.settings#64: -EAGAIN
+--------- beginning of crash
+09-21 11:02:34.771 10233  4471  4471 E AndroidRuntime: FATAL EXCEPTION: main
+09-21 11:02:34.771 10233  4471  4471 E AndroidRuntime: Process: com.example.tracker, PID: 4471
+09-21 11:02:34.771 10233  4471  4471 E AndroidRuntime: java.lang.IllegalStateException: Overlay not permitted
+09-21 11:02:34.771 10233  4471  4471 E AndroidRuntime: 	at com.example.tracker.Overlay.onCreate(Overlay.java:88)
+09-21 11:02:34.771 10233  4471  4471 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:8305)
+09-21 11:02:34.812  1000  1631  1668 W ActivityManager: Force finishing activity com.example.tracker/.Overlay
+09-21 11:02:35.100  1000  1631  1668 I ActivityManager: Process com.example.tracker (pid 4471) has died: fore TOP
+09-21 11:02:36.002  1000  1631  1631 F WatchdogTest: Test fatal line, so a fatal is in the sample
+
+------ EVENT LOG (logcat -b events -v threadtime -v printable -v uid -d *:v) ------
+--------- beginning of events
+09-21 11:02:31.400  1000  1631  1668 I am_proc_start: [0,5210,1000,com.android.settings,activity,com.android.settings/.homepage.SettingsHomepageActivity]
+09-21 11:02:31.660  1000  1631  1668 I wm_set_resumed_activity: [0,com.android.settings/.homepage.SettingsHomepageActivity,resumeTopActivity]
+09-21 11:02:34.780 10233  4471  4471 I am_crash: [4471,0,com.example.tracker,538968133,java.lang.IllegalStateException,Overlay not permitted,Overlay.java,88]
+09-21 11:02:35.099  1000  1631  1668 I am_proc_died: [0,4471,com.example.tracker,100,2]
+09-21 11:02:35.220  1000  1631  1668 I am_low_memory: [42]
+
+------ RADIO LOG (logcat -b radio -v threadtime -v printable -d *:v) ------
+--------- beginning of radio
+09-21 11:02:30.115  1900  1955 D RILJ    : [0123]> RIL_REQUEST_SIGNAL_STRENGTH
+09-21 11:02:30.130  1900  1955 D RILJ    : [0123]< RIL_REQUEST_SIGNAL_STRENGTH {mLte=CellSignalStrengthLte: rssi=-79 rsrp=-108}
+
+------ KERNEL LOG (dmesg) ------
+[    0.000000] Linux version 5.10.177-android13-4-00047-g6e1c2c4c9f0a
+[    1.884213] init: starting service 'surfaceflinger'...
+[    2.114509] healthd: battery l=100 v=4386 t=29.0 h=2 st=2 c=0 chg=a
+[   12.401118] binder: 1631:1668 transaction failed 29189/-22, size 76-0 line 3121
+[   12.401702] lowmemorykiller: Killing 'm.example.tracker' (4471), adj 100

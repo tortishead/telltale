@@ -35,6 +35,7 @@ const CASES = [
      A case names the fixture it reads when that is not its own name. */
   { name: 'input-sample', parse: 'parseInputDump' },
   { name: 'input-devices', file: 'input-sample', parse: 'parseInputDevicesDump' },
+  { name: 'logcat-sample', parse: 'parseLogcatDump' },
 ];
 
 /* Every golden is `tests/golden/<name>.txt` and every fixture is
@@ -73,6 +74,7 @@ const OWN = {
   parseBinderCallsStatsDump: ['binder-sample'],
   parseInputDump: ['input-sample'],
   parseInputDevicesDump: ['input-sample'],
+  parseLogcatDump: ['logcat-sample'],
 };
 
 test('each parser recognises its own dumps and no others', () => {

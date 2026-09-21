@@ -47,6 +47,7 @@ const EXPORTS = [
   'parseBinderCallsStatsDump',
   'parseInputDump',
   'parseInputDevicesDump',
+  'parseLogcatDump',
   // the pieces the parsers are built from, worth testing on their own
   'indentOf',
   'takeBlock',
@@ -70,6 +71,9 @@ const EXPORTS = [
   'binderTxn',
   'binderTime',
   'binderBytes',
+  'logEntry',
+  'logKeep',
+  'logLevel',
   'inputSources',
   'inputWindowName',
   'inputRegion',
@@ -94,12 +98,13 @@ export const parsers = build();
 export const {
   parseWindowDump, parseSurfaceFlingerDump, parsePackageDump, parseAnrDump,
   parseCarServiceDump, parseUserDump, parseBinderCallsStatsDump,
-  parseInputDump, parseInputDevicesDump,
+  parseInputDump, parseInputDevicesDump, parseLogcatDump,
   indentOf, takeBlock, harvest, deriveFrame, shortType, sfFlagNames,
   anrLock, anrWaitGraph, anrCycles,
   carHeadName, carPairs, lineFields, blockRuns, blockEntries, carPropNames,
   userFlagNames, userListUnder,
   binderCaller, binderCall, binderTxn, binderTime, binderBytes,
   inputSources, inputWindowName, inputRegion, inputConfigOf, inputViewports,
+  logEntry, logKeep, logLevel,
   TYPE_INTS,
 } = parsers;

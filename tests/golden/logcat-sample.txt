@@ -1,0 +1,82 @@
+tool: logcat
+displays: 4
+nodes: 54
+
+display 0  label=system log  size=0x0
+    meta: 20 lines · 11 tags · 9 errors
+    1  log-info        vis=y                                             -                           SystemServer
+    2  log-info        vis=y         ^log:0:SystemServer                 -                           Enabled StrictMode for system server main thread.
+    3  log-error       vis=y                                             2 errors                    ActivityManager
+    4  log-info        vis=y         ^log:0:ActivityManager              -                           Start proc 5210:com.android.settings/1000 for activity {com.android.settings/.homepage.SettingsHomepageActivity}
+    5  log-debug       vis=y                                             -                           StatusBar
+    6  log-debug       vis=y         ^log:0:StatusBar                    -                           onConfigurationChanged: newConfig={1.0 ?mcc?mnc [en_GB] ldltr sw411dp w411dp h847dp 420dpi}
+    7  log-warn        vis=y                                             1 warning                   SurfaceControl
+    8  log-warn        vis=y         ^log:0:SurfaceControl               -                           Attempted to set dimming on a layer that is not a surface
+    9  log-info        vis=y                                             -                           WindowManager
+   10  log-info        vis=y         ^log:0:WindowManager                -                           Focus moved to Window{2f04c1a u0 com.android.settings/com.android.settings.homepage.SettingsHomepageActivity}
+   11  log-warn        vis=y                                             1 warning                   TrackerOverlay
+   12  log-warn        vis=y         ^log:0:TrackerOverlay               -                           addView with TYPE_APPLICATION_OVERLAY, alpha=0.01
+   13  log-error       vis=y         ^log:0:ActivityManager              -                           Unable to launch app com.example.tracker/10233 for broadcast Intent { act=android.intent.action.SCREEN_ON }: process is bad
+   14  log-error       vis=y         ^log:0:ActivityManager              -                           Skipping duplicate broadcast to com.example.tracker
+   15  log-info        vis=y                                             -                           InputDispatcher
+   16  log-info        vis=y         ^log:0:InputDispatcher              -                           Window went away: Window{b77c802 u0 InputMethod}
+   17  log-debug       vis=y                                             -                           InputMethodManager
+   18  log-debug       vis=y         ^log:0:InputMethodManager           -                           showSoftInput() view=android.widget.EditText flags=0 reason=SHOW_SOFT_INPUT
+   19  log-warn        vis=y         ^log:0:ActivityManager              -                           Slow operation: 152ms so far, now at startProcess: done updating battery stats
+   20  log-error       vis=y                                             1 error                     SurfaceFlinger
+   21  log-error       vis=y         ^log:0:SurfaceFlinger               -                           Failed to acquire buffer for layer com.android.settings#64: -EAGAIN
+   22  log-crash       vis=y                                             crash,5 errors              AndroidRuntime
+   23  log-crash       vis=y         ^log:0:AndroidRuntime               -                           FATAL EXCEPTION: main
+   24  log-error       vis=y         ^log:0:AndroidRuntime               -                           Process: com.example.tracker, PID: 4471
+   25  log-error       vis=y         ^log:0:AndroidRuntime               -                           java.lang.IllegalStateException: Overlay not permitted
+   26  log-error       vis=y         ^log:0:AndroidRuntime               -                           	at com.example.tracker.Overlay.onCreate(Overlay.java:88)
+   27  log-error       vis=y         ^log:0:AndroidRuntime               -                           	at android.app.Activity.performCreate(Activity.java:8305)
+   28  log-warn        vis=y         ^log:0:ActivityManager              -                           Force finishing activity com.example.tracker/.Overlay
+   29  log-info        vis=y         ^log:0:ActivityManager              -                           Process com.example.tracker (pid 4471) has died: fore TOP
+   30  log-fatal       vis=y                                             1 error                     WatchdogTest
+   31  log-fatal       vis=y         ^log:0:WatchdogTest                 -                           Test fatal line, so a fatal is in the sample
+
+display 1  label=event log  size=0x0
+    meta: 5 lines · 5 tags
+    1  log-info        vis=y                                             -                           am_proc_start
+    2  log-info        vis=y         ^log:1:am_proc_start                -                           [0,5210,1000,com.android.settings,activity,com.android.settings/.homepage.SettingsHomepageActivity]
+    3  log-info        vis=y                                             -                           wm_set_resumed_activity
+    4  log-info        vis=y         ^log:1:wm_set_resumed_activity      -                           [0,com.android.settings/.homepage.SettingsHomepageActivity,resumeTopActivity]
+    5  log-crash       vis=y                                             crash                       am_crash
+    6  log-info        vis=y         ^log:1:am_crash                     -                           [4471,0,com.example.tracker,538968133,java.lang.IllegalStateException,Overlay not permitted,Overlay.java,88]
+    7  log-info        vis=y                                             -                           am_proc_died
+    8  log-info        vis=y         ^log:1:am_proc_died                 -                           [0,4471,com.example.tracker,100,2]
+    9  log-info        vis=y                                             -                           am_low_memory
+   10  log-info        vis=y         ^log:1:am_low_memory                -                           [42]
+
+display 2  label=radio log  size=0x0
+    meta: 2 lines · 1 tag
+    1  log-debug       vis=y                                             -                           RILJ
+    2  log-debug       vis=y         ^log:2:RILJ                         -                           [0123]> RIL_REQUEST_SIGNAL_STRENGTH
+    3  log-debug       vis=y         ^log:2:RILJ                         -                           [0123]< RIL_REQUEST_SIGNAL_STRENGTH {mLte=CellSignalStrengthLte: rssi=-79 rsrp=-108}
+
+display 3  label=kernel log  size=0x0
+    meta: 5 lines · 5 tags
+    1  log-info        vis=y                                             -                           kernel
+    2  log-info        vis=y         ^log:3:kernel                       -                           Linux version 5.10.177-android13-4-00047-g6e1c2c4c9f0a
+    3  log-info        vis=y                                             -                           init
+    4  log-info        vis=y         ^log:3:init                         -                           starting service 'surfaceflinger'...
+    5  log-info        vis=y                                             -                           healthd
+    6  log-info        vis=y         ^log:3:healthd                      -                           battery l=100 v=4386 t=29.0 h=2 st=2 c=0 chg=a
+    7  log-info        vis=y                                             -                           binder
+    8  log-info        vis=y         ^log:3:binder                       -                           1631:1668 transaction failed 29189/-22, size 76-0 line 3121
+    9  log-info        vis=y                                             -                           lowmemorykiller
+   10  log-info        vis=y         ^log:3:lowmemorykiller              -                           Killing 'm.example.tracker' (4471), adj 100
+
+globals:
+  sections: 4
+  lines: 32
+  shown: 32
+  tags: 22
+  errors: 9
+  warns: 4
+  counts: 5 entries
+  crashes: 2
+  first: 09-21 11:02:30.115
+  last: 09-21 11:02:36.002
+  trimmed: 0

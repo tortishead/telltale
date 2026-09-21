@@ -875,7 +875,6 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
   <div class="mark">telltale</div>
   <div class="tagline">AOSP dumps, made legible</div>
   <div class="bar-actions">
-    <div class="tabs" id="toolTabs" role="group" aria-label="Which dump to show" hidden></div>
     <div class="mobile-tabs">
       <button class="tab" id="tabStack" type="button" aria-pressed="false">Stack</button>
       <button class="tab" id="tabPlan" type="button" aria-pressed="true">Layout</button>
@@ -905,7 +904,8 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
       <h1>Drop an AOSP dump here</h1>
       <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>,
       <code>user</code>, <code>input</code>, <code>car_service</code> and
-      <code>binder_calls_stats</code>, ANR traces, and whole bugreports.
+      <code>binder_calls_stats</code>, ANR traces, logcat, and a whole
+      <code>adb bugreport</code> zip as it came off the device.
       The file never leaves your browser.</p>
       <div class="empty-actions">
         <button class="btn-paper btn-paper-key" id="btnPick" type="button">Choose a file</button>
@@ -921,18 +921,24 @@ adb shell dumpsys package         &gt; packages.txt
 adb shell dumpsys user            &gt; users.txt
 adb shell dumpsys input           &gt; input.txt
 adb shell dumpsys car_service     &gt; car.txt
+adb logcat -d                     &gt; logcat.txt
 adb pull /data/anr/traces.txt
+
+# or all of it at once — drop the zip in as it comes
+adb bugreport bugreports/
 
 # binder_calls_stats records nothing while charging, and samples by default
 adb shell dumpsys battery unplug
 adb shell dumpsys binder_calls_stats --enable --no-sampling --enable-detailed-tracking
 adb shell dumpsys binder_calls_stats --reset      # then reproduce, then:
 adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
-        <p class="hint">A bugreport works too — drop the whole thing and Telltale finds every
-        section it knows, with a switch in the top bar to move between them. Add
+        <p class="hint">A bugreport works too — drop in the zip <code>adb bugreport</code>
+        wrote, or a flat <code>bugreport.txt</code>. Telltale opens the archive and puts
+        every section it knows in a tab of its own. Add
         <code>?url=</code> to this page's address to open a dump straight from a link.</p>
       </details>
       <p class="hint" id="loaderBack" hidden></p>
+      <p class="hint" id="loaderNote" hidden></p>
       <p class="err" id="err" hidden></p>
     </div>
   </div>
@@ -1002,7 +1008,7 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
   </aside>
 </main>
 
-<input type="file" id="file" accept=".txt,.log,.dump,.out,text/plain" hidden>
+<input type="file" id="file" accept=".txt,.log,.dump,.out,.zip,text/plain,application/zip" hidden>
 
 <div class="find" id="find" hidden>
   <div class="find-card" role="dialog" aria-modal="true" aria-label="Search this workspace">
@@ -4685,6 +4691,309 @@ function parseInputDevicesDump(input) {
   return finaliseScene('inputdev', displays, nodes, globals);
 }
 
+/* ================ parse: logcat ================ */
+
+/* A bugreport carries its logs in the same file as its dumps, printed by
+   `logcat -v threadtime` under a rule that names the buffer. There is nothing
+   to draw and nothing to nest, but there are eighty thousand lines, of which
+   the ten that matter are an exception and the lines around it. So the list is
+   not the lines: it is the tags, each standing for its own lines, with the
+   levels it printed counted on the row. Opening a tag is opening its lines.
+
+   The same parser reads a plain `adb logcat -d`, which is the same text
+   without the rule above it. */
+
+/* `09-21 11:02:31.088  1000  1631  1668 I ActivityManager: msg`, and the four
+   ways that line varies: a year in front of the date on a recent build, the
+   uid column that `-v uid` adds, a pid and a tid that are always there, and
+   the single letter that is the level. */
+const LOG_HEAD_RE =
+  /^(?:(\d{4})-)?(\d{1,2}-\d{1,2})\s+(\d{1,2}:\d{2}:\d{2}\.\d{3})\s+(?:(\S+)\s+)?(\d+)\s+(\d+)\s+([VDIWEFSA])\s+(.*)$/;
+/* dmesg, which is its own format: a timestamp since boot and then the line. */
+const LOG_KERNEL_RE = /^\[\s*(\d+\.\d+)\]\s(.*)$/;
+/* The rule a bugreport prints above each log, and the marker logd prints when
+   it moves to another buffer. */
+const LOG_SECTION_RE = /^-{4,}\s*([A-Z][A-Z0-9 _./-]*?LOG[A-Z0-9 _./-]*?)\s*(?:\(([^)]*)\))?\s*-{4,}\s*$/;
+const LOG_BEGIN_RE = /^-{4,}\s*beginning of (\S+)\s*$/;
+
+const LOG_LEVELS = {
+  V: { name:'verbose', rank:0, family:'log-verbose' },
+  D: { name:'debug',   rank:1, family:'log-debug' },
+  I: { name:'info',    rank:2, family:'log-info' },
+  W: { name:'warn',    rank:3, family:'log-warn' },
+  E: { name:'error',   rank:4, family:'log-error' },
+  F: { name:'fatal',   rank:5, family:'log-fatal' },
+  A: { name:'assert',  rank:5, family:'log-fatal' },
+  S: { name:'silent',  rank:0, family:'log-verbose' },
+};
+const logLevel = (ch) => LOG_LEVELS[ch] || LOG_LEVELS.I;
+
+/* A tag keeps this many of its own lines. A tag with more than that is nearly
+   always one printing the same thing in a loop, and the count on its row is
+   the whole of what that tag has to say; the lines that are worth reading are
+   the ones with a level on them, so those are the ones kept. */
+const LOG_PER_TAG = 120;
+/* And the log as a whole keeps this many, so a two-hundred-thousand-line
+   bugreport does not become two hundred thousand rows. */
+const LOG_MAX_LINES = 20000;
+
+/* Which lines to keep when a tag printed more than its share: the worst first,
+   and among equals the first ones printed, then back into printed order so the
+   list still reads down the page. */
+function logKeep(entries, cap) {
+  if (entries.length <= cap) return entries;
+  const ranked = entries.slice().sort((a, b) => b.level.rank - a.level.rank || a.at - b.at);
+  return ranked.slice(0, cap).sort((a, b) => a.at - b.at);
+}
+
+/* `FATAL EXCEPTION` is the first line of a Java crash and `am_crash` is the
+   event the framework logs for the same thing. Either one means this tag is
+   the reason the log was taken. */
+const LOG_CRASH_RE = /FATAL EXCEPTION|^am_crash|beginning of crash/;
+
+function logEntry(m, at, buffer) {
+  const rest = m[8];
+  const cut = rest.indexOf(': ');
+  const tag = (cut < 0 ? rest : rest.slice(0, cut)).trim();
+  const message = cut < 0 ? '' : rest.slice(cut + 2);
+  return {
+    at,
+    year: m[1] || null,
+    date: m[2],
+    time: m[3],
+    uid: m[4] || null,
+    pid: +m[5],
+    tid: +m[6],
+    level: logLevel(m[7]),
+    levelChar: m[7],
+    tag: tag || '(no tag)',
+    message,
+    buffer,
+    raw: m[0],
+  };
+}
+
+function logKernelEntry(m, at, buffer) {
+  const body = m[2];
+  const cut = body.indexOf(': ');
+  const tag = cut < 0 ? 'kernel' : body.slice(0, cut).trim();
+  return {
+    at,
+    year: null, date: null, time: null,
+    uptime: +m[1],
+    uid: null, pid: null, tid: null,
+    /* dmesg prints no level, and guessing one off the words in the line would
+       put a colour on a judgement the log did not make. */
+    level: logLevel('I'),
+    levelChar: null,
+    tag: tag.split(/[\s[]/)[0] || 'kernel',
+    message: cut < 0 ? body : body.slice(cut + 2),
+    buffer,
+    raw: m[0],
+  };
+}
+
+const logStamp = (e) => e.time
+  ? `${e.date} ${e.time}` : e.uptime !== undefined ? `[${e.uptime.toFixed(6)}]` : '';
+
+function parseLogcatDump(input) {
+  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const lines = text.split('\n');
+
+  /* One section per rule in the file, and one unnamed section for a log that
+     arrived without a rule above it. A section only becomes a group once a
+     line lands in it, so the dumps either side of a log in a bugreport do not
+     leave empty buffers behind. */
+  const sections = [];
+  let current = null;
+  const section = (title, command) => {
+    current = { id: sections.length, title, command: command || null,
+                entries: [], buffers: new Set() };
+    sections.push(current);
+    return current;
+  };
+  const into = (e) => {
+    if (!current) section('log', null);
+    current.entries.push(e);
+    if (e.buffer) current.buffers.add(e.buffer);
+  };
+
+  let buffer = null, kernel = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line) continue;
+
+    const sec = line.match(LOG_SECTION_RE);
+    if (sec) {
+      const title = sec[1].trim().toLowerCase();
+      section(title, sec[2] || null);
+      buffer = null;
+      kernel = /kernel|dmesg/.test(title) || /dmesg/.test(sec[2] || '');
+      continue;
+    }
+    const begun = line.match(LOG_BEGIN_RE);
+    if (begun) { buffer = begun[1]; continue; }
+    /* Any other rule ends the log that was being read: what follows it is
+       another service's dump, and a `[    1.2] ...` line in the middle of one
+       is not a kernel log line. */
+    if (/^-{4,}/.test(line)) { current = null; buffer = null; kernel = false; continue; }
+
+    const m = line.match(LOG_HEAD_RE);
+    if (m) { into(logEntry(m, i + 1, buffer)); continue; }
+    if (kernel) {
+      const k = line.match(LOG_KERNEL_RE);
+      if (k) into(logKernelEntry(k, i + 1, buffer || 'kernel'));
+    }
+  }
+
+  const nodes = [];
+  const displays = [];
+  let kept = 0;
+
+  for (const sec of sections) {
+    if (!sec.entries.length) continue;
+
+    /* The tags, in the order they first printed. A log read top to bottom is
+       how it happened, and sorting the tags by how much they printed would put
+       the noisiest one first and the crash last. */
+    const tags = new Map();
+    for (const e of sec.entries) {
+      let t = tags.get(e.tag);
+      if (!t) {
+        t = { tag: e.tag, entries: [], counts: {}, worst: logLevel('V'), at: e.at, crash: false };
+        tags.set(e.tag, t);
+      }
+      t.entries.push(e);
+      t.counts[e.level.name] = (t.counts[e.level.name] || 0) + 1;
+      if (e.level.rank > t.worst.rank) t.worst = e.level;
+      if (LOG_CRASH_RE.test(e.tag) || LOG_CRASH_RE.test(e.message)) t.crash = true;
+    }
+
+    const id = sec.id;
+    for (const t of tags.values()) {
+      const hash = `log:${id}:${t.tag}`;
+      const errors = (t.counts.error || 0) + (t.counts.fatal || 0);
+      const warns = t.counts.warn || 0;
+      const first = t.entries[0], last = t.entries[t.entries.length - 1];
+
+      nodes.push({
+        hash,
+        title: t.tag,
+        displayId: id,
+        frame: null, frameSource: null,
+        z: -t.at,
+        family: t.crash ? 'log-crash' : t.worst.family,
+        typeLabel: t.crash ? 'crash' : t.worst.name,
+        visible: true, focused: false,
+        at: t.at,
+        raw: t.entries.slice(0, 40).map((e) => e.raw).join('\n'),
+        search: `${t.tag} ${t.entries.slice(0, 400).map((e) => e.message).join(' ')}`.toLowerCase(),
+        badges: [
+          ...(t.crash ? [['crash', 'badge-focus']] : []),
+          ...(errors ? [[`${errors} error${errors === 1 ? '' : 's'}`, 'badge-exit']] : []),
+          ...(warns && !errors ? [[`${warns} warning${warns === 1 ? '' : 's'}`, 'badge-comp']] : []),
+        ],
+        tagRow: true,
+        tag: t.tag,
+        lines: t.entries.length,
+        counts: t.counts,
+        worst: t.worst,
+        errors, warns,
+        crash: t.crash,
+        first, last,
+        pids: [...new Set(t.entries.map((e) => e.pid).filter((p) => p !== null))],
+        subCount: 0,
+        parentHash: null,
+        ancestors: [],
+      });
+
+      const parent = nodes[nodes.length - 1];
+      const ancestors = [{ hash, title: t.tag }];
+      const room = Math.max(0, LOG_MAX_LINES - kept);
+      const keep = room ? logKeep(t.entries, Math.min(LOG_PER_TAG, room)) : [];
+      kept += keep.length;
+      parent.subCount = keep.length;
+      parent.trimmed = t.entries.length - keep.length;
+
+      for (const e of keep) {
+        nodes.push({
+          hash: `log:${id}:line:${e.at}`,
+          title: e.message || e.tag,
+          displayId: id,
+          frame: null, frameSource: null,
+          z: -e.at,
+          family: LOG_CRASH_RE.test(e.message) ? 'log-crash' : e.level.family,
+          typeLabel: e.level.name,
+          visible: true, focused: false,
+          at: e.at,
+          raw: e.raw,
+          search: `${e.tag} ${e.message} ${e.pid === null ? '' : e.pid}`.toLowerCase(),
+          badges: [],
+          entry: e,
+          level: e.level,
+          lineNo: e.at,
+          parentHash: hash, ancestors,
+          subCount: 0,
+        });
+      }
+    }
+
+    const counts = {};
+    for (const e of sec.entries) counts[e.level.name] = (counts[e.level.name] || 0) + 1;
+    const errors = (counts.error || 0) + (counts.fatal || 0);
+    const first = sec.entries[0], last = sec.entries[sec.entries.length - 1];
+    displays.push({
+      id,
+      label: sec.title,
+      name: null,
+      size: { w: 0, h: 0 },
+      insets: [], raw: '',
+      command: sec.command,
+      lines: sec.entries.length,
+      tags: tags.size,
+      counts,
+      errors,
+      buffers: [...sec.buffers],
+      first, last,
+      crashes: [...tags.values()].filter((t) => t.crash).map((t) => t.tag),
+      meta: `${sec.entries.length} line${sec.entries.length === 1 ? '' : 's'} · ${
+        tags.size} tag${tags.size === 1 ? '' : 's'}${errors ? ` · ${errors} error${errors === 1 ? '' : 's'}` : ''}`,
+    });
+  }
+
+  const all = sections.flatMap((s) => s.entries);
+  /* The span of a log read out of a bugreport is not its first and last line:
+     the buffers are printed one after another, so the radio log's last line
+     comes after the system log's in the file and an hour before it in time.
+     The stamps sort as text — the fields run largest first — so the ends of
+     that sort are the ends of the log. */
+  const clocked = all.filter((e) => e.time)
+    .sort((a, b) => `${a.year || ''}${a.date} ${a.time}`
+      .localeCompare(`${b.year || ''}${b.date} ${b.time}`));
+  const counts = {};
+  for (const e of all) counts[e.level.name] = (counts[e.level.name] || 0) + 1;
+
+  const globals = {
+    sections: displays.length,
+    lines: all.length,
+    shown: kept,
+    tags: nodes.filter((n) => n.tagRow).length,
+    errors: (counts.error || 0) + (counts.fatal || 0),
+    warns: counts.warn || 0,
+    counts,
+    crashes: nodes.filter((n) => n.tagRow && n.crash).length,
+    /* The span of the log, which is a wall clock. dmesg counts from boot
+       instead, so its lines are left out of it rather than printed as the end
+       of a range that starts at a date. */
+    first: clocked.length ? logStamp(clocked[0]) : null,
+    last: clocked.length ? logStamp(clocked[clocked.length - 1]) : null,
+    /* Whether the lines that were read are all the lines there were. */
+    trimmed: nodes.filter((n) => n.tagRow).reduce((sum, n) => sum + (n.trimmed || 0), 0),
+  };
+
+  return finaliseScene('logcat', displays, nodes, globals);
+}
+
 /* ================ state and shared helpers ================ */
 const VIEW0 = { yaw:34, pitch:19, sep:38 };   // the view Reset goes back to
 /* One dump loaded is one document. Everything the user does to a dump — which
@@ -4757,6 +5066,11 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 const trim = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+/* A tail-trimmed name is no name at all where the names share a prefix, which
+   is the normal case for two bugreports off one device: they differ in the
+   date at the end. So this one keeps both ends and loses the middle. */
+const elide = (s, n) => s.length <= n ? s
+  : s.slice(0, Math.ceil((n - 1) / 2)) + '…' + s.slice(s.length - Math.floor((n - 1) / 2));
 const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
 const rectW = (r) => r.r - r.l, rectH = (r) => r.b - r.t;
 /* Rects go into SVG attributes often enough to be worth spelling once. */
@@ -4798,6 +5112,11 @@ const FAMILY_COLORS = {
   'input-touch':'#2e7d5b', 'input-key':'#2f6f8f', 'input-pointer':'#b4622a',
   'input-stick':'#6b5b95', 'input-sensor':'#8a8f6f', 'input-device':'#55636f',
   'input-mapper':'#55636f',
+  /* A log line is coloured by its level, which is the only thing about it that
+     is worth seeing before reading it. */
+  'log-verbose':'#8a8f6f', 'log-debug':'#55636f', 'log-info':'#2f6f8f',
+  'log-warn':'#b4622a', 'log-error':'#a3352f', 'log-fatal':'#a3352f',
+  'log-crash':'#a3352f',
 };
 function colorFor(n){ return FAMILY_COLORS[n.family] || FAMILY_COLORS.other; }
 
@@ -4841,6 +5160,134 @@ const hslToCss = (h, s, l) =>
 
 /* ================ loading a dump ================ */
 
+/* ---- `adb bugreport`, which is a zip ------------------------------------
+   `adb bugreport <dir>` writes a zip, not a text file: the flat bugreport.txt
+   only comes out of `adb bugreport > file.txt` on older platform tools. So the
+   thing people actually have is the zip, and it holds the whole dump as one
+   entry beside the files dumpstate collected — FS/, proto/, a couple of
+   screenshots.
+
+   Reading it needs no library. The archive index is at the end of the file,
+   every entry says where its bytes are, and the browser inflates them:
+   DecompressionStream('deflate-raw') is the same decoder the network stack
+   uses. What follows is that and nothing else — no writing, no encryption, no
+   zip64, each of which is reported rather than half-supported. */
+
+const ZIP_LOCAL = 0x04034b50, ZIP_CD = 0x02014b50, ZIP_EOCD = 0x06054b50;
+const ZIP_MAX_COMMENT = 0xffff;
+
+const isZip = (bytes) => bytes.length > 3 && bytes[0] === 0x50 && bytes[1] === 0x4b
+                      && bytes[2] === 0x03 && bytes[3] === 0x04;
+
+/* The end-of-central-directory record is the last thing in the file, except
+   for a comment nobody writes, so it is found by scanning back for its
+   signature rather than by arithmetic. */
+function zipEocd(view){
+  const end = view.byteLength;
+  const floor = Math.max(0, end - ZIP_MAX_COMMENT - 22);
+  for(let i = end - 22; i >= floor; i--){
+    if(view.getUint32(i, true) === ZIP_EOCD) return i;
+  }
+  return -1;
+}
+
+/* Every entry in the archive index: its name, where its bytes start, how many
+   there are and how they were packed. The index is read rather than the local
+   headers, because only the index is guaranteed to carry the sizes. */
+function zipIndex(buf){
+  const view = new DataView(buf);
+  const at = zipEocd(view);
+  if(at < 0) throw new Error('that zip has no index in it, so it is either truncated or not a zip');
+
+  const count = view.getUint16(at + 10, true);
+  const cdAt = view.getUint32(at + 16, true);
+  if(cdAt === 0xffffffff || count === 0xffff){
+    throw new Error('that zip is in the zip64 format, which Telltale does not read. '
+      + 'Unzip it and drop the bugreport txt in instead');
+  }
+
+  const out = [];
+  let p = cdAt;
+  for(let i = 0; i < count && p + 46 <= buf.byteLength; i++){
+    if(view.getUint32(p, true) !== ZIP_CD) break;
+    const method = view.getUint16(p + 10, true);
+    const flags = view.getUint16(p + 8, true);
+    const packed = view.getUint32(p + 20, true);
+    const size = view.getUint32(p + 24, true);
+    const nameLen = view.getUint16(p + 28, true);
+    const extraLen = view.getUint16(p + 30, true);
+    const commentLen = view.getUint16(p + 32, true);
+    const localAt = view.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nameLen));
+    out.push({ name, method, packed, size, localAt, encrypted: !!(flags & 1) });
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return out;
+}
+
+/* An entry's bytes start after its local header, whose name and extra fields
+   are their own lengths again — the index's copy of them is allowed to differ,
+   so the local ones are the ones that count. */
+async function zipRead(buf, entry){
+  const view = new DataView(buf);
+  if(entry.encrypted) throw new Error(`${entry.name} is encrypted`);
+  if(view.getUint32(entry.localAt, true) !== ZIP_LOCAL){
+    throw new Error(`${entry.name} is not where the index says it is`);
+  }
+  const nameLen = view.getUint16(entry.localAt + 26, true);
+  const extraLen = view.getUint16(entry.localAt + 28, true);
+  const from = entry.localAt + 30 + nameLen + extraLen;
+  const bytes = new Uint8Array(buf, from, entry.packed);
+
+  if(entry.method === 0) return new TextDecoder().decode(bytes);
+  if(entry.method !== 8) throw new Error(`${entry.name} is packed in a way Telltale cannot read`);
+  if(typeof DecompressionStream !== 'function'){
+    throw new Error('this browser cannot unzip; unzip the bugreport and drop the txt in instead');
+  }
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Response(stream).text();
+}
+
+/* Which entry is the bugreport. dumpstate names it `bugreport-<device>-<build>
+   -<date>.txt` and writes that name into `main_entry.txt`, so that file is
+   asked first and the name is matched only when it is not there. Everything
+   else in the archive is what dumpstate collected, not what it wrote. */
+const ZIP_BUGREPORT_RE = /(?:^|\/)bugreport[^/]*\.txt$/i;
+
+async function zipPickDump(buf){
+  const entries = zipIndex(buf).filter(e => !e.name.endsWith('/'));
+  if(!entries.length) throw new Error('that zip is empty');
+
+  const byName = (name) => entries.find(e => e.name === name || e.name.endsWith('/' + name));
+  const main = byName('main_entry.txt');
+  if(main){
+    const named = (await zipRead(buf, main)).trim().split(/\s+/)[0];
+    const hit = named && entries.find(e => e.name === named || e.name.endsWith('/' + named));
+    if(hit) return { name: hit.name, text: await zipRead(buf, hit) };
+  }
+
+  const biggest = (list) => list.slice().sort((a, b) => b.size - a.size)[0];
+  const named = biggest(entries.filter(e => ZIP_BUGREPORT_RE.test(e.name)));
+  if(named) return { name: named.name, text: await zipRead(buf, named) };
+
+  /* No file in it is called a bugreport. The largest text file still stands a
+     good chance of being a dump, and reading it is a better answer than
+     refusing an archive somebody rearranged. */
+  const txt = biggest(entries.filter(e => /\.(txt|log|dump|out)$/i.test(e.name)));
+  if(txt) return { name: txt.name, text: await zipRead(buf, txt) };
+
+  throw new Error('there is no text file in that zip');
+}
+
+/* What every way in hands to `load`: the text, and what to call the tab. A zip
+   is opened to the dump inside it; anything else is already the dump. */
+async function readDump(file){
+  const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  if(!isZip(head)) return { text: await file.text(), label: file.name };
+  const picked = await zipPickDump(await file.arrayBuffer());
+  return { text: picked.text, label: file.name, from: picked.name };
+}
+
 /* Every tool gets a look at the text, and each one that recognises it and
    parses something is kept — a bugreport holds several, and the switcher in
    the top bar is how you get at the others. The score only decides whether a
@@ -4848,7 +5295,7 @@ const hslToCss = (h, s, l) =>
    so a dump that holds several always opens on the same one. */
 const DETECT_MIN = 2;
 
-function load(text, prefer, label){
+function load(text, prefer, label, from){
   const src = String(text || '');
   const found = [], broke = [];
   for(const tool of TOOLS){
@@ -4865,12 +5312,17 @@ function load(text, prefer, label){
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
         + '`dumpsys SurfaceFlinger`, `dumpsys package`, `dumpsys user`, '
         + '`dumpsys input`, `dumpsys car_service` and `dumpsys binder_calls_stats` '
-        + 'output and ART '
+        + 'output, logcat, and ART '
         + 'thread dumps (`/data/anr/traces.txt`), '
-        + 'or a bugreport containing any of them.');
+        + 'or a bugreport — the zip or the text — containing any of them.');
   }
-  const entry = found.find(f => f.tool.id === prefer) || found[0];
-  addDoc(found, entry, label);
+  /* Every reader that recognised the text is a dump in its own right, so each
+     one opens as its own tab rather than as a switch inside one tab. A
+     bugreport is ten dumps in one file and comes out as ten tabs, left to
+     right in the order the readers are registered; `?tool=` decides which of
+     them is in front. */
+  const open = found.find(f => f.tool.id === prefer) || found[0];
+  for(const entry of found) addDoc(entry, label, from, entry === open);
 }
 
 /* ---------------- workspaces ---------------- */
@@ -4939,12 +5391,16 @@ function initialUi(entry){
 
 function currentDoc(){ return S.docs.find(d => d.id === S.docId) || null; }
 
-function addDoc(found, entry, label){
+/* A tab is one reader's reading of one text. `found` is kept as a list of the
+   one entry, because the desk-wide search walks every tab the same way and a
+   tab that held several was only ever showing one of them. */
+function addDoc(entry, label, from, open){
   const id = ++docSeq;
   const doc = { id, label: String(label || '').trim() || `dump ${id}`,
-                found, ui: initialUi(entry) };
+                from: from || null, found: [entry], ui: initialUi(entry) };
   S.docs.push(doc);
-  openDoc(doc);
+  if(open !== false) openDoc(doc); else renderDocTabs();
+  return doc;
 }
 
 /* Opening a tab is one assignment: its state never left it. */
@@ -4976,14 +5432,6 @@ function closeDoc(id){
    built at load — but the picks made against one set of names mean nothing
    against another, so the document starts over on the new scene and only the
    pose carries across. */
-function showTool(entry){
-  const doc = currentDoc();
-  if(!doc) return;
-  const { dim, view, yaw, pitch, sep } = doc.ui;
-  doc.ui = { ...initialUi(entry), dim, view, yaw, pitch, sep };
-  syncUi();
-}
-
 /* Put the open document on screen: first the controls that hold state of their
    own, then every pane. This is the one place that reads a document into the
    DOM, so nothing else has to remember what a switch has to catch up. */
@@ -5027,7 +5475,6 @@ function syncUi(){
     $('groupTitle').textContent = `${n} ${n === 1 ? (tool.groupNoun || 'group') : groups}`;
   }
   renderDocTabs();
-  renderToolTabs();
   renderShow();
   renderTabs();
   setView(S.view);       // syncs the depth controls and draws the sheet
@@ -5039,6 +5486,7 @@ function syncUi(){
    documents keep their tabs and clicking one comes back to it. */
 function showLoader(){
   document.querySelectorAll('.sheet-blank .extra-panel').forEach(el => el.remove());
+  note('');
   $('app').hidden = true;
   $('empty').hidden = false;
   $('err').hidden = true;
@@ -5078,13 +5526,27 @@ async function loadUrl(raw, prefer){
   try {
     const res = await fetch(u.href, { credentials:'omit', redirect:'follow' });
     if(!res.ok) return fail(`The server answered ${res.status} ${res.statusText} for that URL.`);
-    const text = await res.text();
+    const label = u.pathname.split('/').filter(Boolean).pop() || u.hostname;
+    /* A URL can point at a bugreport zip as easily as at a txt, and which one
+       it is, is in the bytes rather than in the name or the content type. */
+    const buf = await res.arrayBuffer();
+    let text, from = null;
+    if(isZip(new Uint8Array(buf, 0, Math.min(4, buf.byteLength)))){
+      const picked = await zipPickDump(buf);
+      text = picked.text; from = picked.name;
+    } else {
+      text = new TextDecoder().decode(buf);
+    }
     if(!text.trim()) return fail('That URL returned an empty file.');
-    load(text, prefer, u.pathname.split('/').filter(Boolean).pop() || u.hostname);
-  } catch {
-    // fetch() hides the reason cross-origin, and CORS is nearly always why.
-    fail('Could not fetch that URL. If it is on another site it has to send an ' +
-         'Access-Control-Allow-Origin header — otherwise download the file and drop it here.');
+    if(from) note(`Read ${from} out of ${label}.`);
+    load(text, prefer, from || label, from ? label : null);
+  } catch(err) {
+    /* A zip that would not open says why; a fetch that failed does not, since
+       fetch() hides the reason cross-origin and CORS is nearly always it. */
+    fail(err && err.message && !/fetch/i.test(err.message)
+      ? `That URL could not be read: ${err.message}.`
+      : 'Could not fetch that URL. If it is on another site it has to send an ' +
+        'Access-Control-Allow-Origin header — otherwise download the file and drop it here.');
   } finally {
     if(btn){ btn.disabled = false; btn.textContent = 'Fetch and show'; }
   }
@@ -5095,10 +5557,21 @@ function fail(msg){
   e.textContent = msg;
   e.hidden = false;
 }
+
+/* Not a failure: something worth saying about what was opened. It goes where
+   the error goes, because that is where somebody who just dropped a file is
+   looking, and it is cleared the same way. */
+function note(msg){
+  const e = $('loaderNote');
+  if(!e) return;
+  e.textContent = msg;
+  e.hidden = !msg;
+}
 function reset(){
   // The paste and URL panels are appended to the card; clear them or they pile
   // up, and a leftover focused input swallows the next paste.
   document.querySelectorAll('.sheet-blank .extra-panel').forEach(el => el.remove());
+  note('');
   S.docs = [];
   S.docId = null;
   document.body.classList.remove('layout-list');
@@ -5330,35 +5803,30 @@ function renderDocTabs(){
      colour: one property here, inherited by whichever tab is open. */
   $('docBar').style.setProperty('--wsp-accent', accentOf(currentSpace()));
   const shown = !$('app').hidden;
+  /* A tab is one reader's reading of one file, and a bugreport is ten of them
+     off the same file, so the reader's name is what tells the tabs apart and
+     leads the tab. The file's name only earns its place when more than one is
+     open; either way the whole of it is in the tooltip. */
+  const files = new Set(S.docs.map(d => d.label));
   $('docTabs').innerHTML = S.docs.map(d => {
-    const entry = d.found.find(f => f.tool.id === d.ui.toolId) || d.found[0];
+    const entry = d.found[0];
     const n = entry.scene.nodes.length;
     const open = shown && d.id === S.docId;
+    const counted = `${n} ${n === 1 ? entry.tool.noun : entry.tool.nouns}`;
     return `<span class="doc-tab" aria-current="${open}">
       <button class="doc-open" type="button" data-doc="${d.id}" aria-pressed="${open}"
-        title="${esc(d.label)} — ${n} ${n === 1 ? entry.tool.noun : entry.tool.nouns}">
-        <span class="doc-name">${esc(d.label)}</span
-        ><span class="doc-kind">${esc(entry.tool.name)}</span>
+        title="${esc(entry.tool.name)} — ${counted} — ${esc(d.label)}${
+          d.from ? `, out of ${esc(d.from)}` : ''}">
+        <span class="doc-name">${esc(entry.tool.name)}</span
+        >${files.size > 1 ? `<span class="doc-kind">${esc(elide(d.label, 22))}</span>` : ''}
       </button
       ><button class="doc-close" type="button" data-close="${d.id}"
-        title="Close this dump" aria-label="Close ${esc(d.label)}">\u00d7</button>
+        title="Close this dump" aria-label="Close ${esc(entry.tool.name)} from ${esc(d.label)}">\u00d7</button>
     </span>`;
   }).join('');
 }
 
 /* Only worth showing when the text held more than one thing Telltale reads. */
-function renderToolTabs(){
-  const el = $('toolTabs');
-  el.hidden = S.found.length < 2;
-  if(el.hidden) return el.innerHTML = '';
-  el.innerHTML = S.found.map(f => {
-    const n = f.scene.nodes.length;
-    return `<button class="tab" type="button" data-tool="${esc(f.tool.id)}"
-      aria-pressed="${f.tool === S.tool}"
-      title="${esc(f.tool.name)} — ${n} ${n === 1 ? f.tool.noun : f.tool.nouns}">${esc(f.tool.name)}</button>`;
-  }).join('');
-}
-
 /* The picker over whatever a tool groups by. It normally sits above the sheet,
    which a tool with nothing to draw does not have, so a list tool gets the
    copy of it that lives at the top of the stack pane instead. */
@@ -7407,6 +7875,114 @@ function inputDevGroupDetail(d){
   return out;
 }
 
+/* ---------------- render: the details pane, logcat ---------------- */
+
+/* The levels in the order logcat prints them, so a row of counts reads the
+   same way every time and the one that matters is at the end. */
+const LOG_ORDER = ['verbose', 'debug', 'info', 'warn', 'error', 'fatal', 'assert'];
+
+function logCounts(counts){
+  const rows = LOG_ORDER.filter(k => counts[k]).map(k =>
+    `<span class="chip">${esc(k)} <b>${counts[k]}</b></span>`);
+  return rows.length ? `<div class="chips">${rows.join('')}</div>` : none;
+}
+
+const logWhen = (e) => !e ? null
+  : e.time ? `${esc(e.date)} ${esc(e.time)}` : `[${e.uptime.toFixed(6)}]`;
+
+function logDetail(n){
+  const out = [];
+
+  if(n.tagRow){
+    out.push(`<section class="dgroup"><h3>Tag</h3>${dl([
+      ['tag', esc(n.tag)],
+      ['lines', `${n.lines}${n.trimmed ? ` <span style="color:var(--dim)">· ${
+        n.subCount} listed</span>` : ''}`],
+      ['worst level', `<span style="color:${tintFor(n)}">■</span> ${esc(n.worst.name)}`],
+      ['levels', logCounts(n.counts)],
+      n.pids.length && ['pids', flatChips(n.pids.map(String))],
+      ['first', logWhen(n.first)],
+      ['last', logWhen(n.last)],
+    ])}</section>`);
+
+    if(n.crash){
+      out.push(`<section class="dgroup"><h3>A crash is in here</h3>
+        <p style="margin:0">One of these lines is the first line of a crash —
+        <b>FATAL EXCEPTION</b>, or the <b>am_crash</b> the framework logs for
+        the same thing. The lines under this row are that crash and what the
+        system did about it.</p></section>`);
+    }
+    if(n.trimmed){
+      out.push(`<section class="dgroup"><h3>Not every line is listed</h3>
+        <p style="margin:0">This tag printed <b>${n.lines}</b> lines and
+        ${n.subCount} of them are listed: a log this long is nearly always one
+        tag repeating itself, so the lines with a level on them are the ones
+        kept. The counts above are of all of them, and the filter searches
+        what was kept.</p></section>`);
+    }
+    return out;
+  }
+
+  const e = n.entry;
+  out.push(`<section class="dgroup"><h3>Line</h3>${dl([
+    ['level', `<span style="color:${tintFor(n)}">■</span> ${esc(e.level.name)}${
+      e.levelChar ? ' ' + dim('(' + e.levelChar + ')') : ''}`],
+    ['tag', docLink(n.parentHash, e.tag)],
+    ['when', logWhen(e)],
+    e.pid !== null && ['pid', e.pid],
+    e.tid !== null && ['tid', `${e.tid}${e.tid === e.pid ? ' ' + dim('· the main thread') : ''}`],
+    e.uid && ['uid', esc(e.uid)],
+    e.buffer && ['buffer', esc(e.buffer)],
+    ['dump line', n.lineNo],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Message</h3><pre class="raw">${
+    esc(e.message || e.raw)}</pre></section>`);
+  return out;
+}
+
+function logSectionDetail(d){
+  const g = S.data.globals;
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>${esc(cap(d.label))}</h3>${dl([
+    ['lines', d.lines],
+    ['tags', d.tags],
+    ['levels', logCounts(d.counts)],
+    d.buffers.length && ['buffers', flatChips(d.buffers)],
+    ['first', logWhen(d.first)],
+    ['last', logWhen(d.last)],
+    d.command && ['printed by', `<code>${esc(d.command)}</code>`],
+  ])}</section>`);
+
+  if(d.crashes.length){
+    out.push(`<section class="dgroup"><h3>${d.crashes.length === 1 ? 'A crash' : 'Crashes'}</h3>
+      <p style="margin:0 0 6px">${d.crashes.length === 1
+        ? 'One tag in this log carries a crash.'
+        : `${d.crashes.length} tags in this log carry a crash.`}</p>
+      ${d.crashes.map(t => docLink(`log:${d.id}:${t}`, t)).join('')}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>The whole log</h3>${dl([
+    ['sections', g.sections],
+    ['lines read', `${g.lines}${g.trimmed ? ` <span style="color:var(--dim)">· ${
+      g.shown} listed</span>` : ''}`],
+    ['tags', g.tags],
+    g.errors && ['errors', g.errors],
+    g.warns && ['warnings', g.warns],
+    g.first && ['from', esc(g.first)],
+    g.last && ['to', esc(g.last)],
+  ])}</section>`);
+
+  if(!d.lines){
+    out.push(`<section class="dgroup"><h3>Nothing in this buffer</h3>
+      <p style="margin:0">The rule for this log is in the file and no lines
+      came under it, which is what a bugreport prints when the buffer was
+      empty or the device would not give it up.</p></section>`);
+  }
+  return out;
+}
+
 function renderDisplayDetail(){
   const d = currentDisplay();
   const noun = S.tool.groupNoun || 'display';
@@ -7726,6 +8302,46 @@ const TOOLS = [
     detail: inputDevDetail,
     displayDetail: inputDevGroupDetail,
   },
+  {
+    id: 'logcat',
+    name: 'Logcat',
+    layout: 'list',        // a log line happened, it does not sit anywhere
+    noun: 'line', nouns: 'lines', groupNoun: 'log', groupNouns: 'logs',
+    /* Eighty thousand lines, of which the ones worth opening the log for are
+       the handful with a level on them. Everything else is there to be filtered
+       down to once you know what you are looking for. */
+    show: 'problems',
+    visBadge: false,
+    filterHint: 'Filter by tag, message or pid',
+    shows: {
+      problems: { label:'errors', test:(n) => n.tagRow ? n.errors > 0 || n.crash
+                                                       : n.level.rank >= 4 },
+      warnings: { label:'warnings', test:(n) => n.tagRow ? n.errors > 0 || n.warns > 0 || n.crash
+                                                         : n.level.rank >= 3 },
+      all:      { label:'all', test:() => true },
+    },
+    /* The list is the tags; a tag's own lines are what is inside it, so they
+       open shut and come out when the tag is picked — or when a setting asks
+       for the lines themselves rather than the tags that hold them. */
+    startCollapsed: (n) => !!n.tagRow,
+    openOnShow: true,
+    rowMeta: (n) => n.tagRow
+      ? [`${n.lines} line${n.lines === 1 ? '' : 's'}`,
+         n.errors ? `${n.errors} error${n.errors === 1 ? '' : 's'}` : null,
+         n.warns ? `${n.warns} warning${n.warns === 1 ? '' : 's'}` : null,
+         n.first && n.first.time ? esc(n.first.time) : null,
+        ].filter(Boolean).join(' \u00b7 ')
+      : [n.entry.time ? esc(n.entry.time) : `[${n.entry.uptime.toFixed(3)}]`,
+         n.entry.pid === null ? null : `${n.entry.pid}/${n.entry.tid}`,
+         esc(n.level.name),
+        ].filter(Boolean).join(' \u00b7 '),
+    detect: (t) => (/^-{4,}\s*(?:SYSTEM|EVENT|RADIO|KERNEL|LAST|MAIN|CRASH)\s+LOG/m.test(t) ? 3 : 0)
+                 + (/^(?:\d{4}-)?\d{1,2}-\d{1,2}\s+\d{1,2}:\d{2}:\d{2}\.\d{3}\s+(?:\S+\s+)?\d+\s+\d+\s+[VDIWEFSA]\s/m.test(t) ? 3 : 0)
+                 + (/^-{4,}\s*beginning of \S+/m.test(t) ? 1 : 0),
+    parse: parseLogcatDump,
+    detail: logDetail,
+    displayDetail: logSectionDetail,
+  },
 ];
 
 /* What `blocking` keeps: main, the chain behind it, a deadlock, and anything
@@ -7825,6 +8441,8 @@ function findSrc(g){
   const ds = g.entry.scene.displays;
   const where = ds.length < 2 ? ''
     : ' · ' + esc(g.display.label || `${g.entry.tool.groupNoun || 'display'} ${g.display.id}`);
+  /* One tab is one reader, so the tab's name and the reader's are two halves
+     of where a hit came from: the file, then what read it. */
   return `<b>${esc(g.doc.label)}</b> · ${esc(g.entry.tool.name)}${where}`;
 }
 
@@ -7907,7 +8525,6 @@ function goToHit(hit){
   const q = $('findBox').value.trim();
   closeFind();
   if(hit.doc.id !== S.docId) openDoc(hit.doc);
-  if(hit.doc.ui.toolId !== hit.entry.tool.id) showTool(hit.entry);
   S.displayId = hit.display.id;
   S.filter = q;
   syncUi();
@@ -8042,11 +8659,6 @@ $('sheet').addEventListener('pointercancel', (e) => {
 $('legend').addEventListener('click', (e) => {
   const b = e.target.closest('[data-hash]');
   if(b) select(b.dataset.hash);
-});
-$('toolTabs').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-tool]'); if(!b) return;
-  const entry = S.found.find(f => f.tool.id === b.dataset.tool);
-  if(entry && entry.tool !== S.tool) showTool(entry);
 });
 $('docTabs').addEventListener('click', (e) => {
   const x = e.target.closest('[data-close]');
@@ -8424,9 +9036,23 @@ document.addEventListener('keydown', (e) => {
 $('btnPick').addEventListener('click', () => $('file').click());
 $('file').addEventListener('change', (e) => {
   const f = e.target.files[0]; if(!f) return;
-  f.text().then(t => load(t, null, f.name)).catch(() => fail('That file could not be read.'));
+  openFile(f);
   e.target.value = '';
 });
+
+/* One file, however it arrived. A zip is opened to the dump inside it, and
+   which entry that was is said on the way in — a bugreport zip holds a dozen
+   files and only one of them is the dump. */
+function openFile(f){
+  note('');
+  return readDump(f)
+    .then(({ text, label, from }) => {
+      if(!text.trim()) return fail(`${f.name} is empty.`);
+      if(from) note(`Read ${from} out of ${f.name}.`);
+      load(text, null, from || label, from ? f.name : null);
+    })
+    .catch((err) => fail(`${f.name} could not be read${err && err.message ? ': ' + err.message : '.'}`));
+}
 $('btnPaste').addEventListener('click', () => {
   const card = document.querySelector('.sheet-blank');
   if($('pasteArea')) { $('pasteArea').focus(); return; }
@@ -8480,9 +9106,7 @@ document.addEventListener('drop', (e) => {
   e.preventDefault();
   const files = e.dataTransfer.files ? [...e.dataTransfer.files] : [];
   if(files.length){
-    files.reduce((p, f) => p.then(() =>
-      f.text().then(t => load(t, null, f.name)).catch(() => fail(`${f.name} could not be read.`))),
-      Promise.resolve());
+    files.reduce((p, f) => p.then(() => openFile(f)), Promise.resolve());
     return;
   }
   const t = e.dataTransfer.getData('text');

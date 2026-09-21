@@ -19,6 +19,7 @@ import {
   binderCaller, binderCall, binderTxn, binderTime, binderBytes,
   parseInputDump, parseInputDevicesDump,
   inputSources, inputWindowName, inputRegion, inputConfigOf, inputViewports,
+  parseLogcatDump, logKeep, logLevel,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -1021,4 +1022,94 @@ test('both input readers read their own section of a bugreport, and no more', ()
   // and the readers either side of it still see their own dumps whole
   assert.equal(parseWindowDump(bugreport).nodes.length, parseWindowDump(read('fixtures/window-sample.txt')).nodes.length);
   assert.equal(parsePackageDump(bugreport).ok, true);
+});
+
+
+/* ---------------- logcat ---------------- */
+
+test('the level letter is the level, and an unknown one is not a crash', () => {
+  assert.equal(logLevel('E').name, 'error');
+  assert.equal(logLevel('F').rank, 5);
+  assert.equal(logLevel('A').name, 'assert');
+  assert.equal(logLevel('?').name, 'info', 'a letter logcat has never printed still reads');
+});
+
+test('the logs are read into one group per rule the bugreport printed', () => {
+  const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
+  assert.equal(s.ok, true);
+  assert.deepEqual(s.displays.map((d) => d.label),
+    ['system log', 'event log', 'radio log', 'kernel log']);
+  assert.equal(s.displays[0].command, 'logcat -b all -v threadtime -v printable -v uid -d *:v');
+  assert.deepEqual(s.displays[0].buffers, ['main', 'crash']);
+});
+
+/* Three shapes of line, and the parser has to read all three off one file. */
+test('a line is read with or without the uid column, and dmesg with neither', () => {
+  const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
+  const line = (tag) => s.nodes.find((n) => !n.tagRow && n.entry.tag === tag).entry;
+
+  const withUid = line('ActivityManager');     // the system log is dumped with -v uid
+  assert.equal(withUid.uid, '1000');
+  assert.equal(withUid.pid, 1631);
+  assert.equal(withUid.tid, 1668);
+  assert.equal(withUid.level.name, 'info');
+
+  const noUid = line('RILJ');                  // the radio log is not
+  assert.equal(noUid.uid, null);
+  assert.equal(noUid.pid, 1900);
+  assert.equal(noUid.tid, 1955);
+
+  const kernel = line('lowmemorykiller');      // and dmesg counts from boot
+  assert.equal(kernel.pid, null);
+  assert.equal(kernel.time, null);
+  assert.ok(kernel.uptime > 12);
+  assert.ok(kernel.message.includes('Killing'));
+});
+
+test('the list is the tags, with their own lines under them', () => {
+  const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
+  const am = s.nodes.find((n) => n.tagRow && n.tag === 'ActivityManager');
+  assert.equal(am.lines, 6);
+  assert.equal(am.errors, 2);
+  assert.equal(am.warns, 2);
+  assert.equal(am.worst.name, 'error');
+  assert.equal(s.nodes.filter((n) => n.parentHash === am.hash).length, 6);
+});
+
+test('a crash is found by either of the two things that say so', () => {
+  const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
+  const crashed = s.nodes.filter((n) => n.tagRow && n.crash).map((n) => n.tag);
+  assert.deepEqual(crashed.sort(), ['AndroidRuntime', 'am_crash'],
+    'FATAL EXCEPTION in the main log, and the event the framework logged for it');
+  assert.equal(s.globals.crashes, 2);
+});
+
+/* The span of a bugreport's logs is not its first and last line: the buffers
+   are printed one after another, so the radio log ends before the main log. */
+test('the span of the log is worked out from the stamps, not the order', () => {
+  const g = parseLogcatDump(read('fixtures/logcat-sample.txt')).globals;
+  assert.equal(g.first, '09-21 11:02:30.115', 'the radio log opens it');
+  assert.equal(g.last, '09-21 11:02:36.002', 'and the system log closes it');
+});
+
+/* A tag that printed ten thousand identical lines is one row and a count; the
+   lines it keeps are the ones with a level on them. */
+test('a tag keeps its worst lines when it printed more than its share', () => {
+  const entries = [];
+  for (let i = 0; i < 500; i++) {
+    entries.push({ at: i, level: logLevel(i === 480 ? 'E' : 'D') });
+  }
+  const kept = logKeep(entries, 10);
+  assert.equal(kept.length, 10);
+  assert.ok(kept.some((e) => e.level.name === 'error'), 'the one error survives the cut');
+  assert.deepEqual(kept.map((e) => e.at), kept.map((e) => e.at).slice().sort((a, b) => a - b),
+    'and what is kept still reads in the order it was printed');
+  assert.equal(logKeep(entries.slice(0, 4), 10).length, 4, 'a short tag is left alone');
+});
+
+test('this parser says no to every dump that is not a log', () => {
+  for (const name of ['window-sample', 'sf-sample', 'package-sample', 'anr-sample',
+                      'car-service-sample', 'user-sample', 'binder-sample', 'input-sample']) {
+    assert.equal(parseLogcatDump(read(`fixtures/${name}.txt`)).ok, false, name);
+  }
 });
