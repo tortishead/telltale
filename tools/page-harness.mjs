@@ -82,6 +82,10 @@ return {
   detail: () => document.getElementById('detail').innerHTML,
   rows: () => { renderList(); return document.getElementById('wlist').innerHTML; },
   sheet: (view) => { setView(view || S.view); return document.getElementById('sheet').innerHTML; },
+  /* The filter boxes' own reading of what was typed, and what the list makes
+     of it — the one piece of the page that decides which rows exist. */
+  match: (q, asRegex) => textMatcher(q, asRegex),
+  filter: (q, asRegex) => { S.filter = q; S.regex = !!asRegex; return visibleNodes(); },
   error: () => { const e = document.getElementById('err'); return e.hidden ? null : e.textContent; },
   note: () => { const e = document.getElementById('loaderNote'); return e.hidden ? null : e.textContent; },
 };

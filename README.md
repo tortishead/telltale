@@ -25,7 +25,7 @@ or point it at a URL.
 | `adb shell dumpsys input` | input windows | `input` | Every window the input dispatcher will consider on its display, drawn to scale in the order it walks them, with the part of each one that actually takes touch drawn inside its frame where the two differ. Says which window has focus, which one a touch is going to right now, and — the question this dump gets opened with — which windows are covered by another window's touch area or are dropping their input because something untrusted is over them. Opens on the windows that take touch. |
 | `adb shell dumpsys input` | input devices | `inputdev` | Every device the reader found, grouped by the display it drives, with what the kernel says it is and what Android made of that: its sources, its axes and their ranges, the key layout and IDC files configuring it, and the mappers the reader gave it. |
 | `adb shell dumpsys binder_calls_stats` | calls | `binder` | Every binder call the system server handled, grouped by the Android user the caller ran as, then by the caller, then by the method it called — with the cpu it cost, its share of the total, the worst latency, the largest reply, and how many of the calls came back with an exception instead. Says whether the dump was worth taking: it records nothing while the device is charging, and samples one call in a thousand unless told not to. |
-| `adb logcat -d`, or any bugreport | log lines | `logcat` | Every log the bugreport carries — system, events, radio, crash, kernel — as one group each. The list is not the lines but the tags, each standing for its own lines with the levels it printed counted on the row, so eighty thousand lines read as two hundred tags; opening a tag opens its lines. Opens on the tags that logged an error, and badges the one holding a crash. |
+| `adb logcat -d`, or any bugreport | log lines | `logcat` | A log reader: every line, in the order it was printed, in the columns logcat prints them in — time, pid-tid, level, tag, message — coloured by level. Every log the bugreport carries is its own group (system, events, radio, crash, kernel). The level buttons are `*:I`, `*:W`, `*:E`; the filter box matches tag, message, pid or tid; rows alternate shade so a stamp on the left stays tied to its message on the right; the line that starts a crash is marked. Only the screenful being read is in the page, so a three-hundred-thousand-line log scrolls like a file. |
 
 ## Bugreports
 
@@ -81,6 +81,14 @@ reader that recognised each of them, and every display inside each reader.
 Results are grouped by the tab they came out of; `↑` `↓` walk them and `⏎`
 opens one, which switches to that tab, to that display, and leaves the query
 on as that tab's own filter so the thing you found is the thing on screen.
+
+Either box takes a regular expression. Press the **`.*`** beside it and what
+you type is the pattern — `activity.*`, `timeout|watchdog` — or write it
+between slashes without touching the switch: `/^am_(crash|anr)/`,
+`/\bpid 1631\b/i`. Matching is case-insensitive whether or not you write `i`,
+and a pattern that will not compile says what is wrong with it instead of
+matching nothing in silence. The switch belongs to the dump you are reading,
+and opening a search result carries it over with the query.
 
 ## Host it
 

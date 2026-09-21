@@ -1078,7 +1078,7 @@ test('the logs are read into one group per rule the bugreport printed', () => {
 /* Three shapes of line, and the parser has to read all three off one file. */
 test('a line is read with or without the uid column, and dmesg with neither', () => {
   const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
-  const line = (tag) => s.nodes.find((n) => !n.tagRow && n.entry.tag === tag).entry;
+  const line = (tag) => s.nodes.find((n) => n.entry.tag === tag).entry;
 
   const withUid = line('ActivityManager');     // the system log is dumped with -v uid
   assert.equal(withUid.uid, '1000');
@@ -1098,19 +1098,33 @@ test('a line is read with or without the uid column, and dmesg with neither', ()
   assert.ok(kernel.message.includes('Killing'));
 });
 
-test('the list is the tags, with their own lines under them', () => {
+/* The list is the log: every line of it, in the order it was printed, with
+   nothing nested inside anything. */
+test('the list is the lines, in the order the log printed them', () => {
   const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
-  const am = s.nodes.find((n) => n.tagRow && n.tag === 'ActivityManager');
-  assert.equal(am.lines, 6);
-  assert.equal(am.errors, 2);
-  assert.equal(am.warns, 2);
-  assert.equal(am.worst.name, 'error');
-  assert.equal(s.nodes.filter((n) => n.parentHash === am.hash).length, 6);
+  const sys = s.nodes.filter((n) => n.displayId === 0);
+
+  assert.equal(sys.length, s.displays[0].lines, 'every line of the buffer is a row');
+  assert.ok(s.nodes.every((n) => !n.parentHash), 'and none of them hangs under anything');
+  assert.deepEqual(sys.map((n) => n.at), sys.map((n) => n.at).slice().sort((a, b) => a - b),
+    'the rows run down the file the way the log ran down the clock');
+
+  const am = sys.filter((n) => n.tag === 'ActivityManager');
+  assert.equal(am.length, 6);
+  assert.equal(am.filter((n) => n.level.rank >= 4).length, 2, 'two of them are errors');
+  assert.equal(am.filter((n) => n.level.name === 'warn').length, 2);
+
+  // the row carries what the columns print, so the reader needs nothing else
+  const one = am[0];
+  assert.equal(one.entry.tag, 'ActivityManager');
+  assert.ok(one.entry.time);
+  assert.equal(typeof one.entry.pid, 'number');
+  assert.ok(one.search.includes(String(one.entry.pid)), 'and the filter reaches the pid');
 });
 
 test('a crash is found by either of the two things that say so', () => {
   const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
-  const crashed = s.nodes.filter((n) => n.tagRow && n.crash).map((n) => n.tag);
+  const crashed = [...new Set(s.nodes.filter((n) => n.crash).map((n) => n.tag))];
   assert.deepEqual(crashed.sort(), ['AndroidRuntime', 'am_crash'],
     'FATAL EXCEPTION in the main log, and the event the framework logged for it');
   assert.equal(s.globals.crashes, 2);
@@ -1124,9 +1138,10 @@ test('the span of the log is worked out from the stamps, not the order', () => {
   assert.equal(g.last, '09-21 11:02:36.002', 'and the system log closes it');
 });
 
-/* A tag that printed ten thousand identical lines is one row and a count; the
-   lines it keeps are the ones with a level on them. */
-test('a tag keeps its worst lines when it printed more than its share', () => {
+/* A log longer than the reader holds is sampled rather than cut off at the
+   budget: what goes is the repetition, and the lines with a level on them
+   stay where they were printed. */
+test('a log keeps its worst lines when it printed more than the budget', () => {
   const entries = [];
   for (let i = 0; i < 500; i++) {
     entries.push({ at: i, level: logLevel(i === 480 ? 'E' : 'D') });

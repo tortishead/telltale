@@ -168,6 +168,12 @@ main{
   padding:5px 8px; border-radius:2px;
 }
 .filter::placeholder{color:var(--placeholder)}
+/* The box and the switch that says how to read it. `.*` is what the switch is
+   called everywhere else a log is searched, so it is what it is called here. */
+.filter-row{display:flex; gap:6px; align-items:stretch}
+.filter-row > input{flex:1; min-width:0}
+.re-btn{font-family:var(--mono); padding:0 8px; flex:none}
+.re-btn[aria-pressed="true"]{border-color:var(--mark); color:var(--fg-strong)}
 .checks{display:flex; gap:14px; flex-wrap:wrap; align-items:center; color:var(--dim); font-size:12px}
 .show{display:flex; gap:4px; align-items:center}
 .checks label{display:flex; gap:5px; align-items:center; cursor:pointer}
@@ -446,6 +452,58 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
   background-repeat:no-repeat;
 }
 .wlist.is-tree .wrow{grid-template-columns:15px 12px minmax(0,1fr); gap:5px 7px}
+/* ---------- the log, which is a log reader ---------- */
+/* Columns, monospace, one line per line: when it happened, which process and
+   thread printed it, the level letter, the tag, and the message. The first
+   four are fixed so the eye runs down them; the message takes what is left and
+   is clipped, because a log read at a glance is read down the left and the
+   long line is the one you open. */
+.wlist.is-log .wrow{
+  grid-template-columns:max-content max-content 1ch minmax(8ch, 22ch) minmax(0,1fr);
+  gap:0 10px; align-items:baseline;
+  padding:2px 12px 2px 9px; border-bottom:none;
+  font-family:var(--mono); font-size:12px; line-height:1.5;
+  background-image:none;
+}
+.wlist.is-log .wrow > span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* Every other row is a shade off the paper. Rows this tight run together, and
+   a band under alternate ones is what keeps a stamp on the left tied to its
+   message on the right across a wide pane. It is the faintest thing on the
+   row: the level's colour, the crash band and the selection all sit on top of
+   it, which is why it is declared before them. The stripe follows the line's
+   own number, not its place in the DOM, so it does not flip as the window
+   scrolls over it. */
+.wlist.is-log .wrow.is-alt{background-color:var(--ink-2)}
+/* The two spacers a windowed list is drawn between. They are rows to the
+   browser and nothing to the reader. */
+.row-gap{padding:0; margin:0; border:none; background:none; pointer-events:none}
+.lg-when{color:var(--dim)}
+.lg-who{color:var(--dim)}
+.lg-lv{font-weight:700; text-align:center}
+.lg-tag{color:var(--label)}
+.lg-msg{color:var(--fg)}
+/* The level colours the letter and the message, and nothing else: a whole row
+   in the level's colour is a row you cannot read the tag off. */
+.wlist.is-log .log-verbose .lg-lv{color:var(--dim)}
+.wlist.is-log .log-debug   .lg-lv{color:#6fa8c8}
+.wlist.is-log .log-info    .lg-lv{color:var(--mark)}
+.wlist.is-log .log-warn    .lg-lv{color:var(--amber)}
+.wlist.is-log .log-error   .lg-lv,
+.wlist.is-log .log-fatal   .lg-lv{color:var(--redline)}
+.wlist.is-log .log-verbose .lg-msg,
+.wlist.is-log .log-debug   .lg-msg{color:var(--dim)}
+.wlist.is-log .log-warn    .lg-msg{color:var(--amber)}
+.wlist.is-log .log-error   .lg-msg,
+.wlist.is-log .log-fatal   .lg-msg{color:var(--redline)}
+/* The line a crash starts at is the one line in a log worth finding from
+   across the room. */
+.wlist.is-log .is-crash,
+.wlist.is-log .is-crash.is-alt{background:color-mix(in srgb, var(--redline) 16%, transparent)}
+.wlist.is-log .is-crash .lg-msg{color:var(--redline); font-weight:700}
+.wlist.is-log .wrow[aria-selected="true"],
+.wlist.is-log .wrow.is-alt[aria-selected="true"]{background-color:var(--ink-3)}
+/* A filter box holding a pattern that will not compile. */
+.filter.is-bad{border-color:var(--redline); color:var(--redline)}
 /* Hover and selection are colour only: the shorthand would take the rails with
    it. */
 .wrow:hover{background-color:var(--ink-2)}
@@ -979,7 +1037,11 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
       <div class="tabs" id="listTabs"></div>
     </div>
     <div class="controls" id="controls">
-      <input class="filter" id="filter" type="search" placeholder="Filter by title, package or type" aria-label="Filter windows">
+      <div class="filter-row">
+        <input class="filter" id="filter" type="search" placeholder="Filter by title, package or type" aria-label="Filter windows">
+        <button class="tab re-btn" id="filterRe" type="button" aria-pressed="false"
+                title="Read what is typed as a regular expression">.*</button>
+      </div>
       <div class="checks">
         <span class="show">
           <span>show</span>
@@ -1040,9 +1102,13 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
 
 <div class="find" id="find" hidden>
   <div class="find-card" role="dialog" aria-modal="true" aria-label="Search this workspace">
-    <input class="find-box" id="findBox" type="search" spellcheck="false" autocomplete="off"
-           placeholder="Search every dump in this workspace"
-           aria-label="Search every dump in this workspace">
+    <div class="filter-row">
+      <input class="find-box" id="findBox" type="search" spellcheck="false" autocomplete="off"
+             placeholder="Search every dump in this workspace"
+             aria-label="Search every dump in this workspace">
+      <button class="tab re-btn" id="findRe" type="button" aria-pressed="false"
+              title="Read what is typed as a regular expression">.*</button>
+    </div>
     <div class="find-results" id="findResults" role="listbox" aria-label="Matches"></div>
     <div class="find-foot" id="findFoot"></div>
   </div>
@@ -4725,10 +4791,13 @@ function parseInputDevicesDump(input) {
 
 /* A bugreport carries its logs in the same file as its dumps, printed by
    `logcat -v threadtime` under a rule that names the buffer. There is nothing
-   to draw and nothing to nest, but there are eighty thousand lines, of which
-   the ten that matter are an exception and the lines around it. So the list is
-   not the lines: it is the tags, each standing for its own lines, with the
-   levels it printed counted on the row. Opening a tag is opening its lines.
+   to draw and nothing to nest: a log is a stream, and the thing that makes one
+   readable is that it is the stream — every line, in the order it happened,
+   with the stamp, the process, the level and the tag in fixed columns down the
+   left. So the list is the lines. The rule above each log is a group, which is
+   what puts main, events, radio and the kernel on their own tabs; the level
+   buttons are the `*:W` every log reader has; the filter box is the tag or the
+   pid or the words in the message.
 
    The same parser reads a plain `adb logcat -d`, which is the same text
    without the rule above it. */
@@ -4758,18 +4827,60 @@ const LOG_LEVELS = {
 };
 const logLevel = (ch) => LOG_LEVELS[ch] || LOG_LEVELS.I;
 
-/* A tag keeps this many of its own lines. A tag with more than that is nearly
-   always one printing the same thing in a loop, and the count on its row is
-   the whole of what that tag has to say; the lines that are worth reading are
-   the ones with a level on them, so those are the ones kept. */
-const LOG_PER_TAG = 120;
-/* And the log as a whole keeps this many, so a two-hundred-thousand-line
-   bugreport does not become two hundred thousand rows. */
-const LOG_MAX_LINES = 20000;
+/* How many lines the reader will hold. Only the screenful being looked at is
+   ever in the DOM, so what this bounds is memory rather than layout, and it is
+   set high enough that the whole of a normal bugreport's logs is in the list
+   and nothing is quietly missing from a search. Past it the log is sampled
+   rather than truncated, so what is dropped is the repetition and not the end
+   of the file. */
+const LOG_MAX_LINES = 250000;
 
-/* Which lines to keep when a tag printed more than its share: the worst first,
-   and among equals the first ones printed, then back into printed order so the
-   list still reads down the page. */
+/* How the budget is split when a file holds several logs. Evenly, except that
+   a log shorter than its share gives the rest back — so the event log and the
+   kernel log come through whole and the system log, which is the one with a
+   quarter of a million lines in it, takes what is left. A single pool handed
+   out first-come would spend the whole of it on the first buffer and leave
+   the others empty. */
+/* Two hundred thousand rows is two hundred thousand objects, so what a row
+   holds is worth counting. The text a filter matches on is the tag and the
+   message again, lowercased — half the memory of the log for a string that is
+   only ever read while someone is typing — so it is worked out when it is
+   asked for rather than kept. Every log node is made on this, which is also
+   what keeps the two empty arrays a row would otherwise each allocate down to
+   one of each for the whole log. */
+const LOG_NODE = {
+  badges: Object.freeze([]),
+  ancestors: Object.freeze([]),
+  get search() {
+    const e = this.entry;
+    return `${e.tag} ${e.message} ${e.pid === null ? '' : e.pid}${
+      e.tid === null ? '' : ' ' + e.tid} ${e.level.name}`.toLowerCase();
+  },
+};
+
+function logBudgets(sections, cap) {
+  const need = sections.map((sec) => sec.entries.length);
+  const out = need.map(() => 0);
+  let left = cap;
+  let open = need.map((_, i) => i).filter((i) => need[i] > 0);
+  while (open.length && left > 0) {
+    const share = Math.floor(left / open.length);
+    if (!share) break;
+    const next = [];
+    for (const i of open) {
+      const take = Math.min(share, need[i] - out[i]);
+      out[i] += take;
+      left -= take;
+      if (out[i] < need[i]) next.push(i);
+    }
+    open = next;
+  }
+  return out;
+}
+
+/* Which lines to keep when a log printed more than the budget: the worst
+   first, and among equals the first ones printed, then back into printed order
+   so the list still reads down the page. */
 function logKeep(entries, cap) {
   if (entries.length <= cap) return entries;
   const ranked = entries.slice().sort((a, b) => b.level.rank - a.level.rank || a.at - b.at);
@@ -4878,94 +4989,54 @@ function parseLogcatDump(input) {
 
   const nodes = [];
   const displays = [];
+  const budgets = logBudgets(sections, LOG_MAX_LINES);
   let kept = 0;
 
-  for (const sec of sections) {
+  for (const [si, sec] of sections.entries()) {
     if (!sec.entries.length) continue;
+    const id = sec.id;
 
-    /* The tags, in the order they first printed. A log read top to bottom is
-       how it happened, and sorting the tags by how much they printed would put
-       the noisiest one first and the crash last. */
+    /* The tags are still counted — how many printed, and which of them carry a
+       crash, is what the group's own pane says about the log — but they are
+       not what the list is made of. */
     const tags = new Map();
     for (const e of sec.entries) {
       let t = tags.get(e.tag);
-      if (!t) {
-        t = { tag: e.tag, entries: [], counts: {}, worst: logLevel('V'), at: e.at, crash: false };
-        tags.set(e.tag, t);
-      }
-      t.entries.push(e);
-      t.counts[e.level.name] = (t.counts[e.level.name] || 0) + 1;
-      if (e.level.rank > t.worst.rank) t.worst = e.level;
+      if (!t) { t = { tag: e.tag, lines: 0, crash: false }; tags.set(e.tag, t); }
+      t.lines++;
       if (LOG_CRASH_RE.test(e.tag) || LOG_CRASH_RE.test(e.message)) t.crash = true;
     }
 
-    const id = sec.id;
-    for (const t of tags.values()) {
-      const hash = `log:${id}:${t.tag}`;
-      const errors = (t.counts.error || 0) + (t.counts.fatal || 0);
-      const warns = t.counts.warn || 0;
-      const first = t.entries[0], last = t.entries[t.entries.length - 1];
+    const keep = logKeep(sec.entries, budgets[si]);
+    kept += keep.length;
 
-      nodes.push({
-        hash,
-        title: t.tag,
+    for (const e of keep) {
+      const crash = LOG_CRASH_RE.test(e.message) || LOG_CRASH_RE.test(e.tag);
+      nodes.push(Object.assign(Object.create(LOG_NODE), {
+        hash: `log:${id}:line:${e.at}`,
+        /* The message is the row, which is why it is the title: it is what the
+           filter matches on, what search across the desk shows, and what the
+           pane is headed with when the line is picked. */
+        title: e.message || e.tag,
         displayId: id,
         frame: null, frameSource: null,
-        z: -t.at,
-        family: t.crash ? 'log-crash' : t.worst.family,
-        typeLabel: t.crash ? 'crash' : t.worst.name,
+        z: -e.at,
+        family: crash ? 'log-crash' : e.level.family,
+        typeLabel: e.level.name,
         visible: true, focused: false,
-        at: t.at,
-        raw: t.entries.slice(0, 40).map((e) => e.raw).join('\n'),
-        search: `${t.tag} ${t.entries.slice(0, 400).map((e) => e.message).join(' ')}`.toLowerCase(),
-        badges: [
-          ...(t.crash ? [['crash', 'badge-focus']] : []),
-          ...(errors ? [[`${errors} error${errors === 1 ? '' : 's'}`, 'badge-exit']] : []),
-          ...(warns && !errors ? [[`${warns} warning${warns === 1 ? '' : 's'}`, 'badge-comp']] : []),
-        ],
-        tagRow: true,
-        tag: t.tag,
-        lines: t.entries.length,
-        counts: t.counts,
-        worst: t.worst,
-        errors, warns,
-        crash: t.crash,
-        first, last,
-        pids: [...new Set(t.entries.map((e) => e.pid).filter((p) => p !== null))],
-        subCount: 0,
+        at: e.at,
+        raw: e.raw,
+        entry: e,
+        level: e.level,
+        tag: e.tag,
+        lineNo: e.at,
+        crash,
         parentHash: null,
-        ancestors: [],
-      });
-
-      const parent = nodes[nodes.length - 1];
-      const ancestors = [{ hash, title: t.tag }];
-      const room = Math.max(0, LOG_MAX_LINES - kept);
-      const keep = room ? logKeep(t.entries, Math.min(LOG_PER_TAG, room)) : [];
-      kept += keep.length;
-      parent.subCount = keep.length;
-      parent.trimmed = t.entries.length - keep.length;
-
-      for (const e of keep) {
-        nodes.push({
-          hash: `log:${id}:line:${e.at}`,
-          title: e.message || e.tag,
-          displayId: id,
-          frame: null, frameSource: null,
-          z: -e.at,
-          family: LOG_CRASH_RE.test(e.message) ? 'log-crash' : e.level.family,
-          typeLabel: e.level.name,
-          visible: true, focused: false,
-          at: e.at,
-          raw: e.raw,
-          search: `${e.tag} ${e.message} ${e.pid === null ? '' : e.pid}`.toLowerCase(),
-          badges: [],
-          entry: e,
-          level: e.level,
-          lineNo: e.at,
-          parentHash: hash, ancestors,
-          subCount: 0,
-        });
-      }
+        subCount: 0,
+        /* `badges` and `ancestors` come off the prototype; a crash is the one
+           line in a log that has anything to say in the margin. */
+        ...(crash ? { badges: [['crash', 'badge-focus']] } : null),
+      }));
     }
 
     const counts = {};
@@ -4980,6 +5051,7 @@ function parseLogcatDump(input) {
       insets: [], raw: '',
       command: sec.command,
       lines: sec.entries.length,
+      listed: keep.length,
       tags: tags.size,
       counts,
       errors,
@@ -5003,22 +5075,28 @@ function parseLogcatDump(input) {
   const counts = {};
   for (const e of all) counts[e.level.name] = (counts[e.level.name] || 0) + 1;
 
+  const crashTags = new Set();
+  for (const e of all) {
+    if (LOG_CRASH_RE.test(e.tag) || LOG_CRASH_RE.test(e.message)) crashTags.add(e.tag);
+  }
+
   const globals = {
     sections: displays.length,
     lines: all.length,
     shown: kept,
-    tags: nodes.filter((n) => n.tagRow).length,
+    tags: new Set(all.map((e) => e.tag)).size,
     errors: (counts.error || 0) + (counts.fatal || 0),
     warns: counts.warn || 0,
     counts,
-    crashes: nodes.filter((n) => n.tagRow && n.crash).length,
+    crashes: crashTags.size,
     /* The span of the log, which is a wall clock. dmesg counts from boot
        instead, so its lines are left out of it rather than printed as the end
        of a range that starts at a date. */
     first: clocked.length ? logStamp(clocked[0]) : null,
     last: clocked.length ? logStamp(clocked[clocked.length - 1]) : null,
-    /* Whether the lines that were read are all the lines there were. */
-    trimmed: nodes.filter((n) => n.tagRow).reduce((sum, n) => sum + (n.trimmed || 0), 0),
+    /* How many lines the file had that the list does not, which is nothing at
+       all until a log is longer than the budget. */
+    trimmed: all.length - kept,
   };
 
   return finaliseScene('logcat', displays, nodes, globals);
@@ -5070,8 +5148,8 @@ for(const key of ['docs', 'docId']){
    inside it. They sit here with the rest of what a document remembers, so two
    tabs off the same dump keep their own place in it. */
 const DOC_STATE = { toolId:null, displayId:null, selected:null, region:null,
-                    filter:'', show:'all', dim:true, view:'depth', collapsed:null,
-                    attr:null, attrFilter:'', ...VIEW0 };
+                    filter:'', regex:false, show:'all', dim:true, view:'depth',
+                    collapsed:null, attr:null, attrFilter:'', ...VIEW0 };
 for(const key of Object.keys(DOC_STATE)){
   Object.defineProperty(S, key, {
     enumerable:true,
@@ -5480,6 +5558,7 @@ function syncUi(){
   $('filter').value = S.filter;
   $('filter').placeholder = tool.filterHint;
   $('filter').setAttribute('aria-label', `Filter ${tool.nouns}`);
+  syncFilterBox();
   /* Three layouts, and two questions about them: whether the list goes in the
      middle pane, and whether the middle pane draws. A document does neither —
      it keeps the list on the left, as a drawn dump does, and reads into the
@@ -5637,9 +5716,38 @@ const SHOW = {
    that needs its own set says so and the pane follows; the rest get these. */
 function shows(){ return (S.tool && S.tool.shows) || SHOW; }
 
+/* What a filter box means. Plain text is a substring, which is what nearly
+   every query is. It is read as a regular expression instead when the `.*`
+   beside the box is on — `activity.*`, `anr|crash` — or when it is written
+   between slashes, which is the same thing without reaching for the switch:
+   `/^am_/`, `/\\bpid 1631\\b/i`. A log is the one dump that is read by pattern,
+   and a box that only takes substrings sends you to grep.
+
+   The text being matched is already lowercased, so `i` is on whether or not it
+   was typed; `g` and `y` are dropped, since a stateful regex would match every
+   other row. A pattern that will not compile matches nothing and says so
+   rather than falling back to matching its own slashes. */
+function textMatcher(query, asRegex){
+  const q = String(query == null ? '' : query).trim();
+  if(!q) return null;
+  const wrapped = q.match(/^\/(.+)\/([gimsuy]*)$/);
+  if(wrapped || asRegex){
+    const body = wrapped ? wrapped[1] : q;
+    const flags = (wrapped ? wrapped[2] : '').replace(/[gy]/g, '');
+    try {
+      const rx = new RegExp(body, flags.includes('i') ? flags : flags + 'i');
+      return { test:(s) => rx.test(s || ''), ok:true, regex:true, source:rx };
+    } catch(err){
+      return { test:() => false, ok:false, regex:true, error:err.message };
+    }
+  }
+  const low = q.toLowerCase();
+  return { test:(s) => (s || '').includes(low), ok:true, regex:false };
+}
+
 function visibleNodes(){
-  const q = S.filter.trim().toLowerCase();
-  if(q) return currentDisplay().nodes.filter(n => n.search.includes(q));
+  const m = textMatcher(S.filter, S.regex);
+  if(m) return m.ok ? currentDisplay().nodes.filter(n => m.test(n.search)) : [];
   const set = shows();
   const keep = (set[S.show] || set.all || SHOW.all).test;
   return currentDisplay().nodes.filter(keep);
@@ -5909,18 +6017,30 @@ function renderList(){
   const tree = items.some(i => i.depth > 0 || i.context || i.kids);
   list.setAttribute('role', tree ? 'tree' : 'listbox');
   list.classList.toggle('is-tree', tree);
+  /* A tool that draws its own rows says so here, once, rather than on every
+     row: the columns are the list's, not the row's. */
+  list.classList.toggle('is-log', S.tool.listClass === 'is-log');
   $('treeCtl').hidden = !tree;
 
   if(!items.length){
     const set = shows();
     const where = `in this ${S.tool.groupNoun || 'display'}`;
-    const why = S.filter.trim() ? `No ${S.tool.nouns} match this filter.`
+    const bad = textMatcher(S.filter, S.regex);
+    const why = bad && !bad.ok
+      ? `That is not a regular expression: ${esc(bad.error)}`
+      : S.filter.trim() ? `No ${S.tool.nouns} match this filter.`
       : S.show !== 'all' && set[S.show]
         ? `Nothing ${where} is <b>${esc(set[S.show].label)}</b>. Try <b>all</b>.`
       : `No ${S.tool.nouns} ${where}.`;
     list.innerHTML = `<li style="padding:16px 12px;color:var(--dim)">${why}</li>`;
     return;
   }
+  /* A row a tool draws itself: the twisty, the swatch and the title-and-meta
+     are the generic row, and a log line is none of those. Everything around
+     the contents — which row is picked, which keys move between them — is the
+     same either way, so only the inside changes. */
+  if(S.tool.row) return renderRowWindow(items.map(i => i.node));
+
   list.innerHTML = items.map(({ node: w, depth, context, kids, open, hiding }) => {
     const meta = rowMeta(S.tool, w);
     /* Badges lead the row. A title is ellipsised when it does not fit — and
@@ -5963,6 +6083,87 @@ function renderList(){
     </li>`;
   }).join('');
 }
+
+/* ---------------- render: a list too long to put in the DOM ------------- */
+
+/* A log is three hundred thousand lines and the pane shows forty of them. Rows
+   for the rest are not built: what is in the DOM is the slice around the
+   scroll position, with one spacer above it and one below standing in for the
+   height of everything that is not there. So the scrollbar is the length of
+   the log, the search is over all of it, and the browser is only ever laying
+   out a screenful.
+
+   This is worth its complexity for exactly one kind of list — one where the
+   rows are uniform, tiny and beyond counting — which is why it is reached only
+   through `tool.row` and everything else still renders whole. */
+const rowWin = { nodes: [], rowH: 22, key: '', from: 0, to: 0,
+                 pending: false, measured: false };
+
+/* Rows either side of the fold, so a flick of the wheel lands on rows that are
+   already there rather than on blank paper. */
+const ROW_WIN_PAD = 24;
+
+function renderRowWindow(nodes){
+  rowWin.nodes = nodes;
+  /* Which list this is. A different one — another buffer, another filter,
+     another dump — starts at the top; the same one redrawn (a row was picked)
+     stays where the reader had scrolled it to. */
+  const key = `${S.toolId}|${S.displayId}|${S.show}|${S.filter}|${nodes.length}`;
+  const fresh = key !== rowWin.key;
+  rowWin.key = key;
+  if(fresh){ $('stackScroll').scrollTop = 0; rowWin.measured = false; }
+  paintRowWindow();
+}
+
+function paintRowWindow(){
+  const list = $('wlist'), box = $('stackScroll');
+  const nodes = rowWin.nodes;
+  const h = rowWin.rowH;
+  const view = box.clientHeight || 600;
+  const top = box.scrollTop;
+  const from = Math.max(0, Math.floor(top / h) - ROW_WIN_PAD);
+  const to = Math.min(nodes.length, Math.ceil((top + view) / h) + ROW_WIN_PAD);
+
+  const rows = [];
+  for(let i = from; i < to; i++){
+    const w = nodes[i];
+    rows.push(`<li class="wrow${i % 2 ? ' is-alt' : ''} ${
+        S.tool.rowClass ? S.tool.rowClass(w) : ''}"
+      role="option" tabindex="0" data-hash="${esc(w.hash)}" data-i="${i}"
+      aria-posinset="${i + 1}" aria-setsize="${nodes.length}"
+      aria-selected="${S.selected === w.hash}">${S.tool.row(w)}</li>`);
+  }
+  list.innerHTML = `<li class="row-gap" style="height:${from * h}px"></li>`
+    + rows.join('')
+    + `<li class="row-gap" style="height:${(nodes.length - to) * h}px"></li>`;
+  rowWin.from = from; rowWin.to = to;
+
+  /* The spacers are in row heights, so the height a row actually has is worth
+     knowing. It is read back off the first one drawn rather than assumed from
+     the stylesheet — and read once per list, because a height that disagreed
+     with itself between two paints would repaint for ever. */
+  if(!rowWin.measured){
+    rowWin.measured = true;
+    const first = list.querySelector('.wrow');
+    const got = first ? Math.round(first.getBoundingClientRect().height) : 0;
+    if(got && got !== rowWin.rowH){ rowWin.rowH = got; paintRowWindow(); }
+  }
+}
+
+/* Scrolling repaints, at most once a frame. */
+$('stackScroll').addEventListener('scroll', () => {
+  if(!S.data || !S.tool || !S.tool.row || rowWin.pending) return;
+  rowWin.pending = true;
+  requestAnimationFrame(() => {
+    rowWin.pending = false;
+    /* Nothing to do while the fold is still inside the slice that is drawn. */
+    const box = $('stackScroll'), h = rowWin.rowH;
+    const from = Math.floor(box.scrollTop / h);
+    const to = Math.ceil((box.scrollTop + (box.clientHeight || 600)) / h);
+    if(from >= rowWin.from && to <= rowWin.to) return;
+    paintRowWindow();
+  });
+});
 
 /* ---------------- render: the sheet ---------------- */
 /* One guard covers the whole of it: a list tool's sheet, legend and footer are
@@ -6034,10 +6235,10 @@ function docSection(node, depth){
    lines was printed as, and a line is a line. A table nothing in matches is
    not drawn at all. */
 function docTable(run){
-  const q = S.attrFilter.trim().toLowerCase();
-  if(q){
-    const rows = run.rows.filter(r =>
-      `${r.cells.join(' ')} ${r.under.join(' ')}`.toLowerCase().includes(q));
+  const m = textMatcher(S.attrFilter);
+  if(m){
+    const rows = m.ok ? run.rows.filter(r =>
+      m.test(`${r.cells.join(' ')} ${r.under.join(' ')}`.toLowerCase())) : [];
     if(!rows.length) return '';
     run = { ...run, rows };
   }
@@ -6059,8 +6260,9 @@ function docTable(run){
    read as a wall. A row is identified by the section it is in and the line it
    is on, which is stable for as long as the dump is open. */
 function docRows(node, lines){
-  const q = S.attrFilter.trim().toLowerCase();
-  const hit = (e) => !q || `${e.key} ${e.value || ''}`.toLowerCase().includes(q);
+  const m = textMatcher(S.attrFilter);
+  const q = m ? S.attrFilter.trim() : '';
+  const hit = (e) => !m || (m.ok && m.test(`${e.key} ${e.value || ''}`.toLowerCase()));
   const under = (e) => e.children.reduce((sum, c) => sum + 1 + under(c), 0);
   /* A row whose child matched is kept as the way in to it, and marked so it
      does not read as a match of its own. */
@@ -7955,46 +8157,38 @@ function logCounts(counts){
 const logWhen = (e) => !e ? null
   : e.time ? `${esc(e.date)} ${esc(e.time)}` : `[${e.uptime.toFixed(6)}]`;
 
+/* One line, in the columns a log reader prints: when, who, what level, which
+   tag, and then the message, which is the only part allowed to be long. The
+   level is its letter, the way logcat itself writes it — a word in every row
+   would push the message off the screen for no gain. */
+function logRow(n){
+  const e = n.entry;
+  const when = e.time ? e.time : e.uptime !== undefined ? `[${e.uptime.toFixed(3)}]` : '';
+  const who = e.pid === null ? '' : `${e.pid}-${e.tid}`;
+  /* The column is the clock time, because that is what a log is read against
+     and a date on every row would cost the message a fifth of the pane. The
+     date is a day or two of a bugreport all the same, so it is on the cell. */
+  return `<span class="lg-when" title="${esc(logStamp(e))}">${esc(when)}</span>`
+    + `<span class="lg-who">${esc(who)}</span>`
+    + `<span class="lg-lv" title="${esc(n.level.name)}">${esc(e.levelChar || '\u00b7')}</span>`
+    + `<span class="lg-tag" title="${esc(e.tag)}">${esc(e.tag)}</span>`
+    + `<span class="lg-msg">${esc(e.message || e.raw)}</span>`;
+}
+
 function logDetail(n){
   const out = [];
-
-  if(n.tagRow){
-    out.push(`<section class="dgroup"><h3>Tag</h3>${dl([
-      ['tag', esc(n.tag)],
-      ['lines', `${n.lines}${n.trimmed ? ` <span style="color:var(--dim)">· ${
-        n.subCount} listed</span>` : ''}`],
-      ['worst level', `<span style="color:${tintFor(n)}">■</span> ${esc(n.worst.name)}`],
-      ['levels', logCounts(n.counts)],
-      n.pids.length && ['pids', flatChips(n.pids.map(String))],
-      ['first', logWhen(n.first)],
-      ['last', logWhen(n.last)],
-    ])}</section>`);
-
-    if(n.crash){
-      out.push(`<section class="dgroup"><h3>A crash is in here</h3>
-        <p style="margin:0">One of these lines is the first line of a crash —
-        <b>FATAL EXCEPTION</b>, or the <b>am_crash</b> the framework logs for
-        the same thing. The lines under this row are that crash and what the
-        system did about it.</p></section>`);
-    }
-    if(n.trimmed){
-      out.push(`<section class="dgroup"><h3>Not every line is listed</h3>
-        <p style="margin:0">This tag printed <b>${n.lines}</b> lines and
-        ${n.subCount} of them are listed: a log this long is nearly always one
-        tag repeating itself, so the lines with a level on them are the ones
-        kept. The counts above are of all of them, and the filter searches
-        what was kept.</p></section>`);
-    }
-    return out;
-  }
 
   const e = n.entry;
   out.push(`<section class="dgroup"><h3>Line</h3>${dl([
     ['level', `<span style="color:${tintFor(n)}">■</span> ${esc(e.level.name)}${
       e.levelChar ? ' ' + dim('(' + e.levelChar + ')') : ''}`],
-    ['tag', docLink(n.parentHash, e.tag)],
+    /* The tag is how a log is normally narrowed, so it is offered as the
+       filter rather than as a link to a row that no longer exists. */
+    ['tag', `<button class="btn btn-quiet" type="button" data-logtag="${esc(e.tag)}"
+       title="List only this tag">${esc(e.tag)}</button>`],
     ['when', logWhen(e)],
-    e.pid !== null && ['pid', e.pid],
+    e.pid !== null && ['pid', `<button class="btn btn-quiet" type="button"
+       data-logtag="${e.pid}" title="List only this process">${e.pid}</button>`],
     e.tid !== null && ['tid', `${e.tid}${e.tid === e.pid ? ' ' + dim('· the main thread') : ''}`],
     e.uid && ['uid', esc(e.uid)],
     e.buffer && ['buffer', esc(e.buffer)],
@@ -8011,7 +8205,8 @@ function logSectionDetail(d){
   const out = [];
 
   out.push(`<section class="dgroup"><h3>${esc(cap(d.label))}</h3>${dl([
-    ['lines', d.lines],
+    ['lines', `${d.lines}${d.listed < d.lines
+      ? ` ${dim('· ' + d.listed + ' listed')}` : ''}`],
     ['tags', d.tags],
     ['levels', logCounts(d.counts)],
     d.buffers.length && ['buffers', flatChips(d.buffers)],
@@ -8025,13 +8220,16 @@ function logSectionDetail(d){
       <p style="margin:0 0 6px">${d.crashes.length === 1
         ? 'One tag in this log carries a crash.'
         : `${d.crashes.length} tags in this log carry a crash.`}</p>
-      ${d.crashes.map(t => docLink(`log:${d.id}:${t}`, t)).join('')}</section>`);
+      <div class="chips">${d.crashes.map(t =>
+        `<button class="btn btn-quiet" type="button" data-logtag="${esc(t)}"
+          title="List only this tag">${esc(t)}</button>`).join('')}</div></section>`);
   }
 
   out.push(`<section class="dgroup"><h3>The whole log</h3>${dl([
     ['sections', g.sections],
     ['lines read', `${g.lines}${g.trimmed ? ` <span style="color:var(--dim)">· ${
       g.shown} listed</span>` : ''}`],
+    g.trimmed && ['not listed', `${g.trimmed} ${dim('· the log is longer than the reader holds')}`],
     ['tags', g.tags],
     g.errors && ['errors', g.errors],
     g.warns && ['warnings', g.warns],
@@ -8372,34 +8570,25 @@ const TOOLS = [
     name: 'Logcat',
     layout: 'list',        // a log line happened, it does not sit anywhere
     noun: 'line', nouns: 'lines', groupNoun: 'log', groupNouns: 'logs',
-    /* Eighty thousand lines, of which the ones worth opening the log for are
-       the handful with a level on them. Everything else is there to be filtered
-       down to once you know what you are looking for. */
-    show: 'problems',
+    /* The log opens as the log: every line, in order. The buttons below are
+       the `*:I`, `*:W`, `*:E` a log reader is normally read through, and they
+       are a floor on the level rather than a set of rows picked out of it. */
+    show: 'all',
     visBadge: false,
-    filterHint: 'Filter by tag, message or pid',
+    filterHint: 'Filter by tag, message, pid or tid, or /regex/',
     shows: {
-      problems: { label:'errors', test:(n) => n.tagRow ? n.errors > 0 || n.crash
-                                                       : n.level.rank >= 4 },
-      warnings: { label:'warnings', test:(n) => n.tagRow ? n.errors > 0 || n.warns > 0 || n.crash
-                                                         : n.level.rank >= 3 },
-      all:      { label:'all', test:() => true },
+      all:      { label:'all',    test:() => true },
+      info:     { label:'info+',  test:(n) => n.level.rank >= 2 },
+      warnings: { label:'warn+',  test:(n) => n.level.rank >= 3 },
+      errors:   { label:'error+', test:(n) => n.level.rank >= 4 },
     },
-    /* The list is the tags; a tag's own lines are what is inside it, so they
-       open shut and come out when the tag is picked — or when a setting asks
-       for the lines themselves rather than the tags that hold them. */
-    startCollapsed: (n) => !!n.tagRow,
-    openOnShow: true,
-    rowMeta: (n) => n.tagRow
-      ? [`${n.lines} line${n.lines === 1 ? '' : 's'}`,
-         n.errors ? `${n.errors} error${n.errors === 1 ? '' : 's'}` : null,
-         n.warns ? `${n.warns} warning${n.warns === 1 ? '' : 's'}` : null,
-         n.first && n.first.time ? esc(n.first.time) : null,
-        ].filter(Boolean).join(' \u00b7 ')
-      : [n.entry.time ? esc(n.entry.time) : `[${n.entry.uptime.toFixed(3)}]`,
-         n.entry.pid === null ? null : `${n.entry.pid}/${n.entry.tid}`,
-         esc(n.level.name),
-        ].filter(Boolean).join(' \u00b7 '),
+    /* A log line is read across, not down: the stamp, who printed it, the
+       level, the tag, the message — in that order, in fixed columns, the way
+       every other log reader prints one. That is a row of its own rather than
+       a title with a line of meta under it, so the tool draws its own row. */
+    row: logRow,
+    rowClass: (n) => 'is-log-row ' + n.level.family + (n.crash ? ' is-crash' : ''),
+    listClass: 'is-log',
     detect: (t) => (/^-{4,}\s*(?:SYSTEM|EVENT|RADIO|KERNEL|LAST|MAIN|CRASH)\s+LOG/m.test(t) ? 3 : 0)
                  + (/^(?:\d{4}-)?\d{1,2}-\d{1,2}\s+\d{1,2}:\d{2}:\d{2}\.\d{3}\s+(?:\S+\s+)?\d+\s+\d+\s+[VDIWEFSA]\s/m.test(t) ? 3 : 0)
                  + (/^-{4,}\s*beginning of \S+/m.test(t) ? 1 : 0),
@@ -8475,19 +8664,21 @@ function select(hash, region){
 const FIND_PER_GROUP = 25;   // hits listed per reader per display
 let findFlat = [];           // every listed hit, in the order they are drawn
 let findAt = 0;              // which one the keyboard is on
+let findRegex = false;       // whether the box is read as a pattern
 
 function findHits(q){
   const needle = q.trim().toLowerCase();
+  const m = textMatcher(q, findRegex);
   const groups = [], flat = [];
   let total = 0, capped = false;
-  if(!needle) return { groups, flat, total, capped, needle };
+  if(!m || !m.ok) return { groups, flat, total, capped, needle, bad:m && !m.ok ? m : null };
   for(const doc of S.docs){
     for(const entry of doc.found){
       for(const display of entry.scene.displays){
         const hits = [];
         let n = 0;
         for(const node of display.nodes){
-          if(!(node.search || '').includes(needle)) continue;
+          if(!m.test(node.search)) continue;
           n++; total++;
           /* A group is capped rather than dropped: a query that matches four
              hundred packages should still say which dumps hold them. */
@@ -8532,8 +8723,10 @@ function renderFind(){
     return;
   }
   if(!findFlat.length){
-    box.innerHTML = `<p class="find-empty">Nothing in this workspace matches <b>${
-      esc(res.needle)}</b>.</p>`;
+    box.innerHTML = res.bad
+      ? `<p class="find-empty">That is not a regular expression: ${esc(res.bad.error)}</p>`
+      : `<p class="find-empty">Nothing in this workspace matches <b>${
+          esc(res.needle)}</b>.</p>`;
     foot.hidden = true;
     return;
   }
@@ -8597,13 +8790,25 @@ function goToHit(hit){
   if(hit.doc.id !== S.docId) openDoc(hit.doc);
   S.displayId = hit.display.id;
   S.filter = q;
+  /* A query that was read as a pattern has to keep being read as one, or the
+     tab lands showing nothing with the thing that was found typed into it. */
+  S.regex = findRegex;
   syncUi();
   select(hit.node.hash);
   revealRow(hit.node.hash);
 }
 
-/* A row can be found and still be below the fold. */
+/* A row can be found and still be below the fold — or, in a windowed list, not
+   be in the DOM at all until the window is moved onto it. */
 function revealRow(hash){
+  if(S.tool && S.tool.row){
+    const i = rowWin.nodes.findIndex(n => n.hash === String(hash));
+    if(i >= 0 && (i < rowWin.from + 2 || i >= rowWin.to - 2)){
+      const box = $('stackScroll');
+      box.scrollTop = Math.max(0, i * rowWin.rowH - (box.clientHeight || 600) / 2);
+      paintRowWindow();
+    }
+  }
   const row = $('wlist').querySelector(`.wrow[data-hash="${CSS.escape(String(hash))}"]`);
   if(row) row.scrollIntoView({ block:'nearest' });
 }
@@ -8619,6 +8824,14 @@ $('wlist').addEventListener('keydown', (e) => {
   if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); select(row.dataset.hash); }
   if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
     e.preventDefault();
+    /* In a windowed list the next row may not be in the DOM yet, so the step
+       is taken in the list itself and the window is moved to follow it. */
+    if(row.dataset.i !== undefined){
+      const i = +row.dataset.i + (e.key === 'ArrowDown' ? 1 : -1);
+      const next = rowWin.nodes[i];
+      if(next) goToRow(next.hash);
+      return;
+    }
     const next = e.key === 'ArrowDown' ? row.nextElementSibling : row.previousElementSibling;
     if(next && next.classList.contains('wrow')) goToRow(next.dataset.hash);
   }
@@ -8647,6 +8860,7 @@ $('wlist').addEventListener('keydown', (e) => {
    so every move puts the focus back on whatever that row is now. */
 function keepFocus(hash, act){
   act();
+  revealRow(hash);
   const row = $('wlist').querySelector(`.wrow[data-hash="${CSS.escape(hash)}"]`);
   if(row) row.focus();
 }
@@ -8809,7 +9023,23 @@ for(const id of ['displayTabs', 'listTabs']){
     renderTabs(); renderAll();
   });
 }
-$('filter').addEventListener('input', (e) => { S.filter = e.target.value; renderList(); renderPlan(); });
+function syncFilterBox(){
+  const box = $('filter');
+  const m = textMatcher(S.filter, S.regex);
+  box.classList.toggle('is-bad', !!m && !m.ok);
+  box.title = m && !m.ok ? m.error : '';
+  $('filterRe').setAttribute('aria-pressed', String(!!S.regex));
+}
+$('filter').addEventListener('input', (e) => {
+  S.filter = e.target.value;
+  syncFilterBox();
+  renderList(); renderPlan();
+});
+$('filterRe').addEventListener('click', () => {
+  S.regex = !S.regex;
+  syncFilterBox();
+  renderList(); renderPlan();
+});
 $('optShow').addEventListener('click', (e) => {
   const b = e.target.closest('[data-show]'); if(!b) return;
   S.show = b.dataset.show;
@@ -8916,6 +9146,15 @@ function hideTip(){
 }
 
 $('detail').addEventListener('click', (e) => {
+  /* A tag or a pid in the pane is the narrowing a log reader does next, so it
+     is typed into the filter box rather than opening anything of its own —
+     the box is where it can then be edited or cleared. */
+  const tag = e.target.closest('[data-logtag]');
+  if(tag){
+    S.filter = tag.dataset.logtag;
+    $('filter').value = S.filter;
+    return void renderAll();
+  }
   /* A rect's row and the rect on the sheet are the same pick seen from two
      sides, so clicking the row marks the rect — and clicking the marked row
      again puts the drawing back to the whole node. */
@@ -9067,6 +9306,13 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe($('sheet'));
 
 $('btnFind').addEventListener('click', openFind);
 $('findBox').addEventListener('input', () => { findAt = 0; renderFind(); });
+$('findRe').addEventListener('click', () => {
+  findRegex = !findRegex;
+  $('findRe').setAttribute('aria-pressed', String(findRegex));
+  findAt = 0;
+  renderFind();
+  $('findBox').focus();
+});
 $('findBox').addEventListener('keydown', (e) => {
   if(e.key === 'ArrowDown'){ e.preventDefault(); moveFind(1); }
   else if(e.key === 'ArrowUp'){ e.preventDefault(); moveFind(-1); }

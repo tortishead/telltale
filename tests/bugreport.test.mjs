@@ -147,3 +147,88 @@ test('only a real archive is unpacked', async () => {
   assert.equal(from, undefined);
   assert.ok(text.startsWith('WINDOW MANAGER'));
 });
+
+/* ---------------- the filter boxes ---------------- */
+
+/* Plain text is a substring; text between slashes is a pattern. This is the
+   one piece of the page that decides which rows exist, and a log is read by
+   pattern more than by word, so both readings are pinned here. */
+test('a filter is a substring, or a regular expression between slashes', () => {
+  const page = openPage();
+  const m = page.match;
+
+  assert.equal(m(''), null, 'an empty box filters nothing');
+  assert.equal(m('   '), null);
+
+  const plain = m('ActivityManager');
+  assert.equal(plain.regex, false);
+  assert.equal(plain.test('tag activitymanager said something'), true,
+    'the text matched against is lowercased, so the query is too');
+
+  const rx = m('/^am_(crash|anr)/');
+  assert.equal(rx.regex, true);
+  assert.equal(rx.ok, true);
+  assert.equal(rx.test('am_crash 4471 com.example'), true);
+  assert.equal(rx.test('not am_crash'), false, 'the anchor is the caller\'s');
+
+  assert.equal(m('/PackageManager/').test('packagemanager: no package'), true,
+    'case is ignored whether or not the i flag was typed');
+
+  const stateful = m('/a/g');
+  assert.equal(stateful.test('aaa'), true);
+  assert.equal(stateful.test('aaa'), true, 'g is dropped, so the match does not walk');
+
+  const bad = m('/[unclosed/');
+  assert.equal(bad.ok, false);
+  assert.ok(bad.error, 'and it says what is wrong with it rather than matching its own slashes');
+  assert.equal(bad.test('anything'), false);
+});
+
+test('the log list is filtered by that same reading', () => {
+  const page = openPage();
+  page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+
+  const all = page.filter('');
+  assert.ok(all.length > 0);
+
+  const tagged = page.filter('activitymanager');
+  assert.equal(tagged.length, 6);
+  assert.ok(tagged.every((n) => n.tag === 'ActivityManager'));
+
+  /* The text a row is matched on is the tag first, so a pattern anchored at
+     the front is a tag query and one in the middle is a message query. */
+  const byTag = page.filter('/^activitymanager\\b/');
+  assert.equal(byTag.length, 6);
+
+  const byMessage = page.filter('/fatal exception|has died/');
+  assert.ok(byMessage.length >= 2);
+  assert.ok(byMessage.some((n) => n.crash), 'the crash is one of them');
+
+  const either = page.filter('/^(surfacecontrol|windowmanager)\\b/');
+  assert.deepEqual([...new Set(either.map((n) => n.tag))].sort(),
+    ['SurfaceControl', 'WindowManager']);
+
+  assert.deepEqual(page.filter('/[/'), [], 'a pattern that will not compile lists nothing');
+});
+
+/* The switch beside the box is the other way in: with it on, what is typed is
+   the pattern, slashes and all not needed. `activity.*` is a query someone
+   types expecting exactly that. */
+test('the .* switch reads the box as a pattern without the slashes', () => {
+  const page = openPage();
+  page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+
+  assert.deepEqual(page.filter('activity.*', false), [],
+    'off, the dots and the star are themselves and nothing has them');
+
+  const on = page.filter('activity.*', true);
+  assert.ok(on.length >= 6, 'on, it matches the tag and every message with the word in it');
+  assert.ok(on.every((n) => /activity/i.test(n.search)));
+  assert.ok(on.some((n) => n.tag === 'ActivityManager'));
+
+  assert.equal(page.filter('surfacecontrol|windowmanager', true).length > 0, true,
+    'an alternation needs no slashes either');
+
+  const m = page.match('[', true);
+  assert.equal(m.ok, false, 'and a pattern that will not compile still says so');
+});
