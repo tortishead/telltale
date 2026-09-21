@@ -94,7 +94,10 @@ return {
 export function openPage(){
   const { doc, win, els } = stubDom();
   const globals = {
-    document: doc, window: win, requestAnimationFrame: () => 0,
+    /* The page hands the frame back between readers so the loading bar can
+       paint. Nothing paints here, so the frame comes straight back — but it
+       has to come back, or a load would never finish. */
+    document: doc, window: win, requestAnimationFrame: (fn) => { fn(0); return 0; },
     localStorage: { getItem: () => null, setItem(){}, removeItem(){} },
     matchMedia: win.matchMedia, getComputedStyle: () => ({ getPropertyValue: () => '' }),
     ResizeObserver: class { observe(){} unobserve(){} disconnect(){} },

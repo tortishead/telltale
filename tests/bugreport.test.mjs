@@ -58,7 +58,7 @@ test('a text file is read as itself, not sniffed at', async () => {
 test('every dump a bugreport holds opens in its own tab', async () => {
   const page = openPage();
   const { text, label, from } = await page.readDump(zipFile());
-  page.load(text, null, from || label, from ? label : null);
+  await page.load(text, null, from || label, from ? label : null);
 
   assert.equal(page.error(), null, 'it loaded');
   const docs = page.docs();
@@ -83,7 +83,7 @@ test('every dump a bugreport holds opens in its own tab', async () => {
 test('?tool= decides which of the tabs is in front', async () => {
   const page = openPage();
   const { text, from } = await page.readDump(zipFile());
-  page.load(text, 'logcat', from);
+  await page.load(text, 'logcat', from);
   const open = page.docs().find((d) => d.id === page.S.docId);
   assert.equal(open.found[0].tool.id, 'logcat');
   assert.equal(page.docs().length, EXPECTED.length, 'the rest are open behind it');
@@ -92,7 +92,7 @@ test('?tool= decides which of the tabs is in front', async () => {
 test('a reader inside a bugreport finds what it finds on its own', async () => {
   const page = openPage();
   const { text } = await page.readDump(zipFile());
-  page.load(text, null, 'bugreport');
+  await page.load(text, null, 'bugreport');
   const found = page.docs().map((d) => d.found[0]);
 
   for (const [id, fixture] of [
@@ -115,7 +115,7 @@ test('a reader inside a bugreport finds what it finds on its own', async () => {
 test('the logs come out as their own reader, one group per buffer', async () => {
   const page = openPage();
   const { text } = await page.readDump(zipFile());
-  page.load(text, null, 'bugreport');
+  await page.load(text, null, 'bugreport');
   const log = page.docs().map((d) => d.found[0])
     .find((f) => f.tool.id === 'logcat').scene;
 
@@ -184,9 +184,9 @@ test('a filter is a substring, or a regular expression between slashes', () => {
   assert.equal(bad.test('anything'), false);
 });
 
-test('the log list is filtered by that same reading', () => {
+test('the log list is filtered by that same reading', async () => {
   const page = openPage();
-  page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
 
   const all = page.filter('');
   assert.ok(all.length > 0);
@@ -214,9 +214,9 @@ test('the log list is filtered by that same reading', () => {
 /* The switch beside the box is the other way in: with it on, what is typed is
    the pattern, slashes and all not needed. `activity.*` is a query someone
    types expecting exactly that. */
-test('the .* switch reads the box as a pattern without the slashes', () => {
+test('the .* switch reads the box as a pattern without the slashes', async () => {
   const page = openPage();
-  page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
 
   assert.deepEqual(page.filter('activity.*', false), [],
     'off, the dots and the star are themselves and nothing has them');

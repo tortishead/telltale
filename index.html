@@ -809,6 +809,20 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 }
 .sheet-blank p{margin:0 0 18px; font-size:14.5px; line-height:1.5; color:#4a5a4e; max-width:52ch}
 .sheet-blank code{font-family:var(--mono); font-size:13px}
+/* A bugreport is twenty-five megabytes of zip and ten readers over half a
+   million lines, which is half a minute of a page that would otherwise look
+   like it had done nothing. The bar says how far through the unpacking is and
+   the line above it says which reader is running. Where there is nothing to
+   count — reading a file off the disk — the bar sweeps instead. */
+.loading{margin:0 0 14px; width:100%; max-width:52ch}
+.loading-what{margin:0 0 6px; font-size:13px; color:#4a5a4e}
+.loading-track{height:4px; border-radius:2px; background:#d9dfd2; overflow:hidden}
+.loading-fill{height:100%; width:0; background:var(--mark); border-radius:2px;
+  transition:width .18s linear}
+.loading-fill.is-sweep{width:38%; animation:loading-sweep 1.1s ease-in-out infinite}
+@keyframes loading-sweep{
+  0%{transform:translateX(-100%)} 100%{transform:translateX(300%)}
+}
 .cmd{
   display:block; background:#e3e7de; border-left:2px solid var(--redline);
   padding:9px 11px; margin:0 0 20px; font-family:var(--mono); font-size:13px;
@@ -1025,6 +1039,10 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
       </details>
       <p class="hint" id="loaderBack" hidden></p>
       <p class="hint" id="loaderNote" hidden></p>
+      <div class="loading" id="loading" hidden role="status" aria-live="polite">
+        <p class="loading-what" id="loadingWhat"></p>
+        <div class="loading-track"><div class="loading-fill" id="loadingFill"></div></div>
+      </div>
       <p class="err" id="err" hidden></p>
     </div>
   </div>
@@ -5336,7 +5354,7 @@ function zipIndex(buf){
 /* An entry's bytes start after its local header, whose name and extra fields
    are their own lengths again — the index's copy of them is allowed to differ,
    so the local ones are the ones that count. */
-async function zipRead(buf, entry){
+async function zipRead(buf, entry, onBytes){
   const view = new DataView(buf);
   if(entry.encrypted) throw new Error(`${entry.name} is encrypted`);
   if(view.getUint32(entry.localAt, true) !== ZIP_LOCAL){
@@ -5352,7 +5370,15 @@ async function zipRead(buf, entry){
   if(typeof DecompressionStream !== 'function'){
     throw new Error('this browser cannot unzip; unzip the bugreport and drop the txt in instead');
   }
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  /* Inflating a bugreport's text is a few seconds on its own, and the only
+     thing that knows how far through it is, is how much of the packed entry
+     has been fed in — so the bytes are counted on their way past. */
+  const counted = onBytes
+    ? new Blob([bytes]).stream().pipeThrough(new TransformStream({
+        transform(chunk, ctl){ onBytes(chunk.byteLength, entry.packed); ctl.enqueue(chunk); },
+      }))
+    : new Blob([bytes]).stream();
+  const stream = counted.pipeThrough(new DecompressionStream('deflate-raw'));
   return new Response(stream).text();
 }
 
@@ -5362,7 +5388,7 @@ async function zipRead(buf, entry){
    else in the archive is what dumpstate collected, not what it wrote. */
 const ZIP_BUGREPORT_RE = /(?:^|\/)bugreport[^/]*\.txt$/i;
 
-async function zipPickDump(buf){
+async function zipPickDump(buf, onBytes){
   const entries = zipIndex(buf).filter(e => !e.name.endsWith('/'));
   if(!entries.length) throw new Error('that zip is empty');
 
@@ -5371,18 +5397,18 @@ async function zipPickDump(buf){
   if(main){
     const named = (await zipRead(buf, main)).trim().split(/\s+/)[0];
     const hit = named && entries.find(e => e.name === named || e.name.endsWith('/' + named));
-    if(hit) return { name: hit.name, text: await zipRead(buf, hit) };
+    if(hit) return { name: hit.name, text: await zipRead(buf, hit, onBytes) };
   }
 
   const biggest = (list) => list.slice().sort((a, b) => b.size - a.size)[0];
   const named = biggest(entries.filter(e => ZIP_BUGREPORT_RE.test(e.name)));
-  if(named) return { name: named.name, text: await zipRead(buf, named) };
+  if(named) return { name: named.name, text: await zipRead(buf, named, onBytes) };
 
   /* No file in it is called a bugreport. The largest text file still stands a
      good chance of being a dump, and reading it is a better answer than
      refusing an archive somebody rearranged. */
   const txt = biggest(entries.filter(e => /\.(txt|log|dump|out)$/i.test(e.name)));
-  if(txt) return { name: txt.name, text: await zipRead(buf, txt) };
+  if(txt) return { name: txt.name, text: await zipRead(buf, txt, onBytes) };
 
   throw new Error('there is no text file in that zip');
 }
@@ -5391,8 +5417,17 @@ async function zipPickDump(buf){
    is opened to the dump inside it; anything else is already the dump. */
 async function readDump(file){
   const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
-  if(!isZip(head)) return { text: await file.text(), label: file.name };
-  const picked = await zipPickDump(await file.arrayBuffer());
+  if(!isZip(head)){
+    progress(`Reading ${file.name}`, null);
+    return { text: await file.text(), label: file.name };
+  }
+  progress(`Reading ${file.name}`, null);
+  const buf = await file.arrayBuffer();
+  let done = 0;
+  const picked = await zipPickDump(buf, (n, total) => {
+    done += n;
+    progress(`Unpacking ${file.name}`, total ? done / total : null);
+  });
   return { text: picked.text, label: file.name, from: picked.name };
 }
 
@@ -5403,10 +5438,15 @@ async function readDump(file){
    so a dump that holds several always opens on the same one. */
 const DETECT_MIN = 2;
 
-function load(text, prefer, label, from){
+/* Reading is the long part — ten readers over half a million lines — so it is
+   done a reader at a time with the frame handed back between them: the card
+   names the one that is running and the bar fills as they come in. */
+async function load(text, prefer, label, from){
   const src = String(text || '');
   const found = [], broke = [];
-  for(const tool of TOOLS){
+  for(const [i, tool] of TOOLS.entries()){
+    progress(`Reading ${tool.name.toLowerCase()}`, i / (TOOLS.length + 1));
+    await nextFrame();
     const score = tool.detect(src);
     if(score < DETECT_MIN) continue;
     let scene;
@@ -5430,7 +5470,11 @@ function load(text, prefer, label, from){
      right in the order the readers are registered; `?tool=` decides which of
      them is in front. */
   const open = found.find(f => f.tool.id === prefer) || found[0];
+  progress(found.length === 1 ? 'Laying it out' : `Laying out ${found.length} tabs`,
+           TOOLS.length / (TOOLS.length + 1));
+  await nextFrame();
   for(const entry of found) addDoc(entry, label, from, entry === open);
+  progressDone();
 }
 
 /* ---------------- workspaces ---------------- */
@@ -5633,6 +5677,7 @@ async function loadUrl(raw, prefer){
   if(btn){ btn.disabled = true; btn.textContent = 'Fetching…'; }
   $('err').hidden = true;
   try {
+    progress(`Fetching ${u.hostname}`, null);
     const res = await fetch(u.href, { credentials:'omit', redirect:'follow' });
     if(!res.ok) return fail(`The server answered ${res.status} ${res.statusText} for that URL.`);
     const label = u.pathname.split('/').filter(Boolean).pop() || u.hostname;
@@ -5641,14 +5686,18 @@ async function loadUrl(raw, prefer){
     const buf = await res.arrayBuffer();
     let text, from = null;
     if(isZip(new Uint8Array(buf, 0, Math.min(4, buf.byteLength)))){
-      const picked = await zipPickDump(buf);
+      let done = 0;
+      const picked = await zipPickDump(buf, (n, total) => {
+        done += n;
+        progress(`Unpacking ${label}`, total ? done / total : null);
+      });
       text = picked.text; from = picked.name;
     } else {
       text = new TextDecoder().decode(buf);
     }
     if(!text.trim()) return fail('That URL returned an empty file.');
     if(from) note(`Read ${from} out of ${label}.`);
-    load(text, prefer, from || label, from ? label : null);
+    await load(text, prefer, from || label, from ? label : null);
   } catch(err) {
     /* A zip that would not open says why; a fetch that failed does not, since
        fetch() hides the reason cross-origin and CORS is nearly always it. */
@@ -5658,6 +5707,7 @@ async function loadUrl(raw, prefer){
         'Access-Control-Allow-Origin header — otherwise download the file and drop it here.');
   } finally {
     if(btn){ btn.disabled = false; btn.textContent = 'Fetch and show'; }
+    progressDone();
   }
 }
 
@@ -5665,6 +5715,46 @@ function fail(msg){
   const e = $('err');
   e.textContent = msg;
   e.hidden = false;
+  progressDone();
+}
+
+/* What is happening and how far through it is. `frac` is a number between 0
+   and 1 where there is something to count, and null where there is not — the
+   bar sweeps then rather than sitting at nought, which reads as stuck. */
+function progress(what, frac){
+  const box = $('loading'), fill = $('loadingFill');
+  if(!box || !fill) return;
+  box.hidden = false;
+  $('loadingWhat').textContent = what;
+  const sweep = frac === null || frac === undefined;
+  fill.classList.toggle('is-sweep', sweep);
+  fill.style.width = sweep ? '' : `${Math.round(Math.max(0, Math.min(1, frac)) * 100)}%`;
+}
+
+function progressDone(){
+  const box = $('loading');
+  if(box) box.hidden = true;
+}
+
+/* Long work on the main thread shows nothing until it lets go of it, so every
+   step that takes a moment hands the frame back first. One frame is enough:
+   the bar is painted before the next step starts.
+
+   A frame is what a painting tab gives back, and a tab nobody is looking at
+   gives back none at all — `requestAnimationFrame` does not run in a hidden or
+   occluded window, and a loop that waited on one there would never finish. So
+   a hidden tab does not wait, and a visible one waits for the frame or a beat,
+   whichever comes first. */
+function nextFrame(){
+  if(typeof document !== 'undefined' && document.visibilityState === 'hidden'){
+    return Promise.resolve();
+  }
+  return new Promise((r) => {
+    let done = false;
+    const go = () => { if(!done){ done = true; r(); } };
+    requestAnimationFrame(go);
+    setTimeout(go, 100);
+  });
 }
 
 /* Not a failure: something worth saying about what was opened. It goes where
@@ -5681,6 +5771,7 @@ function reset(){
   // up, and a leftover focused input swallows the next paste.
   document.querySelectorAll('.sheet-blank .extra-panel').forEach(el => el.remove());
   note('');
+  progressDone();
   S.docs = [];
   S.docId = null;
   document.body.classList.remove('layout-list');
@@ -9382,13 +9473,15 @@ $('file').addEventListener('change', (e) => {
    files and only one of them is the dump. */
 function openFile(f){
   note('');
+  progress(`Reading ${f.name}`, null);
   return readDump(f)
     .then(({ text, label, from }) => {
       if(!text.trim()) return fail(`${f.name} is empty.`);
       if(from) note(`Read ${from} out of ${f.name}.`);
-      load(text, null, from || label, from ? f.name : null);
+      return load(text, null, from || label, from ? f.name : null);
     })
-    .catch((err) => fail(`${f.name} could not be read${err && err.message ? ': ' + err.message : '.'}`));
+    .catch((err) => fail(`${f.name} could not be read${err && err.message ? ': ' + err.message : '.'}`))
+    .finally(progressDone);
 }
 $('btnPaste').addEventListener('click', () => {
   const card = document.querySelector('.sheet-blank');
