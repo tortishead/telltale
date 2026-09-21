@@ -1164,6 +1164,45 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
  * stability guarantee and drift between releases, so they harvest generically
  * and only special-case what is needed in order to draw. */
 
+/* Every parser is handed the same thing — whatever came off the device — and
+   starts by agreeing on what a line is. A dump pulled over adb on Windows, or
+   off a browser that normalised nothing, carries CRLF or lone CRs; a parser
+   that split on \n alone would hang a \r on the end of every field it read.
+   So the normalising is spelled once here rather than ten times below, which
+   is also what stops one reader disagreeing with another about what it was
+   handed when it was handed nothing. */
+const dumpText = (input) => String(input === null || input === undefined ? '' : input)
+  .replace(/\r\n?/g, '\n');
+const dumpLines = (input) => dumpText(input).split('\n');
+
+/* Where one service's dump stops inside a bugreport. Three readers — car,
+   user and input — are handed the whole file and have to read only their own
+   part of it, because a heading of theirs is a common enough shape that
+   another service's output would be read as more of the same. What ends a
+   section is the same for all three: a bugreport rule, the line naming the
+   next service, or the `(dumpsys <service>)` trailer a section heading carries.
+   A reader with siblings of its own — `dumpsys input` prints three — passes
+   them in as well. */
+const DUMP_BOUNDARY = '-{3,}|={3,}|DUMP OF SERVICE\\b|\\S.*\\(dumpsys \\S+\\)\\s*$';
+const DUMP_BOUNDARY_RE = new RegExp(`^(?:${DUMP_BOUNDARY})`);
+
+/* The span of the file one reader should look at: from the first line its
+   start pattern matches to the first boundary after it. `missing` says what to
+   do when nothing said where the section starts — a pasted dump of one service
+   prints no bugreport heading, so most readers take the whole text ('all'),
+   and a reader that is one of several in the same text takes nothing
+   ('none'). */
+function sectionSpan(lines, startRe, endRe, missing) {
+  const start = lines.findIndex((l) => startRe.test(l));
+  if (start < 0) return missing === 'none' ? null : { start: 0, end: lines.length };
+  const stop = endRe || DUMP_BOUNDARY_RE;
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (stop.test(lines[i])) { end = i; break; }
+  }
+  return { start, end };
+}
+
 const RECT_RE = /\[(-?\d+),\s*(-?\d+)\]\[(-?\d+),\s*(-?\d+)\]/;
 const NAMED_RECT_RE = /([A-Za-z_][\w.]*)=\[(-?\d+),\s*(-?\d+)\]\[(-?\d+),\s*(-?\d+)\]/g;
 /* Some sections print a rect as one bracket of four: frame=[l,t,r,b]. */
@@ -1573,7 +1612,7 @@ function finaliseScene(tool, displays, nodes, globals) {
 /* ================ parse: dumpsys window ================ */
 
 function parseWindowDump(input) {
-  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const text = dumpText(input);
   const lines = text.split('\n');
   const windows = [];
   const displayBlocks = [];
@@ -2105,7 +2144,7 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
 }
 
 function parseSurfaceFlingerDump(input) {
-  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const text = dumpText(input);
   const lines = text.split('\n');
 
   const tables = sfHwcTables(lines);
@@ -2140,7 +2179,10 @@ function parseSurfaceFlingerDump(input) {
     if (section.get(name) == null) section.set(name, stackAt(i));
     i = end - 1;
   }
-  if (!order.length) return { tool: 'sf', displays: [], nodes: [], globals: {}, ok: false };
+  /* Through finaliseScene rather than by hand: the shape a parser hands back
+     is stated in one place, so an empty reading of this dump is the same kind
+     of thing as an empty reading of any other. */
+  if (!order.length) return finaliseScene('sf', [], [], {});
 
   const layers = order.map((name, i) =>
     parseSfLayer(name, blocks.get(name).join('\n\n'), heads.get(name), i,
@@ -2437,7 +2479,7 @@ function sharedUserNode(nameOfUid, uid, kids) {
 }
 
 function parsePackageDump(input) {
-  const lines = String(input).replace(/\r\n?/g, '\n').split('\n');
+  const lines = dumpLines(input);
 
   const pkgs = [];
   let section = '';
@@ -2620,7 +2662,7 @@ function anrSched(t, line) {
    next process. A plain `traces.txt` with no header at all is still one
    process — an unnumbered one. */
 function anrProcesses(input) {
-  const lines = String(input).replace(/\r\n?/g, '\n').split('\n');
+  const lines = dumpLines(input);
   const procs = [];
   let p = null, t = null, raw = [];
   /* A bare traces.txt states its `Cmd line:` before there is a process to hang
@@ -3428,22 +3470,13 @@ function carNode(h, parent, ancestors, hashOf, lines, z) {
    couple of thousand car services. The dump is read inside its own part of
    the file, the way the input and user readers read theirs. */
 const CAR_SECTION_START = /^\s*\*+\s*Dump (?:car service|versions?|all services)\s*\*+\s*$/i;
-const CAR_SECTION_END = /^(?:-{3,}|={3,}|DUMP OF SERVICE\b|\S.*\(dumpsys \S+\)\s*$)/;
 
-function carSection(lines) {
-  const start = lines.findIndex((l) => CAR_SECTION_START.test(l));
-  /* Nothing said where it starts, so all of it is the dump — a pasted
-     `dumpsys car_service` of one service prints no such heading. */
-  if (start < 0) return { start: 0, end: lines.length };
-  let end = lines.length;
-  for (let i = start + 1; i < lines.length; i++) {
-    if (CAR_SECTION_END.test(lines[i])) { end = i; break; }
-  }
-  return { start, end };
-}
+/* Nothing said where it starts, so all of it is the dump — a pasted
+   `dumpsys car_service` of one service prints no such heading. */
+const carSection = (lines) => sectionSpan(lines, CAR_SECTION_START, null, 'all');
 
 function parseCarServiceDump(input) {
-  const lines = String(input || '').replace(/\r\n?/g, '\n').split('\n');
+  const lines = dumpLines(input);
   /* Indices stay the file's own, so a section still says which line of the
      bugreport it came off; only the span being read is narrowed. */
   const { start: from, end: to } = carSection(lines);
@@ -3585,22 +3618,13 @@ function userNode(head, body, opts) {
    indented by other services, and `Users:` by the package dump; neither of
    those is this dump starting. */
 const USER_SECTION_START = /^(?:Current user:\s*-?\d+\s*|Users:\s*)$/;
-const USER_SECTION_END = /^(?:-{3,}|={3,}|DUMP OF SERVICE\b|\S.*\(dumpsys \S+\)\s*$)/;
 
-function userSection(lines) {
-  const start = lines.findIndex((l) => USER_SECTION_START.test(l));
-  /* A dump that opens with neither is not a bugreport's; read all of it, which
-     is what a pasted `dumpsys user` wants. */
-  if (start < 0) return { start: 0, end: lines.length };
-  let end = lines.length;
-  for (let i = start + 1; i < lines.length; i++) {
-    if (USER_SECTION_END.test(lines[i])) { end = i; break; }
-  }
-  return { start, end };
-}
+/* A dump that opens with neither is not a bugreport's; read all of it, which
+   is what a pasted `dumpsys user` wants. */
+const userSection = (lines) => sectionSpan(lines, USER_SECTION_START, null, 'all');
 
 function parseUserDump(input) {
-  const lines = String(input || '').replace(/\r\n?/g, '\n').split('\n');
+  const lines = dumpLines(input);
   /* Indices stay the file's own throughout, so a row still says which line of
      the bugreport it came off; only the span being read is narrowed. */
   const { start: from, end: to } = userSection(lines);
@@ -3935,7 +3959,7 @@ function binderNode(opts) {
 }
 
 function parseBinderCallsStatsDump(input) {
-  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const text = dumpText(input);
   const lines = text.split('\n');
 
   const headAt = lines.findIndex((l) => BINDER_RAW_HEAD_RE.test(l));
@@ -4300,18 +4324,12 @@ function inputViewports(text) {
    bugreport rule, or the line naming the next service. */
 const INPUT_SECTION_END = new RegExp(
   '^(?:\\s*(?:Input Dispatcher State|Input Reader State|Input Manager State'
-  + '|Event Hub State|Input Manager Service)\\b|-{3,}|={3,}|DUMP OF SERVICE\\b'
-  + '|\\S.*\\(dumpsys \\S+\\)\\s*$)');
+  + '|Event Hub State|Input Manager Service)\\b|' + DUMP_BOUNDARY + ')');
 
-function inputSection(lines, headRe) {
-  const start = lines.findIndex((l) => headRe.test(l));
-  if (start < 0) return null;
-  let end = lines.length;
-  for (let i = start + 1; i < lines.length; i++) {
-    if (INPUT_SECTION_END.test(lines[i])) { end = i; break; }
-  }
-  return { start, end };
-}
+/* Unlike the other two, a missing heading here is an answer: the dispatcher's
+   half and the reader's half are both in `dumpsys input`, so a text that
+   states neither is not this reader's to read at all. */
+const inputSection = (lines, headRe) => sectionSpan(lines, headRe, INPUT_SECTION_END, 'none');
 
 /* A window line, and nothing else that happens to start with a number: the
    touch state lists its windows in the same shape and the monitors list its
@@ -4358,7 +4376,7 @@ function inputObscured(nodes) {
 }
 
 function parseInputDump(input) {
-  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const text = dumpText(input);
   const lines = text.split('\n');
   const viewports = inputViewports(text);
 
@@ -4672,7 +4690,7 @@ function inputDevFields(block) {
 }
 
 function parseInputDevicesDump(input) {
-  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const text = dumpText(input);
   const lines = text.split('\n');
 
   /* The event hub's half, which is a list of `id: name` under `Devices:`
@@ -5011,7 +5029,7 @@ const logStamp = (e) => e.time
   ? `${e.date} ${e.time}` : e.uptime !== undefined ? `[${e.uptime.toFixed(6)}]` : '';
 
 function parseLogcatDump(input) {
-  const text = String(input || '').replace(/\r\n?/g, '\n');
+  const text = dumpText(input);
   const lines = text.split('\n');
 
   /* One section per rule in the file, and one unnamed section for a log that
@@ -5399,6 +5417,11 @@ function zipIndex(buf){
     const extraLen = view.getUint16(p + 30, true);
     const commentLen = view.getUint16(p + 32, true);
     const localAt = view.getUint32(p + 42, true);
+    /* A truncated archive — a download that stopped, or a zip inside a zip cut
+       at the wrong byte — has an index that runs off the end of the file. The
+       entries read so far are still good, so the index stops here and says so
+       by what it hands back rather than by a RangeError out of Uint8Array. */
+    if(p + 46 + nameLen > buf.byteLength) break;
     const name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nameLen));
     out.push({ name, method, packed, size, localAt, encrypted: !!(flags & 1) });
     p += 46 + nameLen + extraLen + commentLen;
@@ -5412,12 +5435,21 @@ function zipIndex(buf){
 async function zipRead(buf, entry, onBytes){
   const view = new DataView(buf);
   if(entry.encrypted) throw new Error(`${entry.name} is encrypted`);
+  /* Every offset here comes out of the file being read, so none of it is
+     believed before it is used: a header that starts past the end of the
+     archive, or an entry whose packed bytes run off it, is a truncated zip and
+     is told as one. Reaching for those bytes unchecked would throw a
+     RangeError with nothing in it about which file or why. */
+  const truncated = () => new Error(`${entry.name} runs past the end of that zip, `
+    + 'so the archive is truncated');
+  if(entry.localAt < 0 || entry.localAt + 30 > buf.byteLength) throw truncated();
   if(view.getUint32(entry.localAt, true) !== ZIP_LOCAL){
     throw new Error(`${entry.name} is not where the index says it is`);
   }
   const nameLen = view.getUint16(entry.localAt + 26, true);
   const extraLen = view.getUint16(entry.localAt + 28, true);
   const from = entry.localAt + 30 + nameLen + extraLen;
+  if(from + entry.packed > buf.byteLength) throw truncated();
   const bytes = new Uint8Array(buf, from, entry.packed);
 
   if(entry.method === 0) return new TextDecoder().decode(bytes);
@@ -5495,18 +5527,43 @@ const DETECT_MIN = 2;
 
 /* Reading is the long part — ten readers over half a million lines — so it is
    done a reader at a time with the frame handed back between them: the card
-   names the one that is running and the bar fills as they come in. */
+   names the one that is running and the bar fills as they come in.
+
+   One reader failing is not the load failing. A dump drifts between builds and
+   a reader that chokes on a shape it has never seen should cost its own tab
+   and nothing else, so both halves of a reader's work — deciding it recognises
+   the text, and reading it — are taken as answers that might not come, and
+   what it says on the way out is kept to be told if no reader got through. */
 async function load(text, prefer, label, from){
-  const src = String(text || '');
+  /* The bar is the one thing on screen while this runs, so whatever happens
+     next it has to come down: a load that gave up silently would leave the
+     page sweeping a progress bar at a user with nothing to click. Every way
+     into the page — a file, a drop, a paste, a URL — comes through here, so
+     saying it once here is saying it for all of them. */
+  try { await readInto(text, prefer, label, from); }
+  catch(e){ fail(`That dump could not be read${e && e.message ? ': ' + e.message : '.'}`); }
+  finally { progressDone(); }
+}
+
+async function readInto(text, prefer, label, from){
+  const src = String(text === null || text === undefined ? '' : text);
   const found = [], broke = [];
   for(const [i, tool] of TOOLS.entries()){
     progress(`Reading ${tool.name.toLowerCase()}`, i / (TOOLS.length + 1));
     await nextFrame();
-    const score = tool.detect(src);
-    if(score < DETECT_MIN) continue;
-    let scene;
-    try { scene = tool.parse(src); }
-    catch(e){ broke.push(`${tool.name}: ${e.message}`); continue; }
+    let scene, score;
+    try {
+      score = tool.detect(src);
+      if(score < DETECT_MIN) continue;
+      scene = tool.parse(src);
+    } catch(e){ broke.push(`${tool.name}: ${(e && e.message) || e}`); continue; }
+    /* A reader that handed back something other than a scene is broken in the
+       same way as one that threw, and is said so in the same words rather than
+       thrown again from a line that reads `scene.ok`. */
+    if(!scene || typeof scene !== 'object'){
+      broke.push(`${tool.name}: read the text but handed back nothing`);
+      continue;
+    }
     if(scene.ok) found.push({ tool, scene, score });
   }
   if(!found.length){
@@ -5529,7 +5586,6 @@ async function load(text, prefer, label, from){
            TOOLS.length / (TOOLS.length + 1));
   await nextFrame();
   for(const entry of found) addDoc(entry, label, from, entry === open);
-  progressDone();
 }
 
 /* ---------------- workspaces ---------------- */
@@ -6157,7 +6213,7 @@ function rowMeta(tool, w){
   return `${esc(w.typeLabel)} · ${size} · z ${w.zRank+1}/${w.zCount}`;
 }
 
-function renderList(){
+function drawList(){
   const list = $('wlist');
   const items = listItems();
   const tree = items.some(i => i.depth > 0 || i.context || i.kids);
@@ -6314,7 +6370,7 @@ $('stackScroll').addEventListener('scroll', () => {
 /* ---------------- render: the sheet ---------------- */
 /* One guard covers the whole of it: a list tool's sheet, legend and footer are
    out of the grid, and everything that draws is reached from here. */
-function renderPlan(){
+function drawPlan(){
   if(S.tool.layout === 'list') return;
   if(S.tool.layout === 'doc') return renderDoc();
   if(S.view === 'depth') renderDepth(); else renderFlat();
@@ -7616,7 +7672,7 @@ function anrProcessAnalysis(d){
 /* The pane is the one place a tool gets to speak for itself; everything around
    it — the raw block, the copy button, the prompt when nothing is picked — is
    the same whichever dump is open. */
-function renderDetail(){
+function drawDetail(){
   hideTip();
   const n = S.data.nodes.find(x => x.hash === S.selected);
   if(!n) return renderDisplayDetail();
@@ -8751,6 +8807,34 @@ function anrBlocking(n){
       || n.thread.state === 'Blocked' || n.holds.length > 0 || n.waits.length > 0;
 }
 
+/* The three panes are three answers about the same dump, and one of them
+   failing is not a reason to lose the other two. A reader draws its own details
+   pane, so it can throw there as easily as it can while parsing — and a click
+   that dies half way through leaves two panes describing the row before last,
+   which is worse than a pane that says what happened.
+
+   The guard goes on the renderer rather than on the three call sites that ask
+   for all of them, because a pane is redrawn on its own as often as it is
+   redrawn with the others: a selection redraws the details without the sheet,
+   and the promise is the same either way. */
+function paneGuard(into, what, draw){
+  return (...args) => {
+    try { return draw(...args); }
+    catch(e){
+      /* The pane says so in the pane, which is where the reader is looking;
+         the stack goes to the console for whoever is debugging it. */
+      console.error(`Telltale: ${what} could not be drawn`, e);
+      const el = $(into);
+      if(el) el.innerHTML = `<p class="err">Telltale could not draw ${esc(what)}: `
+        + `${esc((e && e.message) || String(e))}</p>`;
+    }
+  };
+}
+
+const renderList = paneGuard('wlist', 'the list', drawList);
+const renderPlan = paneGuard('sheet', 'the sheet', drawPlan);
+const renderDetail = paneGuard('detail', 'the details', drawDetail);
+
 function renderAll(){ renderList(); renderPlan(); renderDetail(); }
 
 function setView(view){
@@ -8960,6 +9044,16 @@ function revealRow(hash){
 }
 
 /* ================ events ================ */
+
+/* Whether a keystroke belongs to a box the user is typing in rather than to
+   the page. `activeElement` is null while focus is between elements — after
+   the row the keyboard was on was redrawn away, which this page does on every
+   selection — so it is asked about rather than reached into. */
+const typingInField = () => {
+  const el = document.activeElement;
+  return !!el && (/^(INPUT|TEXTAREA)$/.test(el.tagName) || el.isContentEditable === true);
+};
+
 $('wlist').addEventListener('click', (e) => {
   const twist = e.target.closest('[data-toggle]');
   if(twist) return toggleCollapse(twist.dataset.toggle);
@@ -9495,7 +9589,7 @@ document.addEventListener('keydown', (e) => {
     else if(document.body.classList.contains('show-detail')) document.body.classList.remove('show-detail');
     else if(S.selected){ S.selected = null; S.region = null; renderAll(); }
   }
-  if(e.key === '/' && !$('app').hidden && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
+  if(e.key === '/' && !$('app').hidden && !typingInField()){
     e.preventDefault(); $('filter').focus();
   }
   /* Alt+shift+arrow moves between workspaces. Arrows rather than digits
@@ -9557,7 +9651,7 @@ document.addEventListener('paste', (e) => {
   // Only on the loader screen: with a dump open the page has its own inputs
   // and a paste is meant for one of them.
   if($('empty').hidden) return;
-  if(/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+  if(typingInField()) return;
   const t = e.clipboardData && e.clipboardData.getData('text');
   if(!t || !t.trim()) return;
   e.preventDefault();
