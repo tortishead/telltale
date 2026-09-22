@@ -14,7 +14,8 @@ import {
   parseCarServiceDump, parseUserDump, parseOverlayDump,
   indentOf, deriveFrame, shortType, sfFlagNames, anrLock,
   carHeadName, carPairs, lineFields, blockRuns, blockEntries, carPropNames,
-  userFlagNames, userListUnder, overlayFields, overlayStateLabel, TYPE_INTS,
+  userFlagNames, userListUnder, overlayFields, overlayStateLabel, overlayConstraints,
+  TYPE_INTS,
   parseBinderCallsStatsDump,
   binderCaller, binderCall, binderTxn, binderTime, binderBytes,
   parseInputDump, parseInputDevicesDump,
@@ -879,15 +880,15 @@ test('this parser says no to every other dump it is shown', () => {
 
 test('overlayFields reads a name the service padded out with dots', () => {
   const f = overlayFields([
-    '    mTargetPackageName.....: com.android.systemui',
-    '    mTargetOverlayableName.: ',
-    '    mPriority..............: 11',
+    ' mTargetPackageName.....: com.android.systemui',
+    ' mTargetOverlayableName.: null',
+    ' mPriority..............: 11',
   ]);
 
   assert.equal(f.get('mTargetPackageName'), 'com.android.systemui');
   assert.equal(f.get('mPriority'), '11');
-  // a field the service printed empty is printed, and empty
-  assert.equal(f.get('mTargetOverlayableName'), '');
+  // the manager concatenates a null field, so `null` is a value that arrives
+  assert.equal(f.get('mTargetOverlayableName'), 'null');
   assert.equal(f.has('mNotPrinted'), false);
 });
 
@@ -897,12 +898,24 @@ test('overlayStateLabel says the constant the way a person would', () => {
   assert.equal(overlayStateLabel(''), null);
 });
 
+/* Android 16 added `mConstraints` to the block. `None` is the manager saying
+   there are none; anything else is a list of `{type: X, value: Y}`. */
+test('overlayConstraints reads what an overlay is held to', () => {
+  assert.deepEqual(overlayConstraints('None'), []);
+  assert.deepEqual(overlayConstraints(undefined), [], 'a build before 16 prints no field');
+  assert.deepEqual(overlayConstraints('[{type: DISPLAY_ID, value: 2}]'), ['display id 2']);
+  assert.deepEqual(overlayConstraints('[{type: DISPLAY_ID, value: 2},{type: DEVICE_ID, value: 7}]'),
+    ['display id 2', 'device id 7']);
+  // a shape this reader has never seen is kept rather than thrown away
+  assert.deepEqual(overlayConstraints('something new'), ['something new']);
+});
+
 test('the overlay sample groups its overlays under the package each is over', () => {
   const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
   const at = (title, user) => s.nodes.find((n) => n.title === title && n.userId === user);
 
   assert.deepEqual(s.displays.map((d) => d.id), [0, 10], 'a display is a user');
-  assert.equal(s.globals.overlays, 12);
+  assert.equal(s.globals.overlays, 13);
   assert.equal(s.globals.targets, 6);
 
   const android = at('android', 0);
@@ -944,9 +957,21 @@ test('an overlay is read for whether it is over anything, and why not', () => {
   assert.equal(fixed.family, 'overlay-fixed');
 });
 
+/* A state this build of the manager has no name for is printed as
+   `<unknown state>`, which is not a state that is over anything. */
+test('a state the manager could not name is not read as applied', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt')
+    .replace('mState.................: STATE_ENABLED\n mIsEnabled.............: true\n mIsMutable.............: true\n mPriority..............: 1',
+             'mState.................: <unknown state>\n mIsEnabled.............: true\n mIsMutable.............: true\n mPriority..............: 1'));
+  const n = s.nodes.find((x) => x.state === '<unknown state>');
+
+  assert.ok(n, 'the block still read');
+  assert.equal(n.on, false);
+  assert.equal(n.family, 'overlay-off');
+});
+
 /* A fabricated overlay is not a package on the device: the manager names it
-   after the thing that made it, which is the one place the head line carries
-   two colons rather than one. */
+   after the thing that made it, in the head line and again in the block. */
 test('a fabricated overlay keeps the name it was registered under', () => {
   const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
   const frro = s.nodes.find((n) => n.fabricated);
@@ -954,11 +979,80 @@ test('a fabricated overlay keeps the name it was registered under', () => {
   assert.equal(frro.overlayPkg, 'com.android.systemui');
   assert.equal(frro.overlayName, 'ThemeOverlayController_accent');
   assert.equal(frro.title, 'com.android.systemui · ThemeOverlayController_accent');
+  assert.equal(frro.identifier, 'com.android.systemui:ThemeOverlayController_accent');
   assert.equal(frro.userId, 0);
 });
 
-/* Highest priority is applied last, so it is the one whose value a resource
-   ends up with — and the only one of a stack that is marked. */
+/* Android 16 holds an overlay to a display or a device. One that is held to
+   another display is over nothing on this one, and no other field says so. */
+test('a constrained overlay says what it is held to', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
+  const held = s.nodes.find((n) => n.title === 'com.example.cluster.theme');
+
+  assert.deepEqual(held.constraints, ['display id 2']);
+  assert.ok(held.badges.some((b) => b[0] === 'display id 2'));
+  assert.equal(s.globals.constrained, 1);
+  assert.equal(s.nodes.find((n) => n.title === 'com.example.kiosk.launcher').constraints.length, 0);
+});
+
+/* The manager prints the idmap of every overlay under the blocks, once per
+   overlay rather than once per user. `<missing idmap>` is the whole of the
+   answer to a STATE_NO_IDMAP, so the two are brought together. */
+test('an idmap is read and hung on the overlay it belongs to', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
+  const at = (title, user) => s.nodes.find((n) => n.title === title && n.userId === user);
+
+  assert.equal(s.globals.idmaps, 4);
+  assert.equal(s.globals.missingIdmaps, 1);
+
+  const mapped = at('com.android.theme.icon_pack.rounded.android', 0);
+  assert.equal(mapped.idmap.missing, false);
+  assert.equal(mapped.idmap.mapped, 2);
+  assert.equal(mapped.idmap.targetPath, '/system/framework/framework-res.apk');
+
+  // the same idmap belongs to the same overlay for every user it is set up for
+  assert.equal(at('com.android.theme.icon_pack.rounded.android', 10).idmap.mapped, 2);
+
+  assert.equal(at('com.android.theme.color.cinnamon', 0).idmap.missing, true);
+  assert.equal(at('com.example.kiosk.launcher', 10).idmap, null,
+    'a dump that printed no idmap for one is not given another overlay\'s');
+});
+
+/* The idmaps and the configuration list are thousands of lines on a real
+   device. Nothing of them may leak into the bag of lines this reader keeps
+   for whatever a future build starts printing. */
+test('what the reader could not account for is kept, and kept short', () => {
+  const text = read('fixtures/overlay-sample.txt');
+  assert.equal(parseOverlayDump(text).globals.tail, null,
+    'every line of the sample was accounted for');
+  assert.equal(parseOverlayDump(text).globals.configured, 3);
+
+  const surprise = parseOverlayDump(text + '\n' +
+    Array.from({ length: 40 }, (_, i) => `Something new ${i}`).join('\n'));
+  assert.equal(surprise.globals.tail.split(' · ').length, 8, 'capped rather than dumped');
+  assert.ok(surprise.globals.tail.startsWith('Something new 0'));
+});
+
+/* The blocks lost `mOverlayName` and `mConstraints` at different releases and
+   the idmaps are printed by a service that can fail to print them at all. A
+   dump without any of it is a dump this reader still reads. */
+test('a dump from a build before Android 16 is read the same way', () => {
+  const old = read('fixtures/overlay-sample.txt')
+    .split('\n')
+    .filter((l) => !/^\s*m(?:OverlayName|Constraints)\.+:/.test(l))
+    .join('\n')
+    .replace(/IDMAP OF [\s\S]*?(?=Default overlays:)/, '');
+  const s = parseOverlayDump(old);
+
+  assert.equal(s.ok, true);
+  assert.equal(s.globals.overlays, 13);
+  assert.equal(s.globals.idmaps, 0);
+  assert.equal(s.globals.constrained, 0);
+  // the head line still names a fabricated overlay when the block no longer does
+  const frro = s.nodes.find((n) => n.fabricated);
+  assert.equal(frro.overlayName, 'ThemeOverlayController_accent');
+});
+
 test('the overlay applied last is the one marked as winning', () => {
   const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
   const under = (target, user) => s.nodes.filter((n) =>
@@ -977,8 +1071,7 @@ test('the overlay applied last is the one marked as winning', () => {
 });
 
 test('a block the dump never closed is still read', () => {
-  const cut = read('fixtures/overlay-sample.txt')
-    .split('\n').slice(0, 8).join('\n');
+  const cut = read('fixtures/overlay-sample.txt').split('\n').slice(0, 8).join('\n');
   const s = parseOverlayDump(cut);
 
   assert.equal(s.ok, true);

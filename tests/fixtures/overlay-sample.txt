@@ -1,159 +1,229 @@
-Settings
-  com.android.internal.display.cutout.emulation.corner:0 {
-    mPackageName...........: com.android.internal.display.cutout.emulation.corner
-    mUserId................: 0
-    mTargetPackageName.....: android
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/DisplayCutoutEmulationCorner/DisplayCutoutEmulationCornerOverlay.apk
-    mState.................: STATE_DISABLED
-    mIsEnabled.............: false
-    mIsMutable.............: true
-    mPriority..............: 0
-    mCategory..............: com.android.internal.display.cutout.emulation
-    mIsFabricated..........: false
-  }
-  com.android.theme.icon_pack.rounded.android:0 {
-    mPackageName...........: com.android.theme.icon_pack.rounded.android
-    mUserId................: 0
-    mTargetPackageName.....: android
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/IconPackRoundedAndroidOverlay/IconPackRoundedAndroidOverlay.apk
-    mState.................: STATE_ENABLED
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 1
-    mCategory..............: android.theme
-    mIsFabricated..........: false
-  }
-  com.android.theme.color.cinnamon:0 {
-    mPackageName...........: com.android.theme.color.cinnamon
-    mUserId................: 0
-    mTargetPackageName.....: android
-    mTargetOverlayableName.: ThemeCustomization
-    mBaseCodePath..........: /product/overlay/CinnamonColorOverlay/CinnamonColorOverlay.apk
-    mState.................: STATE_NO_IDMAP
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 3
-    mCategory..............: android.theme
-    mIsFabricated..........: false
-  }
-  com.google.android.overlay.modules.android:0 {
-    mPackageName...........: com.google.android.overlay.modules.android
-    mUserId................: 0
-    mTargetPackageName.....: android
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/GoogleConfigOverlay/GoogleConfigOverlay.apk
-    mState.................: STATE_ENABLED_IMMUTABLE
-    mIsEnabled.............: true
-    mIsMutable.............: false
-    mPriority..............: 9
-    mCategory..............: 
-    mIsFabricated..........: false
-  }
-  com.android.systemui.navigationbar.gestural:0 {
-    mPackageName...........: com.android.systemui.navigationbar.gestural
-    mUserId................: 0
-    mTargetPackageName.....: com.android.systemui
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/NavigationBarModeGesturalOverlay/NavigationBarModeGesturalOverlay.apk
-    mState.................: STATE_ENABLED
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 4
-    mCategory..............: com.android.internal.navigation_bar_mode
-    mIsFabricated..........: false
-  }
-  com.android.theme.icon_pack.rounded.systemui:0 {
-    mPackageName...........: com.android.theme.icon_pack.rounded.systemui
-    mUserId................: 0
-    mTargetPackageName.....: com.android.systemui
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/IconPackRoundedSystemUIOverlay/IconPackRoundedSystemUIOverlay.apk
-    mState.................: STATE_DISABLED
-    mIsEnabled.............: false
-    mIsMutable.............: true
-    mPriority..............: 2
-    mCategory..............: android.theme
-    mIsFabricated..........: false
-  }
-  com.android.systemui:ThemeOverlayController_accent:0 {
-    mPackageName...........: com.android.systemui
-    mUserId................: 0
-    mTargetPackageName.....: com.android.systemui
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /data/resource-cache/com.android.systemui-ThemeOverlayController_accent.frro
-    mState.................: STATE_ENABLED
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 11
-    mCategory..............: android.theme
-    mIsFabricated..........: true
-  }
-  com.example.brand.settings:0 {
-    mPackageName...........: com.example.brand.settings
-    mUserId................: 0
-    mTargetPackageName.....: com.example.brand.host
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /data/app/~~qK1tF/com.example.brand.settings-Rj9/base.apk
-    mState.................: STATE_MISSING_TARGET
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 0
-    mCategory..............: 
-    mIsFabricated..........: false
-  }
-  com.android.theme.icon_pack.rounded.android:10 {
-    mPackageName...........: com.android.theme.icon_pack.rounded.android
-    mUserId................: 10
-    mTargetPackageName.....: android
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/IconPackRoundedAndroidOverlay/IconPackRoundedAndroidOverlay.apk
-    mState.................: STATE_DISABLED
-    mIsEnabled.............: false
-    mIsMutable.............: true
-    mPriority..............: 1
-    mCategory..............: android.theme
-    mIsFabricated..........: false
-  }
-  com.google.android.overlay.modules.android:10 {
-    mPackageName...........: com.google.android.overlay.modules.android
-    mUserId................: 10
-    mTargetPackageName.....: android
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/GoogleConfigOverlay/GoogleConfigOverlay.apk
-    mState.................: STATE_ENABLED_IMMUTABLE
-    mIsEnabled.............: true
-    mIsMutable.............: false
-    mPriority..............: 9
-    mCategory..............: 
-    mIsFabricated..........: false
-  }
-  com.android.systemui.navigationbar.threebutton:10 {
-    mPackageName...........: com.android.systemui.navigationbar.threebutton
-    mUserId................: 10
-    mTargetPackageName.....: com.android.systemui
-    mTargetOverlayableName.: 
-    mBaseCodePath..........: /product/overlay/NavigationBarMode3ButtonOverlay/NavigationBarMode3ButtonOverlay.apk
-    mState.................: STATE_ENABLED
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 4
-    mCategory..............: com.android.internal.navigation_bar_mode
-    mIsFabricated..........: false
-  }
-  com.example.kiosk.launcher:10 {
-    mPackageName...........: com.example.kiosk.launcher
-    mUserId................: 10
-    mTargetPackageName.....: com.android.settings
-    mTargetOverlayableName.: KioskCustomization
-    mBaseCodePath..........: /data/app/~~m4Lp2/com.example.kiosk.launcher-Bd2/base.apk
-    mState.................: STATE_ENABLED
-    mIsEnabled.............: true
-    mIsMutable.............: true
-    mPriority..............: 6
-    mCategory..............: com.example.kiosk
-    mIsFabricated..........: false
-  }
-
+com.android.internal.display.cutout.emulation.corner:0 {
+ mPackageName...........: com.android.internal.display.cutout.emulation.corner
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: android
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/DisplayCutoutEmulationCorner/DisplayCutoutEmulationCornerOverlay.apk
+ mState.................: STATE_DISABLED
+ mIsEnabled.............: false
+ mIsMutable.............: true
+ mPriority..............: 0
+ mCategory..............: com.android.internal.display.cutout.emulation
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.android.theme.icon_pack.rounded.android:0 {
+ mPackageName...........: com.android.theme.icon_pack.rounded.android
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: android
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/IconPackRoundedAndroidOverlay/IconPackRoundedAndroidOverlay.apk
+ mState.................: STATE_ENABLED
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 1
+ mCategory..............: android.theme
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.android.theme.color.cinnamon:0 {
+ mPackageName...........: com.android.theme.color.cinnamon
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: android
+ mTargetOverlayableName.: ThemeCustomization
+ mBaseCodePath..........: /product/overlay/CinnamonColorOverlay/CinnamonColorOverlay.apk
+ mState.................: STATE_NO_IDMAP
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 3
+ mCategory..............: android.theme
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.google.android.overlay.modules.android:0 {
+ mPackageName...........: com.google.android.overlay.modules.android
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: android
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/GoogleConfigOverlay/GoogleConfigOverlay.apk
+ mState.................: STATE_ENABLED_IMMUTABLE
+ mIsEnabled.............: true
+ mIsMutable.............: false
+ mPriority..............: 9
+ mCategory..............: null
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.android.systemui.navigationbar.gestural:0 {
+ mPackageName...........: com.android.systemui.navigationbar.gestural
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: com.android.systemui
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/NavigationBarModeGesturalOverlay/NavigationBarModeGesturalOverlay.apk
+ mState.................: STATE_ENABLED
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 4
+ mCategory..............: com.android.internal.navigation_bar_mode
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.android.theme.icon_pack.rounded.systemui:0 {
+ mPackageName...........: com.android.theme.icon_pack.rounded.systemui
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: com.android.systemui
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/IconPackRoundedSystemUIOverlay/IconPackRoundedSystemUIOverlay.apk
+ mState.................: STATE_DISABLED
+ mIsEnabled.............: false
+ mIsMutable.............: true
+ mPriority..............: 2
+ mCategory..............: android.theme
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.android.systemui:ThemeOverlayController_accent:0 {
+ mPackageName...........: com.android.systemui
+ mOverlayName...........: ThemeOverlayController_accent
+ mUserId................: 0
+ mTargetPackageName.....: com.android.systemui
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /data/resource-cache/com.android.systemui-ThemeOverlayController_accent.frro
+ mState.................: STATE_ENABLED
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 11
+ mCategory..............: android.theme
+ mIsFabricated..........: true
+ mConstraints...........: None
+}
+com.example.brand.settings:0 {
+ mPackageName...........: com.example.brand.settings
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: com.example.brand.host
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /data/app/~~qK1tF/com.example.brand.settings-Rj9/base.apk
+ mState.................: STATE_MISSING_TARGET
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 0
+ mCategory..............: null
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.example.cluster.theme:0 {
+ mPackageName...........: com.example.cluster.theme
+ mOverlayName...........: null
+ mUserId................: 0
+ mTargetPackageName.....: com.android.systemui
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/ClusterTheme/ClusterTheme.apk
+ mState.................: STATE_ENABLED
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 12
+ mCategory..............: com.example.cluster
+ mIsFabricated..........: false
+ mConstraints...........: [{type: DISPLAY_ID, value: 2}]
+}
+com.android.theme.icon_pack.rounded.android:10 {
+ mPackageName...........: com.android.theme.icon_pack.rounded.android
+ mOverlayName...........: null
+ mUserId................: 10
+ mTargetPackageName.....: android
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/IconPackRoundedAndroidOverlay/IconPackRoundedAndroidOverlay.apk
+ mState.................: STATE_DISABLED
+ mIsEnabled.............: false
+ mIsMutable.............: true
+ mPriority..............: 1
+ mCategory..............: android.theme
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.google.android.overlay.modules.android:10 {
+ mPackageName...........: com.google.android.overlay.modules.android
+ mOverlayName...........: null
+ mUserId................: 10
+ mTargetPackageName.....: android
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/GoogleConfigOverlay/GoogleConfigOverlay.apk
+ mState.................: STATE_ENABLED_IMMUTABLE
+ mIsEnabled.............: true
+ mIsMutable.............: false
+ mPriority..............: 9
+ mCategory..............: null
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.android.systemui.navigationbar.threebutton:10 {
+ mPackageName...........: com.android.systemui.navigationbar.threebutton
+ mOverlayName...........: null
+ mUserId................: 10
+ mTargetPackageName.....: com.android.systemui
+ mTargetOverlayableName.: null
+ mBaseCodePath..........: /product/overlay/NavigationBarMode3ButtonOverlay/NavigationBarMode3ButtonOverlay.apk
+ mState.................: STATE_ENABLED
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 4
+ mCategory..............: com.android.internal.navigation_bar_mode
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+com.example.kiosk.launcher:10 {
+ mPackageName...........: com.example.kiosk.launcher
+ mOverlayName...........: null
+ mUserId................: 10
+ mTargetPackageName.....: com.android.settings
+ mTargetOverlayableName.: KioskCustomization
+ mBaseCodePath..........: /data/app/~~m4Lp2/com.example.kiosk.launcher-Bd2/base.apk
+ mState.................: STATE_ENABLED
+ mIsEnabled.............: true
+ mIsMutable.............: true
+ mPriority..............: 6
+ mCategory..............: com.example.kiosk
+ mIsFabricated..........: false
+ mConstraints...........: None
+}
+IDMAP OF com.android.theme.icon_pack.rounded.android
+Paths:
+ target path : /system/framework/framework-res.apk
+ overlay path : /product/overlay/IconPackRoundedAndroidOverlay/IconPackRoundedAndroidOverlay.apk
+Constraints:
+ None
+Mapping:
+ 0x01080ae1 -> 0x7f010000 (android:drawable/ic_menu_add -> com.android.theme.icon_pack.rounded.android:drawable/ic_menu_add)
+ 0x01080ae2 -> 0x7f010001 (android:drawable/ic_menu_delete -> com.android.theme.icon_pack.rounded.android:drawable/ic_menu_delete)
+IDMAP OF com.android.theme.color.cinnamon
+<missing idmap>
+IDMAP OF com.android.systemui:ThemeOverlayController_accent
+Paths:
+ target path : /system_ext/priv-app/SystemUI/SystemUI.apk
+ overlay path : /data/resource-cache/com.android.systemui-ThemeOverlayController_accent.frro
+Overlay name: ThemeOverlayController_accent
+Constraints:
+ None
+Mapping:
+ 0x7f060001 -> 0x00000001 (com.android.systemui:color/accent_primary -> 0xff8ab4f8)
+IDMAP OF com.example.cluster.theme
+Paths:
+ target path : /system_ext/priv-app/SystemUI/SystemUI.apk
+ overlay path : /product/overlay/ClusterTheme/ClusterTheme.apk
+Constraints:
+ DISPLAY_ID : 2
+Mapping:
+ 0x7f060001 -> 0x7f020000 (com.android.systemui:color/accent_primary -> com.example.cluster.theme:color/accent_primary)
 Default overlays: com.google.android.overlay.modules.android;com.android.theme.icon_pack.rounded.android
+Overlay configurations:
+    0, ParsedConfiguration{packageName=com.android.internal.display.cutout.emulation.corner, enabled=false, mutable=true, policy=product, parsedInfo=null, parsedConfigFile=/product/overlay/config/config.xml}
+    1, ParsedConfiguration{packageName=com.google.android.overlay.modules.android, enabled=true, mutable=false, policy=product, parsedInfo=null, parsedConfigFile=/product/overlay/config/config.xml}
+    2, ParsedConfiguration{packageName=com.example.cluster.theme, enabled=true, mutable=true, policy=product, parsedInfo=null, parsedConfigFile=/product/overlay/config/config.xml}
+

@@ -1,20 +1,21 @@
 tool: overlay
 displays: 2
-nodes: 18
+nodes: 19
 
 display 0  label=user 0  size=0x0
-    meta: 8 overlays · 4 enabled · 3 targets
+    meta: 9 overlays · 5 enabled · 3 targets
     1  overlay-target  vis=y                                             1 broken,2 on               android
     2  overlay-fixed   vis=y         ^overlay:u0:android                 wins,immutable              com.google.android.overlay.modules.android
     3  overlay-broken  vis=n         ^overlay:u0:android                 no idmap                    com.android.theme.color.cinnamon
     4  overlay-on      vis=y         ^overlay:u0:android                 -                           com.android.theme.icon_pack.rounded.android
     5  overlay-off     vis=n         ^overlay:u0:android                 disabled                    com.android.internal.display.cutout.emulation.corner
-    6  overlay-target  vis=y                                             2 on                        com.android.systemui
-    7  overlay-on      vis=y         ^overlay:u0:com.android.systemui    wins,fabricated             com.android.systemui · ThemeOverlayController_accent
-    8  overlay-on      vis=y         ^overlay:u0:com.android.systemui    -                           com.android.systemui.navigationbar.gestural
-    9  overlay-off     vis=n         ^overlay:u0:com.android.systemui    disabled                    com.android.theme.icon_pack.rounded.systemui
-   10  overlay-target  vis=n                                             1 broken,none enabled       com.example.brand.host
-   11  overlay-broken  vis=n         ^overlay:u0:com.example.brand.host  no target                   com.example.brand.settings
+    6  overlay-target  vis=y                                             3 on                        com.android.systemui
+    7  overlay-on      vis=y         ^overlay:u0:com.android.systemui    wins,display id 2           com.example.cluster.theme
+    8  overlay-on      vis=y         ^overlay:u0:com.android.systemui    fabricated                  com.android.systemui · ThemeOverlayController_accent
+    9  overlay-on      vis=y         ^overlay:u0:com.android.systemui    -                           com.android.systemui.navigationbar.gestural
+   10  overlay-off     vis=n         ^overlay:u0:com.android.systemui    disabled                    com.android.theme.icon_pack.rounded.systemui
+   11  overlay-target  vis=n                                             1 broken,none enabled       com.example.brand.host
+   12  overlay-broken  vis=n         ^overlay:u0:com.example.brand.host  no target                   com.example.brand.settings
 
 display 10  label=user 10  size=0x0
     meta: 4 overlays · 3 enabled · 3 targets
@@ -28,10 +29,14 @@ display 10  label=user 10  size=0x0
 
 globals:
   users: 2
-  overlays: 12
+  overlays: 13
   targets: 6
-  enabled: 7
+  enabled: 8
   broken: 2
   fabricated: 1
+  constrained: 1
+  idmaps: 4
+  missingIdmaps: 1
+  configured: 3
   defaults: com.google.android.overlay.modules.android · com.android.theme.icon_pack.rounded.android
-  lines: 160
+  lines: 230
