@@ -66,6 +66,35 @@ test('a dump read with CRLF line ends is the same dump', () => {
   same(parseLogcatDump, fixture('logcat-sample.txt'));
 });
 
+/* ---- a modern dump inside a modern bugreport ---------------------------- */
+
+/* Android 16 prints SurfaceFlinger into a bugreport under a `DUMP OF SERVICE`
+   heading rather than the old banner, and the new frontend's own lists start
+   at column zero the way a heading does. Both readers have to come out of one
+   file with their own section and nothing of the other's. */
+test('an Android 16 SurfaceFlinger section opens alongside the window one', async () => {
+  const page = openPage();
+  const text = [
+    'Bugreport format version: 2.0',
+    '',
+    '------ DUMPSYS CRITICAL (/system/bin/dumpsys) ------',
+    '-'.repeat(79),
+    'DUMP OF SERVICE CRITICAL SurfaceFlinger:',
+    fixture('sf-a16-sample.txt'),
+    '--------- 0.5s was the duration of dumpsys SurfaceFlinger',
+    '-'.repeat(79),
+    'DUMP OF SERVICE window:',
+    fixture('window-sample.txt'),
+  ].join('\n');
+
+  await page.load(text, null, 'bugreport.txt');
+  const found = new Map(page.docs().map(d => [d.found[0].tool.id, d.found[0].scene]));
+  assert.equal(found.get('sf').nodes.length, 80, 'every layer the hierarchy holds');
+  assert.ok(found.get('window').nodes.length, 'and the window dump under it');
+  assert.ok(!found.get('window').nodes.some(n => /#\d+$/.test(n.title)),
+    'with no layer read as a window');
+});
+
 /* ---- one reader failing is not the load failing ------------------------- */
 
 test('a reader that throws costs its own tab and nothing else', async () => {
@@ -186,4 +215,271 @@ test('a details pane that throws does not take the list with it', async () => {
 
   assert.match(page.detail(), /could not draw the details/, 'the pane says what happened');
   assert.ok(page.rows().includes('NavigationBar'), 'and the list is still the dump');
+});
+
+/* ---------------- a touch trace ---------------- */
+
+/* The trace reader is the one that is handed something a bugreport never
+   contains, and the one whose drawing is not the drawing every other tool
+   gets. Both halves are worth a test: that it does not turn up on a dump that
+   merely names the same axes, and that its sheet, its clock and its mapping
+   onto somebody else's display all survive contact with a real capture.
+ */
+
+const capture = () => readFileSync(dir('fixtures/getevent-sample.txt'), 'utf8');
+
+test('a getevent capture opens one tab, and no other reader claims it', async () => {
+  const page = openPage();
+  await page.load(capture(), null, 'touch.txt');
+  assert.deepEqual(page.docs().map((d) => d.found[0].tool.id), ['getevent']);
+});
+
+/* `dumpsys input` prints `ABS_MT_POSITION_X` in the reader's motion ranges. A
+   detect built on the axis names rather than on the shape of an event line
+   would open a trace tab on every bugreport. */
+test('a dump that names the same axes is not read as a capture', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/input-sample.txt'), 'utf8'), null, 'input.txt');
+  assert.ok(!page.docs().some((d) => d.found[0].tool.id === 'getevent'));
+});
+
+test('the trace draws a path for every stroke and marks where each finger landed', async () => {
+  const page = openPage();
+  await page.load(capture(), null, 'touch.txt');
+  page.display(2);
+  const svg = page.sheet();
+  assert.equal((svg.match(/class="gev-path"/g) || []).length, 5, 'one path per stroke');
+  assert.equal((svg.match(/class="gev-down"/g) || []).length, 5, 'and one dot where it went down');
+  /* The playhead's own elements are in the drawing from the start, empty, so
+     playing moves them instead of rebuilding the sheet. */
+  assert.ok(svg.includes('data-live='), 'the live half of each path is there to fill in');
+});
+
+/* A device that only ever reported keys has no panel, and must say that rather
+   than draw a screen nobody measured. */
+test('a device with no positions says so instead of drawing a panel', async () => {
+  const page = openPage();
+  await page.load(capture(), null, 'touch.txt');
+  page.display(0);
+  assert.match(page.sheet(), /Nothing on event0 reported a position/);
+});
+
+test('a trace with another dump on the desk can be drawn over its display', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  await page.load(capture(), null, 'touch.txt');
+
+  const trace = page.docs().find((d) => d.found[0].tool.id === 'getevent');
+  const windows = page.docs().find((d) => d.found[0].tool.id === 'window');
+  page.open(trace);
+  page.display(2);
+
+  /* Nothing is borrowed until it is asked for: a trace opens in its own units. */
+  assert.ok(!page.sheet().includes('gev-under'));
+
+  page.S.mapTo = `${windows.id}:window:0`;
+  const over = page.sheet();
+  assert.ok(over.includes('gev-under'), "the other dump's windows are drawn under the strokes");
+
+  page.select('gev:2:s0');
+  const detail = page.detail();
+  assert.match(detail, /What it landed on/);
+  assert.match(detail, /com\.example\.player/,
+    'and the tap is named by the window it came down in');
+});
+
+test('the playhead moves without the sheet being rebuilt', async () => {
+  const page = openPage();
+  await page.load(capture(), null, 'touch.txt');
+  page.display(2);
+  const before = page.sheet();
+  page.S.playAt = 2.5;
+  assert.equal(page.els.get('sheet').innerHTML, before,
+    'scrubbing is not a redraw; the same SVG is still in the pane');
+});
+
+/* The clock is the reason this reader exists rather than a list of events, so
+   what it says at a moment is worth pinning down: nothing before a stroke
+   started, the whole of it after it ended, and a finger on screen only while
+   that finger was actually down. */
+test('the playhead draws each stroke only over the span it happened in', async () => {
+  const page = openPage();
+  await page.load(capture(), null, 'touch.txt');
+  page.display(2);
+  page.sheet();
+
+  const tap = page.docs()[0].found[0].scene.nodes.find((n) => n.kind === 'tap');
+  const span = page.docs()[0].found[0].scene.globals;
+  const rel = (t) => t - span.start;
+  const frameOf = (t, hash) => page.playhead(t).find((f) => f.hash === hash);
+
+  assert.equal(frameOf(0, tap.hash).d, '', 'nothing has been drawn at zero');
+  assert.equal(frameOf(0, tap.hash).tip, null, 'and no finger is down');
+
+  const mid = frameOf(rel((tap.start + tap.end) / 2), tap.hash);
+  assert.ok(mid.d.startsWith('M'), 'part way through, part of the path is there');
+  assert.ok(mid.tip, 'and the finger is on screen');
+
+  const after = frameOf(rel(tap.end) + 0.5, tap.hash);
+  assert.ok(after.d.startsWith('M'), 'after it ended the whole path stays');
+  assert.equal(after.tip, null, 'but the finger has gone');
+});
+
+test('a stroke is drawn where the display it is mapped onto puts it', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  await page.load(capture(), null, 'touch.txt');
+  const trace = page.docs().find((d) => d.found[0].tool.id === 'getevent');
+  const windows = page.docs().find((d) => d.found[0].tool.id === 'window');
+  page.open(trace);
+  page.display(2);
+
+  const tap = trace.found[0].scene.nodes.find((n) => n.kind === 'tap');
+  const at = (hash) => page.playhead(trace.found[0].scene.globals.span).find((f) => f.hash === hash);
+  const own = at(tap.hash).d.match(/M([\d.]+) ([\d.]+)/);
+
+  page.S.mapTo = `${windows.id}:window:0`;
+  page.sheet();
+  const over = at(tap.hash).d.match(/M([\d.]+) ([\d.]+)/);
+
+  const panel = trace.found[0].scene.displays.find((d) => d.id === 2);
+  const display = windows.found[0].scene.displays.find((d) => d.id === 0);
+  /* In its own units the point is the point; over a display it is that point
+     scaled by the ratio between the two, and nothing else. */
+  assert.equal(Math.round(+own[1]), Math.round(tap.samples[0].x));
+  assert.equal(Math.round(+over[1]),
+    Math.round(tap.samples[0].x / panel.size.w * display.size.w));
+  assert.equal(Math.round(+over[2]),
+    Math.round(tap.samples[0].y / panel.size.h * display.size.h));
+});
+
+/* A panel mounted at 90° to its display is the normal case on a tablet, and
+   nothing in either dump states it, so the turn is the reader's to offer. */
+test('turning the panel against the display turns the strokes with it', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  await page.load(capture(), null, 'touch.txt');
+  const trace = page.docs().find((d) => d.found[0].tool.id === 'getevent');
+  const windows = page.docs().find((d) => d.found[0].tool.id === 'window');
+  page.open(trace);
+  page.display(2);
+  page.S.mapTo = `${windows.id}:window:0`;
+
+  const tap = trace.found[0].scene.nodes.find((n) => n.kind === 'tap');
+  const point = () => page.playhead(trace.found[0].scene.globals.span)
+    .find((f) => f.hash === tap.hash).d.match(/M([\d.]+) ([\d.]+)/).slice(1).map(Number);
+
+  const [x0, y0] = point();
+  page.S.mapRot = 180;
+  const [x2, y2] = point();
+  const display = windows.found[0].scene.displays.find((d) => d.id === 0);
+  assert.ok(Math.abs((x0 + x2) - display.size.w) < 1, 'half a turn mirrors x');
+  assert.ok(Math.abs((y0 + y2) - display.size.h) < 1, 'and y');
+});
+
+/* `event0` is the volume rocker on half the phones ever made and sorts first
+   by number. What a touch trace is about is the panel. */
+test('a trace opens on the device that reported positions, not on the first one', async () => {
+  const page = openPage();
+  await page.load(capture(), null, 'touch.txt');
+  assert.equal(page.S.displayId, 2);
+});
+
+/* ---------------- a capture pasted onto a layout ---------------- */
+
+/* The other direction: not a capture that borrows a display, but a window dump
+   that is handed a capture and plays it over its own windows. It is the same
+   drawing and the same clock reached from the other end, so what is worth
+   testing is that the two ends really do meet — and that the layout underneath
+   is still the thing being read.
+ */
+
+test('a window dump takes a pasted capture and plays it over its own windows', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+
+  assert.equal(page.stage(), null, 'nothing is playing until something is pasted');
+  assert.equal(page.attach(capture()), null, 'and a real capture is taken without complaint');
+
+  const stage = page.stage();
+  assert.equal(stage.own, false, 'the capture is the guest here, not the subject');
+  assert.equal(stage.dev.label, 'event2', 'played off the device that reported positions');
+  assert.equal(stage.display.id, 0, 'over the display this dump is showing');
+
+  const plan = page.sheet('plan');
+  assert.ok(plan.includes('gev-over'), 'the trace is drawn over the layout');
+  assert.equal((plan.match(/class="gev-path"/g) || []).length, 5);
+  /* The dump underneath is still a window dump: its windows are still there
+     and still the things that take a click. */
+  assert.ok(plan.includes('class="pw-fill"'));
+  assert.ok(!plan.includes('data-hash="gev:'),
+    'and no stroke is a hit target of its own: the window under it takes the click');
+});
+
+test('text that is not a capture is refused in words, and changes nothing', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  const bad = page.attach('WINDOW MANAGER WINDOWS (dumpsys window windows)\nnothing here');
+  assert.match(bad, /getevent/);
+  assert.equal(page.stage(), null);
+});
+
+test('taking the capture off puts the dump back the way it was', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  const before = page.sheet('plan');
+  page.attach(capture());
+  assert.notEqual(page.sheet('plan'), before);
+  page.detach();
+  assert.equal(page.stage(), null);
+  assert.equal(page.sheet('plan'), before);
+});
+
+/* The stack is the plan seen from the side, so a trace laid on it has to go
+   through the same rotation the faces did — otherwise the gesture floats over
+   a drawing it is no longer on. */
+test('the trace lies on the screen plane in the z-order view too', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  page.attach(capture());
+  const plan = page.sheet('plan');
+  const depth = page.sheet('depth');
+  assert.ok(depth.includes('gev-over'));
+  const first = (svg) => svg.slice(svg.indexOf('gev-over')).match(/d="M([-\d.]+) ([-\d.]+)/);
+  assert.notDeepEqual(first(depth).slice(1), first(plan).slice(1),
+    'the same stroke is drawn at different points in the two views');
+});
+
+/* The point of putting the log on the layout rather than beside it. */
+test('a selected window says which strokes came down on it, and who took them', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/input-sample.txt'), 'utf8'), 'input', 'input.txt');
+  page.attach(capture());
+  page.sheet('plan');
+
+  const scene = page.docs()[0].found[0].scene;
+  const overlay = scene.nodes.find((n) => n.title.includes('tracker.Overlay'));
+  const ime = scene.nodes.find((n) => n.title === 'InputMethod');
+
+  page.select(overlay.hash);
+  const onOverlay = page.detail();
+  assert.match(onOverlay, /Touches on this window/);
+  assert.match(onOverlay, /this one/, 'the overlay takes what lands on it');
+
+  /* Two strokes came down inside the IME's frame, and the overlay above it is
+     what would actually have got them. */
+  page.select(ime.hash);
+  const onIme = page.detail();
+  assert.match(onIme, /taken by/);
+  assert.match(onIme, /tracker\.Overlay/);
+});
+
+test('a window nothing landed on says so rather than showing an empty list', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/input-sample.txt'), 'utf8'), 'input', 'input.txt');
+  page.attach(capture());
+  page.sheet('plan');
+  const bar = page.docs()[0].found[0].scene.nodes.find((n) => n.title === 'StatusBar');
+  page.select(bar.hash);
+  assert.match(page.detail(), /No finger in the capture came down/);
 });

@@ -95,6 +95,15 @@ return {
     document.getElementById('findBox').value = q === undefined ? '' : q;
     goToHit(hit);
   },
+  /* A trace's playhead at a moment: what every stroke on screen has drawn by
+     then, and where each finger is. This is what the sheet writes into the SVG
+     sixty times a second, taken before it is written. */
+  playhead: (t) => { S.playAt = t; return gevPlayhead(gevPlayAt); },
+  /* A capture pasted onto a dump that draws, and taken off again — the page's
+     own two functions, not a write into its state. */
+  attach: (text) => { const bad = gevAttach(text); if(!bad) renderAll(); return bad; },
+  detach: () => gevDetach(),
+  stage: () => gevStage(),
   error: () => { const e = document.getElementById('err'); return e.hidden ? null : e.textContent; },
   note: () => { const e = document.getElementById('loaderNote'); return e.hidden ? null : e.textContent; },
 };

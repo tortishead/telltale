@@ -20,6 +20,7 @@ import {
   parseInputDump, parseInputDevicesDump,
   inputSources, inputWindowName, inputRegion, inputConfigOf, inputViewports,
   parseLogcatDump, logKeep, logLevel,
+  parseGeteventCapture, gevSigned, gevTracks,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -150,6 +151,80 @@ test('the SurfaceFlinger sample parses to the layer tree it describes', () => {
   assert.ok(d.hwc && d.hwc.rows.length, 'the HWC rows were read');
   const activity = byTitle('MainActivity');
   assert.equal(activity.focused, true, 'the [*] in the HWC table marks the focused layer');
+});
+
+/* Android 15 gave SurfaceFlinger a new frontend, and Android 16 is the first
+   release that prints nothing else: no layer list and no composition blocks,
+   but a one-line snapshot per drawn layer, another per layer input knows
+   about, and a tree with every layer there is in it. */
+test('an Android 16 dump reads every layer, not just the ones that were drawn', () => {
+  const s = parseSurfaceFlingerDump(read('fixtures/sf-a16-sample.txt'));
+  assert.ok(s.ok);
+  assert.equal(s.nodes.length, 80, 'as many layers as the dump says it has');
+  assert.equal(s.globals.activeLayers, '80');
+  assert.equal(s.globals.frontend, 'new');
+  assert.equal(s.displays.length, 1);
+  assert.equal(s.displays[0].hwc.rows.length, 5,
+    'the HWC table is found through the header the quarterly release prints');
+});
+
+test('a new frontend layer is read out of its one line', () => {
+  const s = parseSurfaceFlingerDump(read('fixtures/sf-a16-sample.txt'));
+  const bar = s.nodes.find((n) => n.title === 'StatusBar#83');
+
+  // the dump prints this one `bounds={0,0,63,1080}`: left, top, bottom, right
+  assert.deepEqual(bar.rects.bounds, { l: 0, t: 0, r: 1080, b: 63 });
+  assert.deepEqual(bar.frame, { l: 0, t: 0, r: 1080, b: 63 });
+  assert.equal(bar.winType, 'STATUS_BAR', 'the HWC table still names the window type');
+  assert.equal(bar.comp, 'DEVICE');
+  assert.equal(bar.visible, true);
+  assert.equal(bar.bufferId, '4617089843202');
+  assert.equal(bar.frameNumber, 7);
+  assert.deepEqual(bar.inputFlags, ['NOT_FOCUSABLE', 'TRUSTED_OVERLAY']);
+  assert.deepEqual(bar.touchable, { l: 0, t: 0, r: 1080, b: 63 });
+  assert.equal(bar.pid, 1075);
+  assert.equal(bar.uid, 10194);
+});
+
+test('a layer the new frontend did not draw says so, and why', () => {
+  const s = parseSurfaceFlingerDump(read('fixtures/sf-a16-sample.txt'));
+  const spy = s.nodes.find((n) => n.title === 'PointerEventDispatcherOverlay0#40');
+  assert.equal(spy.visible, false);
+  assert.equal(spy.reason, 'nothing to draw');
+  assert.ok(spy.inputFlags.includes('SPY'), 'it is still in the input list');
+});
+
+test('the hierarchy is where parentage, the owner and the offscreen layers come from', () => {
+  const s = parseSurfaceFlingerDump(read('fixtures/sf-a16-sample.txt'));
+  const app = s.nodes.find((n) => n.title.endsWith('NexusLauncherActivity#105'));
+  assert.equal(app.pid, 1370);
+  assert.ok(app.ancestors.some((a) => a.title === 'Task=6#52'),
+    'the task it is in is on its parent chain, elided name and all');
+
+  /* The hierarchy elides the middle of a long name and the composition list
+     does not; they are joined on the layer id either way. */
+  const record = s.nodes.find((n) => n.title.includes('ActivityRecord{'));
+  assert.ok(record.title.includes('[...]'));
+  assert.ok(record.childCount >= 1);
+
+  const shade = s.nodes.find((n) => n.title === 'NotificationShade#85');
+  assert.equal(shade.offscreen, true, 'a layer off every display is kept');
+  assert.equal(shade.frame, null, 'and has nowhere to be drawn');
+  assert.deepEqual(shade.badges.map(([l]) => l), ['offscreen']);
+});
+
+/* Which way round the lists are printed changed between Android 16 and its
+   first quarterly release. The header says which, and a dump with no
+   hierarchy in it — a bugreport section cut short — has nothing else. */
+test('the composition list is read in the direction its header states', () => {
+  const dump = (dir) =>
+    'Build configuration: [sf]\n\nActive Layers - layers with client handles (count = 2)\n\n' +
+    `Composition list (${dir})\nLayerStack=0\n` +
+    '  Layer [1] Back#1\n    visible reason= buffer=1 frame=1\n    bounds={0,0,100,100}\n' +
+    '  Layer [2] Front#2\n    visible reason= buffer=2 frame=1\n    bounds={0,0,100,100}\n';
+  const topmost = (dir) => parseSurfaceFlingerDump(dump(dir)).displays[0].nodes[0].title;
+  assert.equal(topmost('bottom to top'), 'Front#2');
+  assert.equal(topmost('top to bottom'), 'Back#1');
 });
 
 /* ---------------- packages ---------------- */
@@ -793,8 +868,8 @@ test('times and sizes are read in the unit that keeps them to three figures', ()
 });
 
 test('this parser says no to every other dump it is shown', () => {
-  for (const name of ['window-sample', 'sf-sample', 'package-sample', 'anr-sample',
-                      'car-service-sample', 'user-sample']) {
+  for (const name of ['window-sample', 'sf-sample', 'sf-a16-sample', 'package-sample',
+                      'anr-sample', 'car-service-sample', 'user-sample']) {
     assert.equal(parseBinderCallsStatsDump(read(`fixtures/${name}.txt`)).ok, false, name);
   }
 });
@@ -1015,8 +1090,8 @@ test('the mappers hang under the device the reader gave them to', () => {
 });
 
 test('both input readers say no to every other dump they are shown', () => {
-  for (const name of ['window-sample', 'sf-sample', 'package-sample', 'anr-sample',
-                      'car-service-sample', 'user-sample', 'binder-sample']) {
+  for (const name of ['window-sample', 'sf-sample', 'sf-a16-sample', 'package-sample',
+                      'anr-sample', 'car-service-sample', 'user-sample', 'binder-sample']) {
     assert.equal(parseInputDump(read(`fixtures/${name}.txt`)).ok, false, name);
     assert.equal(parseInputDevicesDump(read(`fixtures/${name}.txt`)).ok, false, name);
   }
@@ -1155,8 +1230,9 @@ test('a log keeps its worst lines when it printed more than the budget', () => {
 });
 
 test('this parser says no to every dump that is not a log', () => {
-  for (const name of ['window-sample', 'sf-sample', 'package-sample', 'anr-sample',
-                      'car-service-sample', 'user-sample', 'binder-sample', 'input-sample']) {
+  for (const name of ['window-sample', 'sf-sample', 'sf-a16-sample', 'package-sample',
+                      'anr-sample', 'car-service-sample', 'user-sample', 'binder-sample',
+                      'input-sample']) {
     assert.equal(parseLogcatDump(read(`fixtures/${name}.txt`)).ok, false, name);
   }
 });
@@ -1246,4 +1322,168 @@ test('an indented Current user or Users line does not open the user dump', () =>
   const s = parseUserDump(`${before}\n${own}`);
   assert.ok(!s.nodes.some((n) => n.title === 'ACTIVITY MANAGER USERS'));
   assert.equal(s.nodes[0].at, parseUserDump(own).nodes[0].at + before.split('\n').length);
+});
+
+/* ---------------- getevent ---------------- */
+
+/* Every other reader is handed the thing it reports. This one is handed a list
+   of kernel events and has to work out that a finger was involved at all, so
+   what it gets wrong is not a field — it is a whole gesture, or a whole
+   protocol, going missing. */
+
+const gevCap = read('fixtures/getevent-sample.txt');
+
+test('a tracking id of ffffffff is the finger leaving, not a finger 4294967295', () => {
+  assert.equal(gevSigned('ffffffff'), -1);
+  assert.equal(gevSigned('00000065'), 0x65);
+  /* A value printed short — some builds do — is not sign-extended off its own
+     top bit. */
+  assert.equal(gevSigned('ff'), 0xff);
+});
+
+test('a capture comes out as the strokes the fingers made', () => {
+  const s = parseGeteventCapture(gevCap);
+  const panel = s.displays.find((d) => d.label === 'event2');
+  assert.ok(panel, 'the touch device is a group of its own');
+  assert.equal(panel.protocol, 'B');
+  /* The ranges were pasted above the capture, so the space is the panel's own
+     and not one guessed from how far the fingers went. */
+  assert.deepEqual(panel.size, { w: 1080, h: 2340 });
+  assert.equal(panel.synthesised, false);
+
+  const kinds = panel.nodes.filter((n) => n.stroke).map((n) => n.kind);
+  assert.deepEqual(kinds,
+    ['tap', 'long press', 'swipe up', 'swipe left', 'swipe right']);
+});
+
+test('a still finger is a tap under half a second and a long press over it', () => {
+  const s = parseGeteventCapture(gevCap);
+  const tap = s.nodes.find((n) => n.kind === 'tap');
+  const press = s.nodes.find((n) => n.kind === 'long press');
+  assert.ok(tap.duration < 0.5 && press.duration >= 0.5);
+  /* Both stood still. What separates them is the clock and nothing else. */
+  assert.ok(tap.geo.travel < 20 && press.geo.travel < 20);
+});
+
+test('fingers down at the same time are one gesture, and two moving apart are a pinch', () => {
+  const s = parseGeteventCapture(gevCap);
+  const group = s.nodes.find((n) => n.gesture);
+  assert.equal(group.title, 'pinch out');
+  assert.equal(group.fingers, 2);
+  const kids = s.nodes.filter((n) => n.parentHash === group.hash);
+  assert.equal(kids.length, 2);
+  /* The two strokes are the gesture's, and nothing else on the panel is. */
+  assert.ok(s.nodes.filter((n) => n.stroke).length > kids.length);
+});
+
+test('a key is a node with no place on the panel, on the device that reported it', () => {
+  const s = parseGeteventCapture(gevCap);
+  const keys = s.displays.find((d) => d.label === 'event0');
+  assert.equal(keys.noGeometry, true);
+  assert.deepEqual(keys.nodes.map((n) => n.title), ['KEY_VOLUMEDOWN']);
+  assert.equal(keys.nodes[0].frame, null);
+});
+
+/* The labels are `-l` and the stamps are `-t`; a capture taken without either
+   is still a capture, and the reader that only reads the fully-flagged form is
+   the reader that is no use at three in the morning. */
+test('a capture taken without -l reads the same as one taken with it', () => {
+  const labelled = [
+    '[   10.000000] /dev/input/event2: EV_ABS       ABS_MT_TRACKING_ID   00000005',
+    '[   10.000000] /dev/input/event2: EV_ABS       ABS_MT_POSITION_X    00000064',
+    '[   10.000000] /dev/input/event2: EV_ABS       ABS_MT_POSITION_Y    000000c8',
+    '[   10.000000] /dev/input/event2: EV_SYN       SYN_REPORT           00000000',
+    '[   10.050000] /dev/input/event2: EV_ABS       ABS_MT_TRACKING_ID   ffffffff',
+    '[   10.050000] /dev/input/event2: EV_SYN       SYN_REPORT           00000000',
+  ].join('\n');
+  const raw = [
+    '[   10.000000] /dev/input/event2: 0003 0039 00000005',
+    '[   10.000000] /dev/input/event2: 0003 0035 00000064',
+    '[   10.000000] /dev/input/event2: 0003 0036 000000c8',
+    '[   10.000000] /dev/input/event2: 0000 0000 00000000',
+    '[   10.050000] /dev/input/event2: 0003 0039 ffffffff',
+    '[   10.050000] /dev/input/event2: 0000 0000 00000000',
+  ].join('\n');
+  const a = parseGeteventCapture(labelled), b = parseGeteventCapture(raw);
+  assert.equal(a.nodes.length, 1);
+  assert.deepEqual(b.nodes.map((n) => n.kind), a.nodes.map((n) => n.kind));
+  assert.deepEqual(b.nodes[0].samples, a.nodes[0].samples);
+});
+
+test('a protocol A device, which states every contact every frame, reads too', () => {
+  const lines = [];
+  const at = (t, code, v) =>
+    lines.push(`[   ${t.toFixed(6)}] /dev/input/event1: EV_ABS       ${code}   ${
+      (v >>> 0).toString(16).padStart(8, '0')}`);
+  const syn = (t, code) =>
+    lines.push(`[   ${t.toFixed(6)}] /dev/input/event1: EV_SYN       ${code}   00000000`);
+  for (let i = 0; i < 5; i++) {
+    const t = 20 + i * 0.01;
+    at(t, 'ABS_MT_POSITION_X', 100 + i * 60);
+    at(t, 'ABS_MT_POSITION_Y', 200);
+    syn(t, 'SYN_MT_REPORT');
+    at(t, 'ABS_MT_POSITION_X', 500 - i * 60);
+    at(t, 'ABS_MT_POSITION_Y', 600);
+    syn(t, 'SYN_MT_REPORT');
+    syn(t, 'SYN_REPORT');
+  }
+  syn(20.06, 'SYN_REPORT');            // an empty frame: both fingers gone
+
+  const s = parseGeteventCapture(lines.join('\n'));
+  assert.equal(s.displays[0].protocol, 'A');
+  const strokes = s.nodes.filter((n) => n.stroke);
+  assert.equal(strokes.length, 2, 'two contacts, not ten');
+  /* They were down together, so they are one gesture — and they closed on each
+     other, which is the other half of a pinch. */
+  const group = s.nodes.find((n) => n.gesture);
+  assert.equal(group.title, 'pinch in');
+});
+
+test('a single-touch device is read off BTN_TOUCH and ABS_X/ABS_Y', () => {
+  const lines = [];
+  const ev = (t, type, code, v) =>
+    lines.push(`[   ${t.toFixed(6)}] /dev/input/event3: ${type}       ${code}   ${
+      (v >>> 0).toString(16).padStart(8, '0')}`);
+  ev(30, 'EV_KEY', 'BTN_TOUCH', 1);
+  for (let i = 0; i < 6; i++) {
+    ev(30 + i * 0.02, 'EV_ABS', 'ABS_X', 300);
+    ev(30 + i * 0.02, 'EV_ABS', 'ABS_Y', 900 - i * 60);
+    ev(30 + i * 0.02, 'EV_SYN', 'SYN_REPORT', 0);
+  }
+  ev(30.14, 'EV_KEY', 'BTN_TOUCH', 0);
+  ev(30.14, 'EV_SYN', 'SYN_REPORT', 0);
+
+  const s = parseGeteventCapture(lines.join('\n'));
+  assert.equal(s.displays[0].protocol, 'single-touch');
+  assert.equal(s.nodes.length, 1);
+  assert.equal(s.nodes[0].kind, 'swipe up');
+  /* BTN_TOUCH is what opened and shut the stroke; it is not a key of its own. */
+  assert.ok(!s.nodes.some((n) => n.key));
+});
+
+/* Without `getevent -p` above it there is no stated coordinate space, and the
+   only honest one is how far the fingers actually went — said to be inferred
+   wherever it is shown. */
+test('a capture with no ranges says its coordinate space was inferred', () => {
+  const noRanges = gevCap.split('\n').filter((l) => !/value \d+, min /.test(l)).join('\n');
+  const s = parseGeteventCapture(noRanges);
+  const panel = s.displays.find((d) => d.label === 'event2');
+  assert.equal(panel.synthesised, true);
+  assert.ok(panel.size.w < 1080 || panel.size.h < 2340,
+    'the space is what the fingers reached, which is less than the panel');
+});
+
+test('a held finger reporting the same point at 120Hz is one sample, not a hundred', () => {
+  const lines = ['[   40.000000] /dev/input/event2: EV_ABS       ABS_MT_TRACKING_ID   00000001'];
+  for (let i = 0; i < 50; i++) {
+    lines.push(`[   ${(40 + i * 0.008).toFixed(6)}] /dev/input/event2: EV_ABS       ABS_MT_POSITION_X    00000064`);
+    lines.push(`[   ${(40 + i * 0.008).toFixed(6)}] /dev/input/event2: EV_ABS       ABS_MT_POSITION_Y    00000064`);
+    lines.push(`[   ${(40 + i * 0.008).toFixed(6)}] /dev/input/event2: EV_SYN       SYN_REPORT           00000000`);
+  }
+  const s = parseGeteventCapture(lines.join('\n'));
+  const n = s.nodes[0];
+  assert.equal(n.samples.length, 1);
+  assert.equal(n.samples[0].held, 50);
+  /* The stroke still lasted as long as it lasted. */
+  assert.ok(n.duration > 0.38);
 });

@@ -1,0 +1,91 @@
+tool: sf
+displays: 1
+nodes: 80
+
+display 0  name=EMU_display_0  size=1080x2400  rot=0  power=On
+    hwc rows: 5
+    1  bar             [0,2337][1080,2400]       hwc frame   vis=y         ^sf78                               device                      ScreenDecorOverlayBottom#109
+    2  sf-container    —                         —           vis=n         ^sf77                               -                           ab8f3bb ScreenDecorOverlayBottom#69
+    3  sf-container    —                         —           vis=n                                             -                           WindowToken{b4f784a type=2024 android.os.BinderProxy@fb809b5}#68
+    4  bar             [0,0][1080,63]            hwc frame   vis=y         ^sf75                               device                      ScreenDecorOverlay#108
+    5  sf-container    —                         —           vis=n         ^sf74                               -                           4dffc90 ScreenDecorOverlay#67
+    6  sf-container    —                         —           vis=n                                             -                           WindowToken{9be7b53 type=2024 android.os.BinderProxy@8ce7f42}#66
+    7  sf-container    —                         —           vis=n                                             -                           Input Consumer recents_animation_input_consumer#87
+    8  sf-container    —                         —           vis=n         ^sf2                                -                           Display Overlays#38
+    9  sf-container    [-10800,-24000][10800,24000]  bounds      vis=n         ^sf68                               -                           PointerEventDispatcherOverlay0#40
+   10  sf-container    [0,0][1080,2400]          bounds      vis=n         ^sf68                               -                           IME Handwriting Surface#89
+   11  sf-container    [-10800,-24000][10800,24000]  bounds      vis=n         ^sf68                               -                           [Gesture Monitor] swipe-up#82
+   12  sf-container    —                         —           vis=n         ^sf2                                -                           Input Overlays#39
+   13  sf-container    —                         —           vis=n         ^sf2                                -                           Accessibility Overlays#41
+   14  sf-container    —                         —           vis=n         ^sf2                                -                           Leaf:36:36#36
+   15  sf-container    —                         —           vis=n         ^sf64                               -                           Leaf:34:35#35
+   16  sf-container    —                         —           vis=n         ^sf60                               -                           OneHanded:34:35#34
+   17  sf-container    —                         —           vis=n         ^sf60                               -                           Leaf:33:33#33
+   18  sf-container    —                         —           vis=n         ^sf61                               -                           Leaf:32:32#32
+   19  sf-container    —                         —           vis=n         ^sf60                               -                           OneHanded:32:32#31
+   20  sf-container    —                         —           vis=n         ^sf2                                -                           HideDisplayCutout:32:35#30
+   21  sf-container    —                         —           vis=n         ^sf58                               -                           Leaf:26:31#29
+   22  sf-container    —                         —           vis=n         ^sf57                               -                           OneHanded:26:31#28
+   23  sf-container    —                         —           vis=n         ^sf3                                -                           HideDisplayCutout:26:31#27
+   24  sf-container    —                         —           vis=n         ^sf3                                -                           Leaf:24:25#26
+   25  sf-container    —                         —           vis=n         ^sf51                               -                           Leaf:23:23#25
+   26  sf-container    —                         —           vis=n         ^sf53                               -                           Leaf:20:22#24
+   27  sf-container    —                         —           vis=n         ^sf51                               -                           AppZoomOut:20:22#23
+   28  sf-container    —                         —           vis=n         ^sf51                               -                           Leaf:18:19#22
+   29  sf-container    —                         —           vis=n         ^sf50                               -                           OneHanded:18:23#21
+   30  sf-container    —                         —           vis=n         ^sf3                                -                           HideDisplayCutout:18:23#20
+   31  sf-container    —                         —           vis=n         ^sf48                               -                           33ed04 NotificationShade#79
+   32  sf-container    —                         —           vis=n         ^sf47                               -                           WindowToken{a44b522 type=2040 android.os.BinderProxy@ed8d596}#78
+   33  sf-container    —                         —           vis=n         ^sf46                               -                           Leaf:17:17#19
+   34  sf-container    —                         —           vis=n         ^sf3                                -                           OneHanded:17:17#18
+   35  sf-container    —                         —           vis=n         ^sf44                               -                           Leaf:16:16#17
+   36  sf-container    —                         —           vis=n         ^sf43                               -                           AppZoomOut:16:16#16
+   37  sf-container    —                         —           vis=n         ^sf42                               -                           OneHanded:16:16#15
+   38  sf-container    —                         —           vis=n         ^sf3                                -                           HideDisplayCutout:16:16#14
+   39  bar             [0,0][1080,63]            hwc frame   vis=y         ^sf40                               device                      StatusBar#83
+   40  sf-container    —                         —           vis=n         ^sf39                               -                           829ede0 StatusBar#76
+   41  sf-container    —                         —           vis=n         ^sf38                               -                           Surface(name=829ede0 StatusBar#76)/@[...]mation-leash of insets_animation#107
+   42  sf-container    —                         —           vis=n         ^sf37                               -                           WindowToken{93f1fe3 type=2000 android.os.BinderProxy@9ac6647}#75
+   43  sf-container    —                         —           vis=n         ^sf36                               -                           Leaf:15:15#13
+   44  sf-container    —                         —           vis=n         ^sf3                                -                           OneHanded:15:15#12
+   45  sf-container    —                         —           vis=n         ^sf14                               -                           ImePlaceholder:13:14#10
+   46  sf-container    —                         —           vis=n         ^sf33                               -                           d267f63 ShellDropTarget#50
+   47  sf-container    —                         —           vis=n         ^sf32                               -                           WindowToken{c1fecde type=2038 android.os.BinderProxy@bba5f15}#49
+   48  sf-container    —                         —           vis=n         ^sf14                               -                           Leaf:3:12#9
+   49  sf-container    [-10800,-24000][10800,24000]  bounds      vis=n         ^sf30                               -                           Dim layer#60
+   50  sf-container    —                         —           vis=n         ^sf27                               -                           Task=5(side)#48
+   51  sf-container    [-10800,-24000][10800,24000]  bounds      vis=n         ^sf28                               -                           Dim layer#51
+   52  sf-container    —                         —           vis=n         ^sf27                               -                           Task=4(main)#47
+   53  sf-container    —                         —           vis=n         ^sf15                               -                           Task=3(SplitRoot)#46
+   54  sf-container    —                         —           vis=n         ^sf16                               -                           home_task_overlay_container#43
+   55  sf-container    —                         —           vis=n         ^sf24                               -                           7ec54e6 InputMethod#91
+   56  sf-container    —                         —           vis=n         ^sf23                               -                           Surface(name=7ec54e6 InputMethod#91)[...]mation-leash of insets_animation#114
+   57  sf-container    —                         —           vis=n         ^sf22                               -                           WindowToken{b4b3ccb type=2011 android.os.Binder@6fe80bc}#81
+   58  sf-container    —                         —           vis=n         ^sf20                               -                           ImeContainer#11
+   59  app             [0,0][1080,2400]          hwc frame   vis=y  focus  ^sf20                               device                      com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#105
+   60  sf-container    —                         —           vis=n         ^sf18                               -                           35f3ed com.google.android.apps.nexus[...]uslauncher.NexusLauncherActivity#103
+   61  sf-container    [-10800,-24000][10800,24000]  bounds      vis=n         ^sf18                               -                           708ccc9 ActivityRecordInputSink com.google.android.apps.nexuslauncher/.NexusLauncherActivity#59
+   62  sf-container    —                         —           vis=n         ^sf17                               -                           ActivityRecord{161128398 u0 com.goog[...]uncher/.NexusLauncherActivity t6}#53
+   63  sf-container    —                         —           vis=n         ^sf16                               -                           Task=6#52
+   64  sf-container    —                         —           vis=n         ^sf15                               -                           Task=1#42
+   65  sf-container    —                         —           vis=n         ^sf14                               -                           DefaultTaskDisplayArea#8
+   66  sf-container    —                         —           vis=n         ^sf5                                -                           AppZoomOut:2:14#7
+   67  sf-buffer       [0,0][1080,2400]          hwc frame   vis=y         ^sf12                               device                      Wallpaper BBQ wrapper#65
+   68  sf-container    —                         —           vis=n         ^sf11                               -                           Wallpaper Transform wrapper#64
+   69  sf-container    [-10800,-24000][10800,24000]  bounds      vis=n         ^sf10                               -                           com.android.systemui.wallpapers.ImageWallpaper#63
+   70  sf-container    —                         —           vis=n         ^sf9                                -                           d433a85 com.android.systemui.wallpapers.ImageWallpaper#62
+   71  sf-container    —                         —           vis=n         ^sf8                                -                           WallpaperWindowToken{f46b2d3}#61
+   72  sf-container    —                         —           vis=n         ^sf5                                -                           Leaf:1:1#6
+   73  sf-container    —                         —           vis=n         ^sf6                                -                           Leaf:0:0#5
+   74  sf-container    —                         —           vis=n         ^sf5                                -                           AppZoomOut:0:0#4
+   75  sf-container    —                         —           vis=n         ^sf4                                -                           OneHanded:0:14#3
+   76  sf-container    —                         —           vis=n         ^sf3                                -                           HideDisplayCutout:0:14#2
+   77  sf-container    —                         —           vis=n         ^sf2                                -                           WindowedMagnification:0:31#1
+   78  sf-container    —                         —           vis=n                                             -                           Display 0 name="Built-in Screen"#37
+   79  sf-container    —                         —           vis=n                                             offscreen                   [Gesture Monitor] minus-one#104
+   80  sf-container    —                         —           vis=n                                             offscreen                   NotificationShade#85
+
+globals:
+  build: [sf PRESENT_TIME_OFFSET=0 FORCE_HWC_FOR_RBG_TO_YUV=0 MAX_VIRT_DISPLAY_DIM=0 RUNNING_WITHOUT_SYNC_FRAMEWORK=0 NUM_FRAMEBUFFER_SURFACE_BUFFERS=2]
+  activeLayers: 80
+  frontend: new

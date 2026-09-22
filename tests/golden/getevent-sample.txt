@@ -1,0 +1,24 @@
+tool: getevent
+displays: 2
+nodes: 7
+
+display 0  label=event0  name=gpio-keys  size=1080x1920
+    meta: 0 strokes · 1 key
+    1  gev-key         —                         —           vis=y                                             0.13 s                      KEY_VOLUMEDOWN
+
+display 2  label=event2  name=fts_ts  size=1080x2340
+    meta: 5 strokes · 1080 × 2340
+    1  gev-tap         [540,1180][541,1181]      —           vis=y                                             9 ms                        tap at 540, 1180
+    2  gev-press       [300,1899][301,1900]      —           vis=y                                             0.72 s                      long press at 300, 1900
+    3  gev-swipe       [515,470][525,1800]       —           vis=y                                             0.13 s,1330 px,fling        swipe up at 520, 1800
+    4  gev-multi       [216,958][864,1442]       —           vis=y                                             2 fingers,0.15 s            pinch out
+    5  gev-swipe       [216,958][480,1150]       —           vis=y         ^gev:2:g3                           0.15 s,326 px,fling         swipe left at 480, 1150
+    6  gev-swipe       [600,1250][864,1442]      —           vis=y         ^gev:2:g3                           0.14 s,326 px,fling         swipe right at 600, 1250
+
+globals:
+  devices: 2
+  events: 285
+  stamped: true
+  start: 56414.024232
+  end: 56419.345232
+  span: 5.320999999996275
