@@ -27,6 +27,7 @@ const CASES = [
   /* The same reader on an Android 16 dump, which prints none of the lists the
      one above is made of. */
   { name: 'sf-a16-sample',  parse: 'parseSurfaceFlingerDump' },
+  { name: 'display-sample', parse: 'parseDisplayManagerDump' },
   { name: 'package-sample', parse: 'parsePackageDump' },
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
@@ -40,6 +41,8 @@ const CASES = [
   { name: 'input-sample', parse: 'parseInputDump' },
   { name: 'input-devices', file: 'input-sample', parse: 'parseInputDevicesDump' },
   { name: 'logcat-sample', parse: 'parseLogcatDump' },
+  { name: 'props-sample', parse: 'parseSystemPropertiesDump' },
+  { name: 'events-sample', parse: 'parseEventLogDump' },
   { name: 'getevent-sample', parse: 'parseGeteventCapture' },
   /* The same reader on a capture taken with a device argument, which prints
      no node in front of its events. */
@@ -78,12 +81,18 @@ const OWN = {
   parseWindowDump: ['window-sample'],
   parseSurfaceFlingerDump: ['sf-sample', 'sf-a16-sample'],
   parsePackageDump: ['package-sample'],
+  parseDisplayManagerDump: ['display-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
   parseOverlayDump: ['overlay-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],
   parseInputDump: ['input-sample'],
   parseInputDevicesDump: ['input-sample'],
+  /* The event log is a log, and it is the one log the log reader does not
+     read: its lines are tags and numbers, and the event reader next door is
+     what they are for. So a pasted event buffer is that reader's alone. */
   parseLogcatDump: ['logcat-sample'],
+  parseSystemPropertiesDump: ['props-sample'],
+  parseEventLogDump: ['events-sample', 'logcat-sample'],
 };
 
 test('each parser recognises its own dumps and no others', () => {

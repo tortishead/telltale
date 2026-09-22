@@ -1,0 +1,23 @@
+tool: display
+displays: 2
+nodes: 6
+
+display 0  label=display 0 · Built-in Screen  name=Built-in Screen  size=1080x2400  rot=0
+    meta: 1080 × 2400 · 420 dpi · 120 Hz
+    1  disp-panel      [0,0][1080,2400]          real        vis=y                                             -                           panel
+    2  disp-app        [0,0][1080,2264]          app         vis=y                                             -                           what apps get
+    3  disp-viewport   [0,0][1080,2400]          logicalFrame  vis=y                                             -                           input viewport
+    4  disp-cutout     [464,0][616,136]          DisplayCutout  vis=y                                             -                           cutout 1
+
+display 2  label=display 2 · HDMI Screen  name=HDMI Screen  size=1920x1080  rot=90
+    meta: 1920 × 1080 · 213 dpi · 60 Hz · 90°
+    1  disp-panel      [0,0][1920,1080]          real        vis=y                                             -                           panel
+    2  disp-viewport   [0,0][1920,1080]          logicalFrame  vis=y                                             -                           input viewport
+
+globals:
+  displays: 2
+  devices: 2
+  viewports: 2
+  stableSize: 2 entries
+  safeMode: false
+  lines: 52

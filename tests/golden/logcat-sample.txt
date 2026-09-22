@@ -1,6 +1,6 @@
 tool: logcat
-displays: 4
-nodes: 32
+displays: 3
+nodes: 27
 
 display 0  label=system log  size=0x0
     meta: 20 lines · 11 tags · 9 errors
@@ -25,20 +25,12 @@ display 0  label=system log  size=0x0
    19  log-info        vis=y                                             -                           Process com.example.tracker (pid 4471) has died: fore TOP
    20  log-fatal       vis=y                                             -                           Test fatal line, so a fatal is in the sample
 
-display 1  label=event log  size=0x0
-    meta: 5 lines · 5 tags
-    1  log-info        vis=y                                             -                           [0,5210,1000,com.android.settings,activity,com.android.settings/.homepage.SettingsHomepageActivity]
-    2  log-info        vis=y                                             -                           [0,com.android.settings/.homepage.SettingsHomepageActivity,resumeTopActivity]
-    3  log-crash       vis=y                                             crash                       [4471,0,com.example.tracker,538968133,java.lang.IllegalStateException,Overlay not permitted,Overlay.java,88]
-    4  log-info        vis=y                                             -                           [0,4471,com.example.tracker,100,2]
-    5  log-info        vis=y                                             -                           [42]
-
-display 2  label=radio log  size=0x0
+display 1  label=radio log  size=0x0
     meta: 2 lines · 1 tag
     1  log-debug       vis=y                                             -                           [0123]> RIL_REQUEST_SIGNAL_STRENGTH
     2  log-debug       vis=y                                             -                           [0123]< RIL_REQUEST_SIGNAL_STRENGTH {mLte=CellSignalStrengthLte: rssi=-79 rsrp=-108}
 
-display 3  label=kernel log  size=0x0
+display 2  label=kernel log  size=0x0
     meta: 5 lines · 5 tags
     1  log-info        vis=y                                             -                           Linux version 5.10.177-android13-4-00047-g6e1c2c4c9f0a
     2  log-info        vis=y                                             -                           starting service 'surfaceflinger'...
@@ -47,14 +39,14 @@ display 3  label=kernel log  size=0x0
     5  log-info        vis=y                                             -                           Killing 'm.example.tracker' (4471), adj 100
 
 globals:
-  sections: 4
-  lines: 32
-  shown: 32
-  tags: 22
+  sections: 3
+  lines: 27
+  shown: 27
+  tags: 17
   errors: 9
   warns: 4
   counts: 5 entries
-  crashes: 2
+  crashes: 1
   first: 09-21 11:02:30.115
   last: 09-21 11:02:36.002
   trimmed: 0

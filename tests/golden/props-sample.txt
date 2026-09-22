@@ -1,0 +1,196 @@
+tool: props
+displays: 11
+nodes: 124
+
+display 0  label=ro  size=0x0
+    meta: 53 properties · 11 sections
+    1  prop-section    vis=y                                             -                           ro.adb
+    2  prop-ro         vis=y         ^props:31:ro.adb                    -                           ro.adb.secure
+    3  prop-section    vis=y                                             -                           ro.board
+    4  prop-ro         vis=y         ^props:32:ro.board                  -                           ro.board.platform
+    5  prop-section    vis=y                                             -                           ro.boot
+    6  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.bootreason
+    7  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.flash.locked
+    8  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.hardware
+    9  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.hardware.revision
+   10  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.slot_suffix
+   11  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.verifiedbootstate
+   12  prop-ro         vis=y         ^props:33:ro.boot                   -                           ro.boot.veritymode
+   13  prop-section    vis=y                                             -                           ro.build
+   14  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.characteristics
+   15  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.date
+   16  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.date.utc
+   17  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.description
+   18  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.display.id
+   19  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.fingerprint
+   20  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.flavor
+   21  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.host
+   22  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.id
+   23  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.product
+   24  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.tags
+   25  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.type
+   26  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.user
+   27  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.version.codename
+   28  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.version.incremental
+   29  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.version.release
+   30  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.version.release_or_codename
+   31  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.version.sdk
+   32  prop-ro         vis=y         ^props:40:ro.build                  -                           ro.build.version.security_patch
+   33  prop-section    vis=y                                             -                           ro.config
+   34  prop-ro         vis=y         ^props:59:ro.config                 -                           ro.config.low_ram
+   35  prop-section    vis=y                                             -                           ro.crypto
+   36  prop-ro         vis=y         ^props:60:ro.crypto                 -                           ro.crypto.state
+   37  prop-ro         vis=y         ^props:60:ro.crypto                 -                           ro.crypto.type
+   38  prop-ro         vis=y                                             -                           ro.debuggable
+   39  prop-ro         vis=y                                             -                           ro.hardware
+   40  prop-section    vis=y                                             -                           ro.hardware
+   41  prop-ro         vis=y         ^props:64:ro.hardware               -                           ro.hardware.egl
+   42  prop-section    vis=y                                             -                           ro.product
+   43  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.board
+   44  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.brand
+   45  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.cpu.abi
+   46  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.cpu.abilist
+   47  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.cpu.abilist32
+   48  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.cpu.abilist64
+   49  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.device
+   50  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.first_api_level
+   51  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.locale
+   52  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.manufacturer
+   53  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.model
+   54  prop-ro         vis=y         ^props:65:ro.product                -                           ro.product.name
+   55  prop-ro         vis=y                                             -                           ro.sdk_version
+   56  prop-ro         vis=y                                             -                           ro.secure
+   57  prop-ro         vis=y                                             -                           ro.serialno
+   58  prop-section    vis=y                                             -                           ro.sf
+   59  prop-ro         vis=y         ^props:80:ro.sf                     -                           ro.sf.lcd_density
+   60  prop-section    vis=y                                             -                           ro.treble
+   61  prop-ro         vis=y         ^props:81:ro.treble                 -                           ro.treble.enabled
+   62  prop-section    vis=y                                             -                           ro.vndk
+   63  prop-ro         vis=y         ^props:82:ro.vndk                   -                           ro.vndk.version
+   64  prop-ro         vis=y                                             -                           ro.zygote
+
+display 1  label=init  size=0x0
+    meta: 12 properties · 2 sections
+    1  prop-section    vis=y                                             3 flagged                   init.svc
+    2  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.adbd
+    3  prop-flagged    vis=y         ^props:12:init.svc                  stopped                     init.svc.bootanim
+    4  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.logd
+    5  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.media
+    6  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.statsd
+    7  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.surfaceflinger
+    8  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.tombstoned
+    9  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.vendor.gpuservice
+   10  prop-flagged    vis=y         ^props:12:init.svc                  restarting                  init.svc.vendor.sensors-hal
+   11  prop-flagged    vis=y         ^props:12:init.svc                  stopped                     init.svc.vendor.tcpdump_logger
+   12  prop-service    vis=y         ^props:12:init.svc                  -                           init.svc.zygote
+   13  prop-section    vis=y                                             -                           init.svc_debug_pid
+   14  prop-runtime    vis=y         ^props:23:init.svc_debug_pid        -                           init.svc_debug_pid.zygote
+
+display 2  label=dalvik  size=0x0
+    meta: 6 properties · 1 section
+    1  prop-section    vis=y                                             -                           dalvik.vm
+    2  prop-runtime    vis=y         ^props:0:dalvik.vm                  -                           dalvik.vm.appimageformat
+    3  prop-runtime    vis=y         ^props:0:dalvik.vm                  -                           dalvik.vm.dex2oat64.enabled
+    4  prop-runtime    vis=y         ^props:0:dalvik.vm                  -                           dalvik.vm.heapgrowthlimit
+    5  prop-runtime    vis=y         ^props:0:dalvik.vm                  -                           dalvik.vm.heapsize
+    6  prop-runtime    vis=y         ^props:0:dalvik.vm                  -                           dalvik.vm.heapstartsize
+    7  prop-runtime    vis=y         ^props:0:dalvik.vm                  -                           dalvik.vm.isa.arm64.variant
+
+display 3  label=persist  size=0x0
+    meta: 5 properties · 3 sections
+    1  prop-section    vis=y                                             -                           persist.debug
+    2  prop-persist    vis=y         ^props:26:persist.debug             -                           persist.debug.wfd.enable
+    3  prop-section    vis=y                                             -                           persist.sys
+    4  prop-persist    vis=y         ^props:27:persist.sys               -                           persist.sys.locale
+    5  prop-persist    vis=y         ^props:27:persist.sys               -                           persist.sys.timezone
+    6  prop-persist    vis=y         ^props:27:persist.sys               -                           persist.sys.usb.config
+    7  prop-section    vis=y                                             -                           persist.vendor
+    8  prop-persist    vis=y         ^props:30:persist.vendor            -                           persist.vendor.radio.multisim.config
+
+display 4  label=sys  size=0x0
+    meta: 5 properties · 3 sections
+    1  prop-section    vis=y                                             -                           sys.boot
+    2  prop-runtime    vis=y         ^props:87:sys.boot                  -                           sys.boot.reason
+    3  prop-runtime    vis=y                                             -                           sys.boot_completed
+    4  prop-section    vis=y                                             -                           sys.sysctl
+    5  prop-runtime    vis=y         ^props:89:sys.sysctl                -                           sys.sysctl.extra_free_kbytes
+    6  prop-section    vis=y                                             -                           sys.usb
+    7  prop-runtime    vis=y         ^props:90:sys.usb                   -                           sys.usb.config
+    8  prop-runtime    vis=y         ^props:90:sys.usb                   -                           sys.usb.state
+
+display 5  label=debug  size=0x0
+    meta: 3 properties · 2 sections
+    1  prop-section    vis=y                                             -                           debug.atrace
+    2  prop-runtime    vis=y         ^props:6:debug.atrace               -                           debug.atrace.tags.enableflags
+    3  prop-runtime    vis=y                                             -                           debug.force_rtl
+    4  prop-section    vis=y                                             -                           debug.sf
+    5  prop-runtime    vis=y         ^props:8:debug.sf                   -                           debug.sf.showupdates
+
+display 6  label=gsm  size=0x0
+    meta: 3 properties · 3 sections
+    1  prop-section    vis=y                                             -                           gsm.operator
+    2  prop-runtime    vis=y         ^props:9:gsm.operator               -                           gsm.operator.alpha
+    3  prop-section    vis=y                                             -                           gsm.sim
+    4  prop-runtime    vis=y         ^props:10:gsm.sim                   -                           gsm.sim.state
+    5  prop-section    vis=y                                             -                           gsm.version
+    6  prop-runtime    vis=y         ^props:11:gsm.version               -                           gsm.version.baseband
+
+display 7  label=net  size=0x0
+    meta: 2 properties · 1 section
+    1  prop-section    vis=y                                             -                           net.bt
+    2  prop-runtime    vis=y         ^props:24:net.bt                    -                           net.bt.name
+    3  prop-runtime    vis=y                                             -                           net.dns1
+
+display 8  label=service  size=0x0
+    meta: 2 properties · 2 sections
+    1  prop-section    vis=y                                             -                           service.bootanim
+    2  prop-runtime    vis=y         ^props:85:service.bootanim          -                           service.bootanim.exit
+    3  prop-section    vis=y                                             -                           service.sf
+    4  prop-runtime    vis=y         ^props:86:service.sf                -                           service.sf.present_timestamp
+
+display 9  label=vendor  size=0x0
+    meta: 2 properties · 2 sections
+    1  prop-section    vis=y                                             -                           vendor.camera
+    2  prop-runtime    vis=y         ^props:92:vendor.camera             -                           vendor.camera.hal.version
+    3  prop-section    vis=y                                             -                           vendor.display
+    4  prop-runtime    vis=y         ^props:93:vendor.display            -                           vendor.display.enable_hwc_vds
+
+display 10  label=no namespace  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           selinux
+
+globals:
+  count: 94
+  namespaces: 11
+  sections: 30
+  lines: 95
+  fingerprint: google/panther/panther:14/UQ1A.240105.004/11129216:user/release-keys
+  brand: google
+  model: Pixel 7
+  device: panther
+  product: panther
+  manufacturer: Google
+  hardware: panther
+  board: gs201
+  abi: arm64-v8a
+  characteristics: nosdcard
+  sdk: 34
+  release: 14
+  patch: 2024-01-05
+  buildId: UQ1A.240105.004
+  incremental: 11129216
+  buildType: user
+  tags: release-keys
+  buildDate: Fri Jan  5 11:20:41 UTC 2024
+  firstApi: 33
+  treble: true
+  locale: en-GB
+  timezone: Europe/London
+  density: 420
+  bootState: green
+  locked: 1
+  bootReason: reboot,userrequested
+  bootCompleted: 1
+  services: 11
+  servicesRunning: 8
+  flagged: [object Object],[object Object],[object Object]

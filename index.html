@@ -515,6 +515,24 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .is-crash .lg-msg{color:var(--redline); font-weight:700}
 .wlist.is-log .wrow[aria-selected="true"],
 .wlist.is-log .wrow.is-alt[aria-selected="true"]{background-color:var(--ink-3)}
+/* ---------- the event log, which is the same columns read differently ----- */
+/* The event reader borrows the log's grid: when it happened, who it was about,
+   one character saying what kind of thing it was, the tag the framework wrote,
+   and the sentence it comes to. The mark is a letter rather than a word for
+   the same reason the level is. */
+.ev-when{color:var(--dim)}
+.ev-who{color:var(--dim)}
+.ev-mark{font-weight:700; text-align:center; color:var(--dim)}
+.ev-tag{color:var(--label)}
+.ev-what{color:var(--fg)}
+.wlist.is-log .ev-process  .ev-mark{color:var(--mark)}
+.wlist.is-log .ev-activity .ev-mark{color:#6fa8c8}
+.wlist.is-log .ev-system   .ev-mark{color:var(--amber)}
+.wlist.is-log .ev-trouble  .ev-mark,
+.wlist.is-log .ev-trouble  .ev-what{color:var(--redline); font-weight:700}
+.wlist.is-log .ev-other    .ev-what{color:var(--dim)}
+.wlist.is-log .ev-trouble,
+.wlist.is-log .ev-trouble.is-alt{background:color-mix(in srgb, var(--redline) 16%, transparent)}
 /* A filter box holding a pattern that will not compile. */
 .filter.is-bad{border-color:var(--redline); color:var(--redline)}
 /* Hover and selection are colour only: the shorthand would take the rails with
@@ -1100,10 +1118,10 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
   <div class="empty-card">
     <div class="sheet-blank">
       <h1>Drop an AOSP dump here</h1>
-      <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>,
-      <code>user</code>, <code>overlay</code>, <code>input</code>, <code>car_service</code>
-      and <code>binder_calls_stats</code>, ANR traces, logcat, and a whole
-      <code>adb bugreport</code> zip as it came off the device.
+      <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>display</code>,
+      <code>package</code>, <code>user</code>, <code>overlay</code>, <code>input</code>, <code>car_service</code>
+      and <code>binder_calls_stats</code>, <code>getprop</code>, ANR traces, logcat and
+      the event log, and a whole <code>adb bugreport</code> zip as it came off the device.
       The file never leaves your browser.</p>
       <div class="empty-actions">
         <button class="btn-paper btn-paper-key" id="btnPick" type="button">Choose a file</button>
@@ -1115,12 +1133,15 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
         <summary>How to take one</summary>
         <code class="cmd">adb shell dumpsys window windows   &gt; windows.txt
 adb shell dumpsys SurfaceFlinger  &gt; sf.txt
+adb shell dumpsys display         &gt; displays.txt
 adb shell dumpsys package         &gt; packages.txt
 adb shell dumpsys user            &gt; users.txt
 adb shell dumpsys overlay         &gt; overlays.txt
+adb shell getprop                 &gt; props.txt
 adb shell dumpsys input           &gt; input.txt
 adb shell dumpsys car_service     &gt; car.txt
 adb logcat -d                     &gt; logcat.txt
+adb logcat -b events -d           &gt; events.txt
 adb pull /data/anr/traces.txt
 
 # or all of it at once — drop the zip in as it comes
@@ -2699,6 +2720,354 @@ function parseSurfaceFlingerDump(input) {
 }
 
 
+/* ================ parse: dumpsys display ================ */
+
+/* Every other reader in Telltale draws onto a display and takes the display's
+   size from whatever the dump it was reading happened to say. This is the
+   service that decides it. `dumpsys display` prints three views of the same
+   hardware: the panels the device has (display devices), the displays the
+   framework hands out (logical displays), and the viewports the input stack
+   maps touches through. Read together they answer the questions the other
+   readers can only assume at — how big the panel really is, which way round
+   it is mounted, where the cutout is, and whether the area apps get is the
+   whole of it.
+
+   So the displays of this reader are the logical displays, and its nodes are
+   the rectangles one display is made of: the panel, the part of it apps get,
+   the viewport the input stack maps through, and the cutout. Drawn to scale
+   they are the picture nothing else in a bugreport draws. */
+
+const DM_RECT_RE = /Rect\((-?\d+),\s*(-?\d+)\s*-\s*(-?\d+),\s*(-?\d+)\)/;
+const DM_RECT_G = new RegExp(DM_RECT_RE.source, 'g');
+
+const dmRect = (s) => {
+  const m = s && s.match(DM_RECT_RE);
+  return m ? { l: +m[1], t: +m[2], r: +m[3], b: +m[4] } : null;
+};
+
+/* A rect printed as a named field — `logicalFrame=Rect(0, 0 - 1080, 2400)`. */
+const dmRectField = (body, key) =>
+  dmRect((body.match(new RegExp(`\\b${key}=(Rect\\([^)]*\\))`)) || [])[1] || '');
+
+/* The blocks this service prints hold blocks of their own — a cutout, an HDR
+   table, a product descriptor — so one is taken by counting braces rather than
+   by matching to the first `}`. */
+function dmBalanced(text, open) {
+  let depth = 0;
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === '{') depth++;
+    else if (text[i] === '}') {
+      depth--;
+      if (depth === 0) return text.slice(open + 1, i);
+    }
+  }
+  return text.slice(open + 1);
+}
+
+/* The first `<Name>{...}` in a text, as its body — a cutout inside a device, a
+   DisplayInfo inside a logical display. */
+function dmBlock(text, name) {
+  const at = text.indexOf(`${name}{`);
+  return at < 0 ? null : dmBalanced(text, at + name.length);
+}
+
+/* Every `<Name>{...}` in the text, with the line it started on. */
+function dmBlocks(text, name) {
+  const out = [];
+  const re = new RegExp(`${name}\\{`, 'g');
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const open = m.index + m[0].length - 1;
+    const body = dmBalanced(text, open);
+    out.push({ body, at: text.slice(0, m.index).split('\n').length - 1 });
+    re.lastIndex = open + body.length + 2;
+  }
+  return out;
+}
+
+/* A field out of one of those blocks. The service prints them as `key=value`
+   in a viewport and as `key value` in a DisplayInfo, so both are read. */
+const dmField = (body, key) => {
+  const m = body.match(new RegExp(`\\b${key}\\s*[= ]\\s*("[^"]*"|'[^']*'|[^,{}]+)`));
+  if (!m) return null;
+  const v = m[1].trim().replace(/^["']|["']$/g, '');
+  return v === '' || v === 'null' ? null : v;
+};
+const dmNum = (body, key) => {
+  const v = dmField(body, key);
+  const n = v === null ? NaN : Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+/* `real 1080 x 2400`, `app 1080 x 2400` — a size the service prints as words
+   rather than as a field. */
+const dmSize = (body, key) => {
+  const m = body.match(new RegExp(`\\b${key}\\s+(\\d+)\\s*x\\s*(\\d+)`));
+  return m ? { w: +m[1], h: +m[2] } : null;
+};
+
+const dmFlags = (body) => {
+  const out = [];
+  for (const m of body.matchAll(/\bFLAG_[A-Z0-9_]+/g)) if (!out.includes(m[0])) out.push(m[0]);
+  return out;
+};
+
+/* Android counts rotation in quarter turns and everyone else counts it in
+   degrees. The dumps print the quarter turn. */
+const dmDegrees = (v) => (v === null || v === undefined ? null : ((v % 4) + 4) % 4 * 90);
+
+/* Every mode the panel printed. */
+function dmModes(body) {
+  const out = [];
+  const re = /\{id=(\d+),\s*width=(\d+),\s*height=(\d+),\s*fps=([\d.]+)/g;
+  let m;
+  while ((m = re.exec(body)) !== null) {
+    out.push({ id: +m[1], w: +m[2], h: +m[3], fps: +m[4] });
+  }
+  return out;
+}
+
+/* The one it is running. The list is what says what the panel can do; the one
+   that matters is the one it is doing. */
+const dmMode = (body, id) =>
+  (id === null ? null : dmModes(body).find((m) => m.id === id) || null);
+
+/* The holes in a panel, out of the cutout block that describes them. */
+function dmCutoutBounds(cutout) {
+  if (!cutout) return [];
+  const at = cutout.indexOf('Bounds');
+  const from = at < 0 ? cutout : cutout.slice(at);
+  return [...from.matchAll(DM_RECT_G)]
+    .map((m) => ({ l: +m[1], t: +m[2], r: +m[3], b: +m[4] }))
+    .filter((r) => r.r > r.l && r.b > r.t);
+}
+
+/* Where this service's dump is in a bugreport. `DisplayManagerService state:`
+   is the line only this service prints; the rule above it is what dumpstate
+   writes and is not there in a pasted dump. */
+const DM_SECTION_START = /^-{4,}\s*DISPLAY MANAGER\b|^\s*DISPLAY MANAGER\b|^\s*DisplayManagerService state:/;
+const dmSection = (lines) => sectionSpan(lines, DM_SECTION_START, null, 'all');
+
+function dmNode(opts) {
+  return {
+    hash: opts.hash, title: opts.title, displayId: opts.displayId,
+    frame: opts.frame || null, frameSource: opts.frameSource || null, z: opts.z,
+    family: opts.family, typeLabel: opts.typeLabel, badges: opts.badges || [],
+    search: `${opts.title} ${opts.typeLabel} ${opts.searchExtra || ''}`.toLowerCase(),
+    raw: opts.raw || '',
+    visible: opts.visible !== false, focused: false,
+    parentHash: null, ancestors: [], subCount: 0,
+    body: [], bodyAt: opts.at, at: opts.at, meta: opts.meta || null,
+  };
+}
+
+function parseDisplayManagerDump(input) {
+  const lines = dumpLines(input);
+  const { start: from, end: to } = dmSection(lines);
+  const text = lines.slice(from, to).join('\n');
+  /* Indices inside the section are the section's; a row says which line of the
+     whole file it came off, so they are put back before they are hung on
+     anything. */
+  const fileLine = (k) => from + k + 1;
+
+  /* The viewports, which are what the input stack maps a touch through, keyed
+     by the display they are for. `dumpsys input` prints these too; this is the
+     service that owns them. */
+  const viewports = new Map();
+  for (const v of dmBlocks(text, 'DisplayViewport')) {
+    const id = dmNum(v.body, 'displayId');
+    if (id === null || viewports.has(id)) continue;
+    viewports.set(id, {
+      id, at: fileLine(v.at),
+      type: dmField(v.body, 'type'),
+      uniqueId: dmField(v.body, 'uniqueId'),
+      port: dmNum(v.body, 'physicalPort'),
+      orientation: dmNum(v.body, 'orientation'),
+      logical: dmRectField(v.body, 'logicalFrame'),
+      physical: dmRectField(v.body, 'physicalFrame'),
+      deviceSize: (() => {
+        const w = dmNum(v.body, 'deviceWidth'), h = dmNum(v.body, 'deviceHeight');
+        return w && h ? { w, h } : null;
+      })(),
+      valid: dmField(v.body, 'valid') !== 'false',
+    });
+  }
+
+  /* The panels. A device is what the framework has; a logical display is what
+     it hands out, and most of the time they are one to one. */
+  const devices = dmBlocks(text, 'DisplayDeviceInfo').map((d) => {
+    const name = (d.body.match(/^\s*"([^"]*)"/) || [])[1] || dmField(d.body, 'name');
+    const size = (d.body.match(/(\d+)\s*x\s*(\d+)/) || []);
+    const cutout = dmBlock(d.body, 'DisplayCutout');
+    const modeId = dmNum(d.body, 'modeId');
+    return {
+      at: fileLine(d.at), body: d.body, name: name || null,
+      size: size.length ? { w: +size[1], h: +size[2] } : null,
+      uniqueId: dmField(d.body, 'uniqueId'),
+      density: dmNum(d.body, 'density'),
+      dpi: (() => {
+        const m = d.body.match(/([\d.]+)\s*x\s*([\d.]+)\s*dpi/);
+        return m ? { x: +m[1], y: +m[2] } : null;
+      })(),
+      type: dmField(d.body, 'type'),
+      state: dmField(d.body, 'state'),
+      /* The one field in the whole dump that says which way round the panel is
+         glued to the device, which is the number every reader that draws a
+         touch onto a display has had to assume. */
+      installOrientation: dmNum(d.body, 'installOrientation'),
+      modeId, mode: dmMode(d.body, modeId), modes: dmModes(d.body),
+      renderFrameRate: dmNum(d.body, 'renderFrameRate'),
+      flags: dmFlags(d.body),
+      owner: dmField(d.body, 'ownerPackageName'),
+      cutoutInsets: cutout ? dmRectField(cutout, 'insets') : null,
+      /* A cutout prints its insets — how far in the corners eat — and then the
+         rectangles the holes actually are, under `Bounds`. It is the second
+         that is a place on the panel, so where the block names them that is
+         what is read; where it does not, any rect with an area is one. */
+      cutoutBounds: dmCutoutBounds(cutout),
+    };
+  });
+  const deviceByName = new Map(devices.filter((d) => d.name).map((d) => [d.name, d]));
+  const deviceByUnique = new Map(devices.filter((d) => d.uniqueId).map((d) => [d.uniqueId, d]));
+
+  /* The logical displays, which is what the rest of Android calls a display
+     and what the rest of Telltale draws onto. */
+  const logicals = [];
+  const LOGICAL_HEAD = /^\s*Display\s+(-?\d+):\s*$/;
+  for (let i = from; i < to; i++) {
+    const m = lines[i].match(LOGICAL_HEAD);
+    if (!m) continue;
+    const { text: block } = takeBlock(lines, i, indentOf(lines[i]));
+    logicals.push({ id: +m[1], at: i + 1, block });
+  }
+
+  const displays = [];
+  const nodes = [];
+  let z = 0;
+
+  const make = (id, at, info, device, name) => {
+    /* A logical display states most of this itself; where it did not print a
+       field, the panel behind it is the answer. */
+    const saidField = (k) => (info ? dmField(info, k) : null);
+    const saidNum = (k) => (info ? dmNum(info, k) : null);
+    const ofDevice = (k) => (device ? device[k] : null);
+
+    const vp = viewports.get(id) || null;
+    const real = (info && dmSize(info, 'real')) || (device && device.size) || null;
+    const app = info ? dmSize(info, 'app') : null;
+    const rotation = info ? saidNum('rotation') : (vp ? vp.orientation : null);
+    const size = real || (app || (vp && vp.deviceSize)) || { w: 1080, h: 1920 };
+    const flags = info ? dmFlags(info) : device ? device.flags : [];
+    const modeId = info ? saidNum('mode') : ofDevice('modeId');
+    const mode = (info && dmMode(info, modeId)) || (device && device.mode) || null;
+    const density = saidNum('density') || ofDevice('density');
+
+    const push = (o) => { nodes.push(dmNode({ ...o, displayId: id, z: -z++ })); };
+
+    if (real) {
+      push({ hash: `display:${id}:real`, title: 'panel', at,
+             frame: { l: 0, t: 0, r: real.w, b: real.h }, frameSource: 'real',
+             family: 'disp-panel', typeLabel: 'the display',
+             meta: `${real.w} × ${real.h}`,
+             searchExtra: `${name || ''} real` });
+    }
+    if (app && real && (app.w !== real.w || app.h !== real.h)) {
+      push({ hash: `display:${id}:app`, title: 'what apps get', at,
+             frame: { l: 0, t: 0, r: app.w, b: app.h }, frameSource: 'app',
+             family: 'disp-app', typeLabel: 'app area',
+             meta: `${app.w} × ${app.h} · ${real.h - app.h}px of decor`,
+             searchExtra: 'app area' });
+    }
+    if (vp && vp.logical) {
+      push({ hash: `display:${id}:viewport`, title: 'input viewport', at: vp.at,
+             frame: vp.logical, frameSource: 'logicalFrame',
+             family: 'disp-viewport', typeLabel: 'viewport',
+             meta: `orientation ${dmDegrees(vp.orientation)}°${
+               vp.port === null ? '' : ` · port ${vp.port}`}`,
+             badges: vp.valid ? [] : [['not valid', 'badge-exit']],
+             searchExtra: `viewport ${vp.type || ''} ${vp.uniqueId || ''}` });
+    }
+    if (vp && vp.physical && vp.logical
+        && (vp.physical.l !== vp.logical.l || vp.physical.t !== vp.logical.t
+            || vp.physical.r !== vp.logical.r || vp.physical.b !== vp.logical.b)) {
+      push({ hash: `display:${id}:physframe`, title: 'physical frame', at,
+             frame: vp.physical, frameSource: 'physicalFrame',
+             family: 'disp-viewport', typeLabel: 'viewport',
+             meta: 'the part of the panel the logical frame is scaled onto',
+             searchExtra: 'physical frame' });
+    }
+    if (device) {
+      device.cutoutBounds.forEach((r, k) => {
+        push({ hash: `display:${id}:cutout:${k}`, title: `cutout ${k + 1}`, at,
+               frame: r, frameSource: 'DisplayCutout',
+               family: 'disp-cutout', typeLabel: 'cutout',
+               meta: `${r.r - r.l} × ${r.b - r.t}`, searchExtra: 'cutout notch' });
+      });
+    }
+
+    displays.push({
+      id, label: name ? `display ${id} · ${name}` : `display ${id}`,
+      name: name || null,
+      size, insets: [], raw: '',
+      rotation: rotation === null ? null : String(dmDegrees(rotation)),
+      real, app, density,
+      dpi: ofDevice('dpi'),
+      state: saidField('state') || ofDevice('state'),
+      type: saidField('type') || ofDevice('type'),
+      uniqueId: saidField('uniqueId') || ofDevice('uniqueId'),
+      layerStack: saidNum('layerStack'),
+      groupId: saidNum('displayGroupId'),
+      flags, mode, modes: device ? device.modes : [],
+      renderFrameRate: ofDevice('renderFrameRate'),
+      owner: ofDevice('owner'),
+      viewport: vp,
+      /* Which way round the panel is glued on, in degrees, where the service
+         said. This is the number a touch trace has had to be turned by hand
+         to match, and the only dump in a bugreport that states it. */
+      installRotation: device && device.installOrientation !== null
+        ? dmDegrees(device.installOrientation) : null,
+      device: device ? { name: device.name, size: device.size, at: device.at } : null,
+      cutoutInsets: ofDevice('cutoutInsets'),
+      meta: [real ? `${real.w} × ${real.h}` : null,
+             density ? `${density} dpi` : null,
+             mode ? `${mode.fps} Hz` : null,
+             rotation ? `${dmDegrees(rotation)}°` : null].filter(Boolean).join(' · '),
+    });
+  };
+
+  if (logicals.length) {
+    for (const lg of logicals) {
+      const info = dmBlock(lg.block, 'DisplayInfo');
+      const devName = (lg.block.match(/mPrimaryDisplayDevice=(.+)/) || [])[1];
+      const name = info ? (info.match(/^\s*"([^"]*)"/) || [])[1] || null : null;
+      const device = (devName && deviceByName.get(devName.trim()))
+                  || (info && deviceByUnique.get(dmField(info, 'uniqueId')))
+                  || (logicals.length === 1 ? devices[0] : null)
+                  || null;
+      make(lg.id, lg.at, info, device || null, name || (device ? device.name : null));
+    }
+  } else {
+    /* A dump that printed its devices and no logical displays — an older build,
+       or one cut short — is still a dump of the panels it has. */
+    devices.forEach((d, i) => make(i, d.at, null, d, d.name));
+  }
+
+  const globals = {
+    displays: displays.length,
+    devices: devices.length,
+    viewports: viewports.size,
+    /* The three the rest of Telltale would otherwise have to assume. */
+    stableSize: (() => {
+      const m = text.match(/mStableDisplaySize=Point\((\d+),\s*(\d+)\)/);
+      return m ? { w: +m[1], h: +m[2] } : null;
+    })(),
+    safeMode: /mSafeMode=true/.test(text),
+    lines: to - from,
+  };
+
+  return finaliseScene('display', displays, nodes, globals);
+}
+
 /* ================ parse: dumpsys package ================ */
 
 /* The first dump Telltale reads with no geometry in it at all: a package does not
@@ -4256,6 +4625,280 @@ function userTypeNode(head, body, shared) {
   };
 }
 
+/* ================ parse: system properties ================ */
+
+/* `getprop` prints the whole property store — two and a half thousand lines of
+   it — one property to a line, name and value each in its own brackets, sorted
+   by name; dumpstate prints the same thing into a bugreport under a rule of
+   its own. There is nothing to draw and nothing the dump itself nests, so the
+   shape the reader gives it is the one the names already carry. A property is
+   a path: `ro.build.version.sdk` is the build's, `init.svc.adbd` is that
+   service's. The first segment is the namespace and becomes the group; the
+   two segments after it are the thing inside it and become a section; the
+   properties are what a section holds.
+
+   Which is also why this is worth a reader at all. Every other dump in a
+   bugreport says what the device was doing; this one says what the device is
+   — the fingerprint, the SDK, the patch level, whether it is debuggable and
+   whether its bootloader is open — and those answers sit in the reading pane
+   of whichever namespace is open rather than having to be found in the list.
+   Until this reader, Telltale only learned a fingerprint from an ANR trace. */
+
+/* One property as `getprop` prints it. The value is whatever was between the
+   last pair of brackets on the line, because a value may hold brackets of its
+   own and nothing escapes them. A value holding a newline — rare, and always
+   somebody's mistake — spills onto lines that are not properties, and those
+   are left where they are rather than guessed at. */
+const PROP_LINE_RE = /^\[([A-Za-z_][A-Za-z0-9_.@\-]*)\]:\s*\[(.*)\]$/;
+
+/* The rule dumpstate prints above them. Some builds name the command in the
+   rule and some do not, so only the words are matched. */
+const PROP_SECTION_START = /^-{4,}\s*SYSTEM PROPERTIES\b/;
+
+/* A text that opens with no such rule is a pasted `getprop`; read all of it,
+   and let the line shape decide what is a property. */
+const propsSection = (lines) => sectionSpan(lines, PROP_SECTION_START, null, 'all');
+
+const propNamespace = (name) => {
+  const i = name.indexOf('.');
+  return i < 0 ? '' : name.slice(0, i);
+};
+
+/* The thing inside a namespace a property belongs to. A name of one segment
+   belongs to nothing and a name of two is already its own thing, so neither
+   gets a section and both sit straight in the group. */
+const propSectionOf = (name) => {
+  const p = name.split('.');
+  return p.length >= 3 ? `${p[0]}.${p[1]}` : null;
+};
+
+/* `ro.` is not a naming convention: init refuses to set a property twice if it
+   starts with one, so the prefix is the whole difference between a fact about
+   the build and something the running system put there. */
+const propReadOnly = (name) => /^ro\./.test(name);
+
+/* The properties whose value is the answer to a question a bugreport gets
+   opened with, and the word for the value that answers it. Everything else in
+   here is a fact; one of these, at one of these values, is a finding — so it
+   is badged on the row rather than left to be found by reading two thousand
+   lines. `init.svc.*` is the one rule rather than a name: init prints what it
+   thinks of every service it started, and anything but `running` is worth
+   seeing. */
+/* init prints what it thinks of every service it started, under a name of
+   this shape and nowhere else. */
+const INIT_SVC_RE = /^init\.svc\./;
+
+function propFlag(name, value) {
+  if (INIT_SVC_RE.test(name)) return value && value !== 'running' ? value : null;
+  switch (name) {
+    case 'ro.debuggable':             return value === '1' ? 'debuggable' : null;
+    case 'ro.secure':                 return value === '0' ? 'insecure' : null;
+    case 'ro.adb.secure':             return value === '0' ? 'adb unsecured' : null;
+    case 'ro.boot.flash.locked':      return value === '0' ? 'bootloader unlocked' : null;
+    case 'ro.boot.verifiedbootstate': return value && value !== 'green' ? `verified boot ${value}` : null;
+    case 'ro.boot.veritymode':        return value && value !== 'enforcing' ? `verity ${value}` : null;
+    case 'ro.build.type':             return value && value !== 'user' ? value : null;
+    case 'ro.build.tags':             return /\btest-keys\b/.test(value || '') ? 'test-keys' : null;
+    case 'sys.boot_completed':        return value === '1' ? null : 'boot not completed';
+    default:                          return null;
+  }
+}
+
+/* A value goes on a row as well as into the pane, and a row is one line. The
+   few properties that print a kilobyte of it — a package list, a whole
+   allowlist — would push everything else off the row otherwise. */
+const propShort = (v) => v.length > 96 ? v.slice(0, 95) + '…' : v;
+
+const propCount = (n) => `${n} propert${n === 1 ? 'y' : 'ies'}`;
+
+function propNode(opts) {
+  return {
+    hash: opts.hash, title: opts.title, displayId: opts.displayId,
+    frame: null, frameSource: null, z: opts.z,
+    family: opts.family, typeLabel: opts.typeLabel, badges: opts.badges || [],
+    search: opts.search,
+    raw: opts.raw,
+    visible: true, focused: false,
+    parentHash: opts.parentHash || null, ancestors: opts.ancestors || [],
+    body: opts.body, bodyAt: opts.bodyAt, subCount: opts.subCount || 0,
+    own: opts.body.length, lines: opts.body.length,
+    at: opts.at, meta: opts.meta,
+  };
+}
+
+function parseSystemPropertiesDump(input) {
+  const lines = dumpLines(input);
+  const { start: from, end: to } = propsSection(lines);
+
+  const props = [];
+  for (let i = from; i < to; i++) {
+    const m = lines[i].match(PROP_LINE_RE);
+    if (m) props.push({ at: i, name: m[1], value: m[2] });
+  }
+  if (!props.length) return finaliseScene('props', [], [], {});
+
+  /* The store answers a name once. A dump that printed one twice — a vendor
+     script appending its own getprop to the end of the section — is read as
+     the first answer, which is the one the section was taken at. */
+  const byName = new Map();
+  for (const p of props) if (!byName.has(p.name)) byName.set(p.name, p.value);
+
+  const groups = new Map();
+  for (const p of props) {
+    p.flag = propFlag(p.name, p.value);
+    p.section = propSectionOf(p.name);
+    const ns = propNamespace(p.name) || 'no namespace';
+    if (!groups.has(ns)) groups.set(ns, { ns, props: [], sections: new Map() });
+    const g = groups.get(ns);
+    g.props.push(p);
+    if (p.section) {
+      if (!g.sections.has(p.section)) g.sections.set(p.section, []);
+      g.sections.get(p.section).push(p);
+    }
+  }
+
+  /* The biggest namespace first, which on every device is `ro` and therefore
+     the one holding what the device is. The order is the counts the strip
+     already prints, so the list says why it is in the order it is in. */
+  const ordered = [...groups.values()].sort((a, b) =>
+    b.props.length - a.props.length || (a.ns < b.ns ? -1 : a.ns > b.ns ? 1 : 0));
+
+  const displays = [];
+  const nodes = [];
+  let z = 0;
+
+  ordered.forEach((g, id) => {
+    /* The section a property hangs under, once it has one. A section is
+       opened by the first property that belongs to it, which is also where
+       its line number comes from. */
+    const heads = new Map();
+
+    for (const p of g.props) {
+      let head = null;
+      if (p.section) {
+        head = heads.get(p.section) || null;
+        if (!head) {
+          const own = g.sections.get(p.section);
+          const flagged = own.filter((x) => x.flag).length;
+          /* `getprop` prints its properties sorted, so a section is a run of
+             lines and the reading pane can count a row's line number off the
+             first of them. A dump that printed them in some other order still
+             reads, with the line numbers inside a section no better than the
+             line it starts on. */
+          head = propNode({
+            hash: `props:${own[0].at}:${p.section}`,
+            title: p.section, displayId: id, z: -z++,
+            family: 'prop-section', typeLabel: 'section',
+            badges: flagged ? [[`${flagged} flagged`, 'badge-exit']] : [],
+            search: `${p.section} ${own.map((x) => `${x.name} ${x.value}`).join(' ')}`.toLowerCase(),
+            raw: own.map((x) => lines[x.at]).join('\n'),
+            body: own.map((x) => `${x.name}: ${x.value}`),
+            bodyAt: own[0].at + 1, at: own[0].at + 1,
+            subCount: own.length,
+            meta: propCount(own.length),
+          });
+          Object.assign(head, {
+            propSection: true, namespace: g.ns, section: p.section,
+            readOnly: propReadOnly(p.section), flagged: flagged > 0,
+          });
+          heads.set(p.section, head);
+          nodes.push(head);
+        }
+      }
+
+      const ro = propReadOnly(p.name);
+      const node = propNode({
+        hash: `props:${p.at}`,
+        title: p.name, displayId: id, z: -z++,
+        family: p.flag ? 'prop-flagged'
+              : INIT_SVC_RE.test(p.name) ? 'prop-service'
+              : /^persist\./.test(p.name) ? 'prop-persist'
+              : ro ? 'prop-ro' : 'prop-runtime',
+        typeLabel: 'property',
+        badges: p.flag ? [[p.flag, 'badge-exit']] : [],
+        search: `${p.name} ${p.value}`.toLowerCase(),
+        raw: lines[p.at],
+        body: [`${p.name}: ${p.value}`],
+        bodyAt: p.at + 1, at: p.at + 1,
+        parentHash: head ? head.hash : null,
+        ancestors: head ? [{ hash: head.hash, title: p.section }] : [],
+        meta: p.value === '' ? '\u2014' : propShort(p.value),
+      });
+      Object.assign(node, {
+        prop: true, name: p.name, value: p.value,
+        namespace: g.ns, section: p.section,
+        readOnly: ro, flagged: !!p.flag, flag: p.flag,
+      });
+      nodes.push(node);
+    }
+
+    const secs = g.sections.size;
+    displays.push({
+      id, label: g.ns, name: null,
+      size: { w: 0, h: 0 }, insets: [], raw: '',
+      meta: `${propCount(g.props.length)}${
+        secs ? ` · ${secs} section${secs === 1 ? '' : 's'}` : ''}`,
+    });
+  });
+
+  const one = (...names) => {
+    for (const n of names) {
+      const v = byName.get(n);
+      if (v !== undefined && v !== '') return v;
+    }
+    return null;
+  };
+  const services = props.filter((p) => INIT_SVC_RE.test(p.name));
+
+  const globals = {
+    count: props.length,
+    namespaces: displays.length,
+    sections: ordered.reduce((n, g) => n + g.sections.size, 0),
+    lines: to - from,
+
+    fingerprint: one('ro.build.fingerprint', 'ro.system.build.fingerprint',
+                     'ro.vendor.build.fingerprint', 'ro.bootimage.build.fingerprint'),
+    brand: one('ro.product.brand', 'ro.product.vendor.brand'),
+    model: one('ro.product.model', 'ro.product.vendor.model'),
+    device: one('ro.product.device', 'ro.product.vendor.device'),
+    product: one('ro.product.name', 'ro.build.product'),
+    manufacturer: one('ro.product.manufacturer'),
+    hardware: one('ro.hardware', 'ro.boot.hardware'),
+    board: one('ro.product.board', 'ro.board.platform'),
+    abi: one('ro.product.cpu.abi'),
+    characteristics: one('ro.build.characteristics'),
+
+    sdk: one('ro.build.version.sdk'),
+    release: one('ro.build.version.release'),
+    patch: one('ro.build.version.security_patch'),
+    buildId: one('ro.build.id'),
+    incremental: one('ro.build.version.incremental'),
+    buildType: one('ro.build.type'),
+    tags: one('ro.build.tags'),
+    buildDate: one('ro.build.date'),
+    firstApi: one('ro.product.first_api_level', 'ro.board.first_api_level'),
+    treble: one('ro.treble.enabled'),
+
+    locale: one('persist.sys.locale', 'ro.product.locale'),
+    timezone: one('persist.sys.timezone'),
+    density: one('ro.sf.lcd_density', 'ro.boot.lcd_density'),
+
+    bootState: one('ro.boot.verifiedbootstate'),
+    locked: one('ro.boot.flash.locked'),
+    bootReason: one('sys.boot.reason', 'ro.boot.bootreason'),
+    bootCompleted: one('sys.boot_completed'),
+
+    services: services.length,
+    servicesRunning: services.filter((p) => p.value === 'running').length,
+    /* Everything the rows are badged with, gathered once so the pane can say
+       it without the list having to be walked for it. */
+    flagged: props.filter((p) => p.flag)
+      .map((p) => ({ name: p.name, value: p.value, label: p.flag })),
+  };
+
+  return finaliseScene('props', displays, nodes, globals);
+}
+
 /* ================ parse: dumpsys overlay ================ */
 
 /* The overlay manager prints one block per runtime resource overlay it knows
@@ -5765,6 +6408,12 @@ function logKeep(entries, cap) {
   return ranked.slice(0, cap).sort((a, b) => a.at - b.at);
 }
 
+/* Which buffer is the event log, out of the name a bugreport rules it with or
+   the marker logd writes at the top of a pasted one. Both readers of that
+   buffer agree on this: the event reader takes it, and the log reader leaves
+   it, so the two never list the same line twice. */
+const EVENT_SECTION_RE = /event/i;
+
 /* `FATAL EXCEPTION` is the first line of a Java crash and `am_crash` is the
    event the framework logs for the same thing. Either one means this tag is
    the reason the log was taken. */
@@ -5837,7 +6486,12 @@ function parseLogcatDump(input) {
     if (e.buffer) current.buffers.add(e.buffer);
   };
 
-  let buffer = null, kernel = false;
+  /* The event buffer is a log, and it is the one log this reader does not
+     read. Every line in it is a tag and a list of numbers — `am_proc_start:
+     [0,5210,...]` — which is unreadable as a line and is the whole subject of
+     the event reader next door. Listing it here as well would put the same
+     lines on the desk twice, in the reading that is no use. */
+  let buffer = null, kernel = false, events = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
@@ -5845,17 +6499,23 @@ function parseLogcatDump(input) {
     const sec = line.match(LOG_SECTION_RE);
     if (sec) {
       const title = sec[1].trim().toLowerCase();
-      section(title, sec[2] || null);
+      events = EVENT_SECTION_RE.test(title);
+      current = null;
+      if (!events) section(title, sec[2] || null);
       buffer = null;
       kernel = /kernel|dmesg/.test(title) || /dmesg/.test(sec[2] || '');
       continue;
     }
     const begun = line.match(LOG_BEGIN_RE);
-    if (begun) { buffer = begun[1]; continue; }
+    /* A pasted `logcat -b events` has no rule over it, only logd's marker. */
+    if (begun) { buffer = begun[1]; events = begun[1] === 'events'; continue; }
     /* Any other rule ends the log that was being read: what follows it is
        another service's dump, and a `[    1.2] ...` line in the middle of one
        is not a kernel log line. */
-    if (/^-{4,}/.test(line)) { current = null; buffer = null; kernel = false; continue; }
+    if (/^-{4,}/.test(line)) {
+      current = null; buffer = null; kernel = false; events = false; continue;
+    }
+    if (events) continue;
 
     const m = line.match(LOG_HEAD_RE);
     if (m) { into(logEntry(m, i + 1, buffer)); continue; }
@@ -5978,6 +6638,521 @@ function parseLogcatDump(input) {
   };
 
   return finaliseScene('logcat', displays, nodes, globals);
+}
+
+/* ================ parse: the event log ================ */
+
+/* The event log is the framework's own account of what happened, and it is the
+   one buffer in a bugreport that is not prose: every line is a tag and a list
+   of fields, written by the framework at a moment it thought was worth
+   recording. A process started. An activity resumed. Something ANRed. The
+   configuration changed. Read as lines it is `am_proc_start: [0,5210,1000,…]`
+   and unreadable; read as what the tags mean it is the story of the session,
+   which is what this reader is for.
+
+   The logcat reader already lists these lines, and deliberately leaves them as
+   they were printed: a log reader that rewrote its lines would be lying about
+   the file. This is the other reading of the same buffer — the tag decoded
+   against what the framework declares it logs, one sentence a line — so the
+   two sit as their own tabs over the same text rather than one inside the
+   other.
+
+   The fields come from AOSP's `event-log-tags`, which is where the tag's
+   arity and the order of its fields are declared. A tag this reader has never
+   seen is still a line of the log and still a row: it keeps its name and its
+   fields as printed, and is filed under `other`. */
+
+/* Splitting a field list is not splitting on commas: a field may hold a list
+   of its own, and the last field of a crash is a message somebody wrote. So
+   commas inside brackets are not separators, and a tag that came out with more
+   fields than it declares had its free-text field eaten into — which is
+   recoverable, because the fields around that one are fixed in number. */
+function eventSplit(body) {
+  const out = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i];
+    if (c === '[' || c === '{' || c === '(') depth++;
+    else if (c === ']' || c === '}' || c === ')') depth--;
+    else if (c === ',' && depth === 0) { out.push(body.slice(start, i)); start = i + 1; }
+  }
+  out.push(body.slice(start));
+  /* Untrimmed on purpose: the free-text field is put back together by joining
+     these again, and trimming first would eat the space somebody typed after
+     their own comma. */
+  return out;
+}
+
+function eventFields(message, names, greedy) {
+  const raw = String(message === null || message === undefined ? '' : message).trim();
+  const body = raw.startsWith('[') && raw.endsWith(']') ? raw.slice(1, -1) : raw;
+  const parts = body === '' ? [] : eventSplit(body);
+  const out = {};
+  if (!names || !names.length) return { parts, fields: out };
+
+  const gi = greedy ? names.indexOf(greedy) : -1;
+  if (parts.length > names.length && gi >= 0) {
+    /* The fields before the free-text one and the fields after it are both
+       fixed, so what is left in the middle is the free-text one, commas and
+       all. */
+    const after = names.length - gi - 1;
+    const tail = after ? parts.slice(parts.length - after) : [];
+    const mid = parts.slice(gi, parts.length - after).join(',');
+    names.forEach((n, i) => {
+      const v = i < gi ? parts[i] : i === gi ? mid : tail[i - gi - 1];
+      out[n] = v === undefined ? null : v.trim();
+    });
+  } else {
+    names.forEach((n, i) => {
+      out[n] = parts[i] === undefined ? null : parts[i].trim();
+    });
+  }
+  return { parts: parts.map((v) => v.trim()), fields: out };
+}
+
+/* The bits `Configuration.diff` sets, which is what `configuration_changed`
+   logs. A configuration change is read for which part of it changed — an
+   orientation change and a font scale change are not the same event — and the
+   mask is the only place the dump says. */
+const CONFIG_BITS = [
+  [0x00000001, 'mcc'], [0x00000002, 'mnc'], [0x00000004, 'locale'],
+  [0x00000008, 'touchscreen'], [0x00000010, 'keyboard'], [0x00000020, 'keyboardHidden'],
+  [0x00000040, 'navigation'], [0x00000080, 'orientation'], [0x00000100, 'screenLayout'],
+  [0x00000200, 'uiMode'], [0x00000400, 'screenSize'], [0x00000800, 'smallestScreenSize'],
+  [0x00001000, 'density'], [0x00002000, 'layoutDirection'], [0x00004000, 'colorMode'],
+  [0x00008000, 'grammaticalGender'], [0x10000000, 'fontWeightAdjustment'],
+  [0x20000000, 'windowConfiguration'], [0x40000000, 'fontScale'],
+  [0x80000000, 'assetsPaths'],
+];
+
+function configChanges(mask) {
+  const n = Number(mask);
+  if (!Number.isFinite(n)) return [];
+  const bits = n >>> 0;
+  return CONFIG_BITS.filter(([b]) => (bits & (b >>> 0)) !== 0).map(([, name]) => name);
+}
+
+/* The steps the framework marks on its way up. A boot in the log is these in
+   order, and the gaps between them are where a slow boot went. */
+const BOOT_STEPS = {
+  boot_progress_start: 'init handed over',
+  boot_progress_preload_start: 'zygote preload started',
+  boot_progress_preload_end: 'zygote preload finished',
+  boot_progress_system_run: 'system server running',
+  boot_progress_pms_start: 'package manager started',
+  boot_progress_pms_system_scan_start: 'scanning system packages',
+  boot_progress_pms_data_scan_start: 'scanning data packages',
+  boot_progress_pms_scan_end: 'package scan finished',
+  boot_progress_pms_ready: 'package manager ready',
+  boot_progress_ams_ready: 'activity manager ready',
+  boot_progress_enable_screen: 'screen enabled',
+};
+
+/* An activity's last name is what anyone reads it by; the package in front of
+   it is the row next to it more often than not. */
+const shortComponent = (c) => {
+  if (!c) return '';
+  const slash = c.indexOf('/');
+  if (slash < 0) return c;
+  const pkg = c.slice(0, slash);
+  const cls = c.slice(slash + 1);
+  const dot = cls.lastIndexOf('.');
+  return `${pkg}/${dot < 0 ? cls : cls.slice(dot + 1)}`;
+};
+
+const evMs = (v) => (v === null || v === undefined || v === '' ? null : `${v} ms`);
+
+/* What the framework logs, and what each of them says. `fields` is the order
+   the tag declares; `greedy` names the one field somebody's own words go into,
+   which is the only one a comma can turn up inside. `who` is what the event is
+   about — a process, a package, an activity — and it is what the row is filed
+   and searched under. */
+const EVENT_TAGS = {
+  /* ---- processes ---- */
+  am_proc_start: {
+    kind: 'process', fields: ['user', 'pid', 'uid', 'process', 'type', 'component'],
+    who: (f) => f.process,
+    say: (f) => `${f.process} started · pid ${f.pid}${f.type ? ` · for ${f.type}` : ''}`,
+  },
+  am_proc_bound: {
+    kind: 'process', fields: ['user', 'pid', 'process'],
+    who: (f) => f.process, say: (f) => `${f.process} bound · pid ${f.pid}`,
+  },
+  am_proc_died: {
+    kind: 'process', fields: ['user', 'pid', 'process', 'oomAdj', 'procState'],
+    who: (f) => f.process, say: (f) => `${f.process} died · pid ${f.pid}`,
+  },
+  am_kill: {
+    kind: 'trouble', fields: ['user', 'pid', 'process', 'oomAdj', 'reason'], greedy: 'reason',
+    who: (f) => f.process,
+    say: (f) => `${f.process} killed${f.reason ? ` · ${f.reason}` : ''}`,
+  },
+  am_freeze: {
+    kind: 'process', fields: ['pid', 'process'],
+    who: (f) => f.process, say: (f) => `${f.process} frozen · pid ${f.pid}`,
+  },
+  am_unfreeze: {
+    kind: 'process', fields: ['pid', 'process'],
+    who: (f) => f.process, say: (f) => `${f.process} unfrozen · pid ${f.pid}`,
+  },
+  am_uid_running: { kind: 'process', fields: ['uid'], who: (f) => `uid ${f.uid}`,
+    say: (f) => `uid ${f.uid} running` },
+  am_uid_idle:    { kind: 'process', fields: ['uid'], who: (f) => `uid ${f.uid}`,
+    say: (f) => `uid ${f.uid} idle` },
+  am_uid_active:  { kind: 'process', fields: ['uid'], who: (f) => `uid ${f.uid}`,
+    say: (f) => `uid ${f.uid} active` },
+  am_uid_stopped: { kind: 'process', fields: ['uid'], who: (f) => `uid ${f.uid}`,
+    say: (f) => `uid ${f.uid} stopped` },
+  am_pss: {
+    kind: 'process',
+    fields: ['pid', 'uid', 'process', 'pss', 'uss', 'swapPss', 'rss', 'statType',
+             'procState', 'timeToCollect'],
+    who: (f) => f.process,
+    say: (f) => `${f.process} measured · ${Math.round(Number(f.pss) / 1024) || 0} MB pss`,
+  },
+
+  /* ---- what went wrong ---- */
+  am_anr: {
+    kind: 'trouble', fields: ['user', 'pid', 'package', 'flags', 'reason'], greedy: 'reason',
+    who: (f) => f.package,
+    say: (f) => `ANR in ${f.package}${f.reason ? ` · ${f.reason}` : ''}`,
+  },
+  am_crash: {
+    kind: 'trouble',
+    fields: ['user', 'pid', 'process', 'flags', 'exception', 'message', 'file', 'line'],
+    greedy: 'message',
+    who: (f) => f.process,
+    say: (f) => `Crash in ${f.process} · ${[f.exception, f.message]
+      .filter(Boolean).join(': ')}`,
+  },
+  am_wtf: {
+    kind: 'trouble', fields: ['user', 'pid', 'process', 'flags', 'tag', 'message'],
+    greedy: 'message',
+    who: (f) => f.process,
+    say: (f) => `WTF in ${f.process} · ${[f.tag, f.message].filter(Boolean).join(': ')}`,
+  },
+  am_low_memory: {
+    kind: 'trouble', fields: ['processes'], who: () => null,
+    say: (f) => `Low memory · ${f.processes} process${f.processes === '1' ? '' : 'es'} left`,
+  },
+  am_meminfo: {
+    kind: 'trouble', fields: ['cached', 'free', 'zram', 'kernel', 'native'],
+    who: () => null, say: () => 'Memory low enough to be recorded',
+  },
+  watchdog: {
+    kind: 'trouble', fields: ['service'], greedy: 'service', who: (f) => f.service,
+    say: (f) => `Watchdog · ${f.service}`,
+  },
+  watchdog_soft_reset:       { kind: 'trouble', fields: [], who: () => null,
+    say: () => 'Watchdog asked for a soft reset' },
+  watchdog_hard_reset:       { kind: 'trouble', fields: [], who: () => null,
+    say: () => 'Watchdog asked for a hard reset' },
+  watchdog_requested_reboot: { kind: 'trouble', fields: [], who: () => null,
+    say: () => 'Watchdog asked for a reboot' },
+
+  /* ---- the system ---- */
+  configuration_changed: {
+    kind: 'system', fields: ['mask'], who: () => null,
+    say: (f) => {
+      const names = configChanges(f.mask);
+      return `Configuration changed${names.length ? ` · ${names.join(', ')}` : ''}`;
+    },
+  },
+  am_switch_user: {
+    kind: 'system', fields: ['user'], who: (f) => `user ${f.user}`,
+    say: (f) => `Switched to user ${f.user}`,
+  },
+  power_screen_state: {
+    kind: 'system',
+    fields: ['state', 'becauseOfUser', 'totalTouchDownTime', 'touchCycles', 'latency'],
+    who: () => null,
+    say: (f) => `Screen ${f.state === '0' ? 'off' : 'on'}${
+      f.becauseOfUser && f.becauseOfUser !== '0' ? ' · the user asked' : ''}`,
+  },
+  power_sleep_requested: {
+    kind: 'system', fields: ['wakeLocksCleared'], who: () => null,
+    say: (f) => `Sleep requested · ${f.wakeLocksCleared} wake lock${
+      f.wakeLocksCleared === '1' ? '' : 's'} cleared`,
+  },
+  power_partial_wake_state: {
+    kind: 'system', fields: ['held', 'tag'], greedy: 'tag', who: (f) => f.tag,
+    say: (f) => `Partial wake lock ${f.held === '1' ? 'taken' : 'released'} · ${f.tag}`,
+  },
+  screen_toggled: {
+    kind: 'system', fields: ['state'], who: () => null,
+    say: (f) => `Screen ${f.state === '0' ? 'off' : 'on'}`,
+  },
+  battery_level: {
+    kind: 'system', fields: ['level', 'voltage', 'temperature'], who: () => null,
+    say: (f) => `Battery ${f.level}%${f.temperature ? ` · ${
+      (Number(f.temperature) / 10).toFixed(1)}°C` : ''}`,
+  },
+  battery_status: {
+    kind: 'system', fields: ['status', 'health', 'present', 'plugged', 'technology'],
+    who: () => null, say: () => 'Battery status changed',
+  },
+  device_idle: {
+    kind: 'system', fields: ['state', 'reason'], greedy: 'reason', who: () => null,
+    say: (f) => `Doze state ${f.state}${f.reason ? ` · ${f.reason}` : ''}`,
+  },
+  device_idle_off_start: { kind: 'system', fields: ['reason'], greedy: 'reason', who: () => null,
+    say: (f) => `Leaving doze${f.reason ? ` · ${f.reason}` : ''}` },
+  device_idle_on_start:  { kind: 'system', fields: [], who: () => null,
+    say: () => 'Entering doze' },
+  notification_panel_revealed: { kind: 'system', fields: ['items'], who: () => null,
+    say: () => 'Notification shade opened' },
+  notification_panel_hidden:   { kind: 'system', fields: [], who: () => null,
+    say: () => 'Notification shade closed' },
+  volume_changed: {
+    kind: 'system', fields: ['stream', 'prevVolume', 'volume', 'max', 'caller'],
+    greedy: 'caller', who: (f) => f.caller,
+    say: (f) => `Volume ${f.prevVolume} → ${f.volume} of ${f.max}`,
+  },
+  input_focus: {
+    kind: 'system', fields: ['reason'], greedy: 'reason', who: () => null,
+    say: (f) => `Input focus · ${f.reason}`,
+  },
+  dvm_lock_sample: {
+    kind: 'trouble',
+    fields: ['process', 'flags', 'thread', 'waitMs', 'file', 'line',
+             'ownerFile', 'ownerLine', 'sampleMs'],
+    who: (f) => f.process,
+    say: (f) => `Lock contention in ${f.process} · ${f.waitMs} ms on ${
+      f.thread || 'a thread'}`,
+  },
+  sf_stop_bootanim: {
+    kind: 'system', fields: ['time'], who: () => null,
+    say: (f) => `Boot animation stopped${evMs(f.time) ? ` · at ${evMs(f.time)}` : ''}`,
+  },
+};
+
+/* The lifecycle events, which the framework logs twice over: with the user in
+   front of them on a build up to Android 10 and with the activity's token in
+   front of them since, under `am_` then `wm_`. Neither number is in the
+   sentence, so one shape reads both eras — which is the whole reason they are
+   generated here rather than written out twice. */
+const EVENT_LIFECYCLE = [
+  ['create_activity', 'created', ['user', 'token', 'taskId', 'component', 'action',
+                                 'mimeType', 'uri', 'flags']],
+  ['restart_activity', 'restarted', ['user', 'token', 'taskId', 'component']],
+  ['resume_activity', 'resumed', ['user', 'token', 'taskId', 'component']],
+  ['pause_activity', 'paused', ['user', 'token', 'component', 'userLeaving']],
+  ['stop_activity', 'stopped', ['user', 'token', 'component']],
+  ['destroy_activity', 'destroyed', ['user', 'token', 'taskId', 'component', 'reason']],
+  ['finish_activity', 'finished', ['user', 'token', 'taskId', 'component', 'reason']],
+  ['set_resumed_activity', 'is the resumed activity', ['user', 'component', 'reason']],
+  ['focused_activity', 'took focus', ['user', 'component', 'reason']],
+  ['new_intent', 'was given a new intent', ['user', 'token', 'taskId', 'component',
+                                            'action', 'mimeType', 'uri', 'flags']],
+];
+
+/* And the callbacks, which are the same line again with the reason the
+   framework called it. */
+const EVENT_CALLBACKS = [
+  ['create', 'onCreate'], ['start', 'onStart'], ['restart', 'onRestart'],
+  ['resume', 'onResume'], ['paused', 'onPause'], ['stop', 'onStop'],
+  ['destroy', 'onDestroy'], ['activity_result', 'onActivityResult'],
+  ['top_resumed_gained', 'onTopResumedActivityChanged(true)'],
+  ['top_resumed_lost', 'onTopResumedActivityChanged(false)'],
+];
+
+for (const [name, verb, fields] of EVENT_LIFECYCLE) {
+  const entry = {
+    kind: 'activity', fields, greedy: 'reason',
+    who: (f) => f.component,
+    say: (f) => `${shortComponent(f.component)} ${verb}${
+      f.reason ? ` · ${f.reason}` : ''}`,
+  };
+  EVENT_TAGS[`am_${name}`] = entry;
+  EVENT_TAGS[`wm_${name}`] = entry;
+}
+
+for (const [name, call] of EVENT_CALLBACKS) {
+  const entry = {
+    kind: 'activity', fields: ['who', 'component', 'reason'], greedy: 'reason',
+    who: (f) => f.component,
+    say: (f) => `${shortComponent(f.component)} · ${call}${
+      f.reason ? ` · ${f.reason}` : ''}`,
+  };
+  EVENT_TAGS[`am_on_${name}_called`] = entry;
+  EVENT_TAGS[`wm_on_${name}_called`] = entry;
+}
+
+for (const [name, what] of [['activity_launch_time', 'launched'],
+                            ['activity_fully_drawn_time', 'fully drawn']]) {
+  const entry = {
+    kind: 'activity', fields: ['user', 'token', 'component', 'time'],
+    who: (f) => f.component,
+    say: (f) => `${shortComponent(f.component)} ${what}${
+      evMs(f.time) ? ` in ${evMs(f.time)}` : ''}`,
+  };
+  EVENT_TAGS[`am_${name}`] = entry;
+  EVENT_TAGS[`wm_${name}`] = entry;
+}
+
+for (const [tag, step] of Object.entries(BOOT_STEPS)) {
+  EVENT_TAGS[tag] = {
+    kind: 'system', fields: ['time'], who: () => null,
+    say: (f) => `Boot · ${step}${evMs(f.time) ? ` · at ${evMs(f.time)}` : ''}`,
+  };
+}
+
+/* What the reader makes of one line. A tag it knows becomes a sentence; one it
+   does not keeps its name and whatever it printed, because a tag this reader
+   has never seen is still something the framework thought worth logging. */
+function eventRead(e) {
+  const spec = EVENT_TAGS[e.tag] || null;
+  const { parts, fields } = eventFields(e.message, spec ? spec.fields : null,
+                                        spec ? spec.greedy : null);
+  if (!spec) {
+    return { kind: 'other', fields: {}, parts,
+             who: null, title: `${e.tag}${e.message ? ` ${e.message}` : ''}` };
+  }
+  /* A tag's sentence is written per tag and reads its fields by name, so a
+     line that came out short is a throw rather than a wrong sentence. What the
+     line itself said is the answer either way. */
+  const said = (fn, fallback) => {
+    try { return fn(fields) || fallback; } catch (err) { return fallback; }
+  };
+  return {
+    kind: spec.kind, fields, parts,
+    who: said(spec.who, null),
+    title: said(spec.say, `${e.tag} ${e.message}`),
+  };
+}
+
+/* How many of each kind, and how many tags — asked of one section and again of
+   the whole log. */
+const eventCounts = (list) => {
+  const out = {};
+  for (const e of list) out[e.kind] = (out[e.kind] || 0) + 1;
+  return out;
+};
+const eventTagCount = (list) => new Set(list.map((e) => e.tag)).size;
+
+const EVENT_KINDS = {
+  process:  { label: 'process',  mark: 'p', family: 'ev-process' },
+  activity: { label: 'activity', mark: 'a', family: 'ev-activity' },
+  trouble:  { label: 'trouble',  mark: '!', family: 'ev-trouble' },
+  system:   { label: 'system',   mark: 's', family: 'ev-system' },
+  other:    { label: 'other',    mark: '·', family: 'ev-other' },
+};
+
+/* A tag this reader has never seen is still an event, and is filed as one. */
+const evKind = (kind) => EVENT_KINDS[kind] || EVENT_KINDS.other;
+
+function parseEventLogDump(input) {
+  const lines = dumpLines(input);
+
+  const sections = [];
+  let current = null, inEvents = false;
+  const section = (title) => {
+    current = { id: sections.length, title: title || 'event log', events: [] };
+    sections.push(current);
+    return current;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line) continue;
+
+    const sec = line.match(LOG_SECTION_RE);
+    if (sec) {
+      const title = sec[1].trim().toLowerCase();
+      inEvents = EVENT_SECTION_RE.test(title);
+      current = inEvents ? section(title) : null;
+      continue;
+    }
+    const begun = line.match(LOG_BEGIN_RE);
+    if (begun) {
+      inEvents = begun[1] === 'events';
+      if (inEvents && !current) section(null);
+      continue;
+    }
+    if (/^-{4,}/.test(line)) { current = null; inEvents = false; continue; }
+
+    const m = line.match(LOG_HEAD_RE);
+    if (!m) continue;
+    const e = logEntry(m, i + 1, 'events');
+    /* Outside a buffer this reader was told about, a line is an event only if
+       the framework declares its tag. That is what keeps a system log full of
+       `ActivityManager:` prose out of a reader that would otherwise read every
+       line in a bugreport as an event with a tag it did not know. */
+    if (!inEvents && !EVENT_TAGS[e.tag]) continue;
+    if (!current) section(null);
+    current.events.push(Object.assign(e, eventRead(e)));
+  }
+
+  const nodes = [];
+  const displays = [];
+  let z = 0;
+
+  for (const sec of sections) {
+    if (!sec.events.length) continue;
+    const counts = eventCounts(sec.events);
+
+    for (const e of sec.events) {
+      const kind = evKind(e.kind);
+      nodes.push({
+        hash: `event:${sec.id}:${e.at}`,
+        title: e.title,
+        displayId: sec.id,
+        frame: null, frameSource: null, z: -z++,
+        family: kind.family,
+        typeLabel: kind.label,
+        badges: e.kind === 'trouble' ? [[kind.label, 'badge-exit']] : [],
+        search: `${e.tag} ${e.title} ${e.who || ''} ${e.message} ${e.pid}`.toLowerCase(),
+        raw: e.raw,
+        visible: true, focused: false,
+        parentHash: null, ancestors: [], subCount: 0,
+        at: e.at, meta: e.who || null,
+        entry: e, tag: e.tag, kind: e.kind, who: e.who,
+        fields: e.fields, parts: e.parts,
+        trouble: e.kind === 'trouble',
+        known: !!EVENT_TAGS[e.tag],
+      });
+    }
+
+    const first = sec.events[0], last = sec.events[sec.events.length - 1];
+    const trouble = counts.trouble || 0;
+    displays.push({
+      id: sec.id, label: sec.title, name: null,
+      size: { w: 0, h: 0 }, insets: [], raw: '',
+      events: sec.events.length, counts, first, last,
+      tags: eventTagCount(sec.events),
+      meta: `${sec.events.length} event${sec.events.length === 1 ? '' : 's'}${
+        trouble ? ` · ${trouble} trouble` : ''}`,
+    });
+  }
+
+  const all = sections.flatMap((s) => s.events);
+  const counts = eventCounts(all);
+  const of = (...tags) => all.filter((e) => tags.includes(e.tag));
+
+  const globals = {
+    events: all.length,
+    sections: displays.length,
+    tags: eventTagCount(all),
+    unknown: new Set(all.filter((e) => !EVENT_TAGS[e.tag]).map((e) => e.tag)).size,
+    counts,
+    first: all.length ? logStamp(all[0]) : null,
+    last: all.length ? logStamp(all[all.length - 1]) : null,
+    /* The three questions this buffer is opened with, answered before it is
+       read: what crashed, what hung, and what the system took away. */
+    anrs: of('am_anr').map((e) => ({ at: e.at, who: e.who, title: e.title })),
+    crashes: of('am_crash', 'am_wtf').map((e) => ({ at: e.at, who: e.who, title: e.title })),
+    kills: of('am_kill').map((e) => ({ at: e.at, who: e.who, title: e.title })),
+    lowMemory: of('am_low_memory').length,
+    /* A boot in the log is the marks the framework left on its way up, and the
+       last of them is how long it took to get there. */
+    boot: all.filter((e) => BOOT_STEPS[e.tag])
+      .map((e) => ({ at: e.at, step: BOOT_STEPS[e.tag], ms: e.fields.time || null })),
+    started: of('am_proc_start').length,
+    died: of('am_proc_died').length,
+    configChanges: of('configuration_changed').length,
+  };
+
+  return finaliseScene('events', displays, nodes, globals);
 }
 
 /* ================ parse: getevent ================ */
@@ -6630,10 +7805,13 @@ for(const key of ['docs', 'docId']){
    line of the section is being asked about, and what is being looked for
    inside it. They sit here with the rest of what a document remembers, so two
    tabs off the same dump keep their own place in it. */
-/* `mapTo` and `mapRot` are a trace's own: which display out of the other dumps
-   on this desk its raw device units are being drawn onto, and how the panel is
-   turned against it. `playAt` is where the playhead is, in seconds from the
-   start of the capture, so scrubbing one tab does not move another.
+/* `mapTo` and `mapTurn` are a trace's own: which display out of the other
+   dumps on this desk its raw device units are being drawn onto, and how the
+   panel is turned against it. `mapTurn` is null until somebody turns it by
+   hand, because a display that states how its panel is mounted — which
+   `dumpsys display` does and nothing else in a bugreport does — is a better
+   answer than any default. `playAt` is where the playhead is, in seconds from
+   the start of the capture, so scrubbing one tab does not move another.
 
    `trace` is the other direction: a capture pasted onto a dump that draws, so
    the gesture plays over that dump's own windows. It is a whole scene, read by
@@ -6644,7 +7822,7 @@ for(const key of ['docs', 'docId']){
 const DOC_STATE = { toolId:null, displayId:null, selected:null, region:null,
                     filter:'', regex:false, show:'all', dim:true, view:'depth',
                     collapsed:null, attr:null, attrFilter:'',
-                    mapTo:null, mapRot:0, playAt:0,
+                    mapTo:null, mapTurn:null, playAt:0,
                     trace:null, traceDev:null, ...VIEW0 };
 for(const key of Object.keys(DOC_STATE)){
   Object.defineProperty(S, key, {
@@ -6702,6 +7880,22 @@ const FAMILY_COLORS = {
      by being one. */
   'user-system':'#55636f', 'user-full':'#2f6f8f', 'user-profile':'#6b5b95',
   'user-guest':'#b4622a', 'user-section':'#55636f',
+  /* A display is coloured by which of the rectangles it is made of a node is:
+     the panel itself, the part of it apps get, the frame the input stack maps
+     a touch through, and the holes in it. */
+  'disp-panel':'#2f6f8f', 'disp-app':'#2e7d5b', 'disp-viewport':'#6b5b95',
+  'disp-cutout':'#a3352f',
+  /* An event is coloured by what kind of thing happened: a process coming and
+     going, an activity's lifecycle, something the system did, and the ones
+     that are the reason the log was taken. */
+  'ev-process':'#2e7d5b', 'ev-activity':'#2f6f8f', 'ev-system':'#6b5b95',
+  'ev-trouble':'#a3352f', 'ev-other':'#55636f',
+  /* A property is coloured by where its value came from: the build, something
+     that persisted it, init saying what it thinks of a service, or the running
+     system. One whose value is a finding rather than a fact is coloured as
+     one, and a section is the namespace they are grouped into. */
+  'prop-section':'#55636f', 'prop-ro':'#2f6f8f', 'prop-persist':'#6b5b95',
+  'prop-service':'#2e7d5b', 'prop-runtime':'#b4622a', 'prop-flagged':'#a3352f',
   /* An overlay is coloured by whether it is over anything: on, off, held on by
      being immutable, or broken in a way nothing on the device will fix. A
      target is the package they are all over. */
@@ -6986,8 +8180,9 @@ async function readInto(text, prefer, label, from){
       ? 'That looks like a dump Telltale knows, but it could not be read. ' + broke.join('; ')
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
         + '`dumpsys SurfaceFlinger`, `dumpsys package`, `dumpsys user`, '
-        + '`dumpsys input`, `dumpsys car_service` and `dumpsys binder_calls_stats` '
-        + 'output, `getevent -lt` captures, logcat, and ART '
+        + '`dumpsys input`, `dumpsys display`, `dumpsys car_service` and '
+        + '`dumpsys binder_calls_stats` '
+        + 'output, `getprop`, `getevent -lt` captures, logcat and the event log, and ART '
         + 'thread dumps (`/data/anr/traces.txt`), '
         + 'or a bugreport — the zip or the text — containing any of them.');
   }
@@ -7826,8 +9021,8 @@ function renderDoc(){
   $('docSearch').hidden = !n;
   $('attrFilter').value = S.attrFilter;
   if(!n){
-    sheet.innerHTML = `<div class="doc"><p class="doc-empty">Pick a ${
-      esc(S.tool.noun)} from the list to read what it printed.</p></div>`;
+    sheet.innerHTML = `<div class="doc"><p class="doc-empty">Pick ${
+      an(esc(S.tool.noun))} from the list to read what it printed.</p></div>`;
     return;
   }
 
@@ -8413,7 +9608,7 @@ function gevStage(){
     const target = gevTarget();
     return { scene:S.data, dev, target,
              display: target ? target.display : null,
-             P: gevProject(dev, target, S.mapRot),
+             P: gevProject(dev, target, gevTurn(target)),
              nodes: gevDrawn(), own:true };
   }
 
@@ -8427,7 +9622,7 @@ function gevStage(){
   const display = currentDisplay();
   const target = { display, tool:S.tool };
   return { scene:trace, dev, target, display,
-           P: gevProject(dev, target, S.mapRot),
+           P: gevProject(dev, target, gevTurn(target)),
            /* A layout's filter is about its windows, so it does not thin the
               strokes: the whole gesture plays over whatever is being shown. */
            nodes: dev.nodes.filter(n => n.samples && n.samples.length), own:false };
@@ -8457,6 +9652,30 @@ function gevTargets(){
 }
 
 const gevTarget = () => S.mapTo ? gevTargets().find(t => t.key === S.mapTo) || null : null;
+
+/* The turn a target states for itself, in degrees. Only `dumpsys display`
+   prints one — `installOrientation`, which is how the panel is glued to the
+   display it drives — so every other reader's display comes back as no turn
+   at all rather than as a guess. */
+const deg360 = (d) => ((d % 360) + 360) % 360;
+
+function gevInstalledTurn(target){
+  const r = target && target.display ? target.display.installRotation : null;
+  return typeof r === 'number' ? deg360(r) : 0;
+}
+
+/* How far the panel is turned against the display the strokes are drawn onto:
+   what that display's own dump says, until somebody says otherwise with the
+   button beside the clock. The display is passed in rather than looked up,
+   because there are two ways round to this — a trace borrowing a display off
+   another tab, and a layout with a capture pasted onto it — and only one of
+   them has a display in `mapTo`. */
+const gevTurn = (target) => S.mapTurn === null ? gevInstalledTurn(target)
+                          : deg360(S.mapTurn);
+
+/* The turn the sheet is actually drawing with, for the button that shows and
+   overrides it. */
+const gevStageTurn = () => { const st = gevStage(); return st ? gevTurn(st.target) : gevTurn(null); };
 
 /* Device units in, display pixels out. The panel is normalised to 0..1 first,
    so a digitiser that counts to 4096 and a display that counts to 1080 meet in
@@ -8710,7 +9929,7 @@ function gevSyncBar(){
     sel.value = String(stage.dev.id);
     sel.hidden = devs.length < 2;
   }
-  $('btnMapRot').textContent = `${((S.mapRot % 360) + 360) % 360}°`;
+  $('btnMapRot').textContent = `${gevStageTurn()}°`;
   $('btnMapRot').disabled = own && !S.mapTo;
   $('tracePaste').hidden = $('tracePaste').dataset.open !== '1';
 }
@@ -8773,7 +9992,7 @@ function gevAttach(text){
 
 function gevDetach(){
   gevStop();
-  S.trace = null; S.traceDev = null; S.playAt = 0; S.mapRot = 0;
+  S.trace = null; S.traceDev = null; S.playAt = 0; S.mapTurn = null;
   $('tracePaste').dataset.open = '0';
   $('traceText').value = '';
   gevSaid('');
@@ -8824,6 +10043,12 @@ const winName = (s) => s ? esc(s.replace(/^\w+\{\S+\s+u\d+\s+/,'').replace(/\}$/
 const wh = (o) => o ? `${o.w} × ${o.h}` : null;
 const none = '<span style="color:var(--dim)">none</span>';
 const dim = (t) => `<span style="color:var(--dim)">${t}</span>`;
+/* A value that is a thing you paste back into a shell — a property name, a
+   fingerprint, a path — set the way a shell would print it. */
+const mono = (s) => `<span style="font-family:var(--mono);font-size:11.5px">${esc(s)}</span>`;
+/* "Pick a event" is what a noun-shaped hole in a sentence does to it, and the
+   nouns come from the tools rather than from the sentence. */
+const an = (word) => `${/^[aeiou]/i.test(word) ? 'an' : 'a'} ${word}`;
 
 /* A flag Telltale has the official text for gets a chip you can hover or tab to.
    Which text depends on where the flag came from, so a chip names its set as
@@ -9205,7 +10430,7 @@ function sfDisplayDetail(d){
       g.totalLayers && ['total layers', esc(g.totalLayers)],
       g.activeLayers && ['active layers', `${esc(g.activeLayers)} ${dim('(with a client handle)')}`],
       g.frontend === 'new' && ['frontend', `new ${dim('(Android 15 and up)')}`],
-      g.build && ['build configuration', `<span style="font-family:var(--mono);font-size:11.5px">${esc(g.build)}</span>`],
+      g.build && ['build configuration', mono(g.build)],
     ])}</section>`);
   }
 
@@ -9265,8 +10490,8 @@ function packageDetail(n){
     ['kind', esc(n.typeLabel)],
     n.appId && ['app id', `${esc(n.appId)}${n.userId ? dim(` · uid ${n.userId * 100000 + (+n.appId % 100000)} for user ${n.userId}`) : ''}`],
     p.sharedUser && ['shared user', esc(p.sharedUser)],
-    n.codePath && ['code path', `<span style="font-family:var(--mono);font-size:11.5px">${esc(n.codePath)}</span>`],
-    props.dataDir && ['data dir', `<span style="font-family:var(--mono);font-size:11.5px">${esc(props.dataDir)}</span>`],
+    n.codePath && ['code path', mono(n.codePath)],
+    props.dataDir && ['data dir', mono(props.dataDir)],
     props.primaryCpuAbi && props.primaryCpuAbi !== 'null' && ['abi', esc(props.primaryCpuAbi)
       + (props.secondaryCpuAbi && props.secondaryCpuAbi !== 'null' ? dim(' · ' + esc(props.secondaryCpuAbi)) : '')],
     props.installerPackageName && props.installerPackageName !== 'null' && ['installer', esc(props.installerPackageName)],
@@ -9373,7 +10598,7 @@ function packageUserDetail(d){
     out.push(`<section class="dgroup"><h3>Dump</h3>${dl([
       g.sdk && ['sdk', esc(g.sdk)],
       g.shadowed && ['shadowed system packages', g.shadowed],
-      g.fingerprint && ['fingerprint', `<span style="font-family:var(--mono);font-size:11.5px">${esc(g.fingerprint)}</span>`],
+      g.fingerprint && ['fingerprint', mono(g.fingerprint)],
     ])}</section>`);
   }
 
@@ -9567,7 +10792,7 @@ function anrProcessDetail(d){
     p.at && ['dumped', esc(p.at)],
     p.subject && ['subject', esc(p.subject)],
     ['threads', `${p.threads.length}${d.blocked ? ` · ${d.blocked} blocked` : ''}`],
-    p.fingerprint && ['fingerprint', `<span style="font-family:var(--mono);font-size:11.5px">${esc(p.fingerprint)}</span>`],
+    p.fingerprint && ['fingerprint', mono(p.fingerprint)],
   ])}</section>`);
 
   out.push(`<section class="dgroup"><h3>Findings</h3>${
@@ -9721,6 +10946,134 @@ function carDisplayDetail(d){
   return out;
 }
 
+/* ---- dumpsys display ---- */
+
+/* What each of the rectangles a display is made of actually is. The picture
+   says where they are; this says why there is more than one of them. */
+const DISPLAY_RECTS = {
+  'disp-panel': `The display as the framework has it: the number every other
+    dump's coordinates are in, and the one a window dump has to guess at when it
+    prints no display block.`,
+  'disp-app': `The part of the display an app is laid out in — the whole of it
+    less whatever the system decor is holding. A window that looks the wrong height
+    in a window dump is usually the difference between this and the panel.`,
+  'disp-viewport': `The frame the input stack maps a touch through. Where it is
+    not the whole panel, a touch outside it reaches nothing — and where the logical
+    and the physical frame differ, the display is being scaled onto the panel.`,
+  'disp-cutout': `A hole in the panel. Nothing is drawn under it, and a window
+    that asked to lay out edge to edge has to avoid it itself.`,
+};
+
+function displayNodeDetail(n){
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>${esc(cap(n.typeLabel))}</h3>${dl([
+    ['what', esc(n.title)],
+    n.frame && ['rect', r(n.frame)],
+    n.frameSource && ['printed as', `<code>${esc(n.frameSource)}</code>`],
+    n.meta && ['says', esc(n.meta)],
+    ['at', `line ${n.at}`],
+  ])}</section>`);
+
+  const why = DISPLAY_RECTS[n.family];
+  if(why) out.push(`<section class="dgroup"><h3>What it is</h3>
+    <p style="margin:0">${why}</p></section>`);
+
+  return out;
+}
+
+function displayManagerDetail(d){
+  const g = S.data.globals;
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>Panel</h3>${dl([
+    d.real && ['size', `${d.real.w} × ${d.real.h}`],
+    d.density && ['density', `${d.density} dpi${d.dpi
+      ? ` ${dim(`· ${d.dpi.x} × ${d.dpi.y} actual`)}` : ''}`],
+    d.mode && ['mode', `${d.mode.w} × ${d.mode.h} at ${d.mode.fps} Hz ${
+      dim('· id ' + d.mode.id)}`],
+    d.renderFrameRate && ['rendering at', `${d.renderFrameRate} Hz`],
+    d.state && ['state', esc(d.state)],
+    d.type && ['type', esc(d.type)],
+    d.rotation !== null && ['rotation', `${esc(d.rotation)}°`],
+    d.layerStack !== null && d.layerStack !== undefined && ['layer stack', d.layerStack],
+    d.owner && ['owned by', esc(d.owner)],
+    d.uniqueId && ['unique id', mono(d.uniqueId)],
+  ])}</section>`);
+
+  /* The difference between the panel and what an app is given is the whole of
+     what system decor costs, and it is the number a window dump is read
+     against without ever stating it. */
+  if(d.app && d.real && (d.app.w !== d.real.w || d.app.h !== d.real.h)){
+    out.push(`<section class="dgroup"><h3>What apps get</h3>${dl([
+      ['app area', `${d.app.w} × ${d.app.h}`],
+      ['decor', `${d.real.w - d.app.w} px across · ${d.real.h - d.app.h} px down`],
+    ])}</section>`);
+  }
+
+  if(d.cutoutInsets){
+    const c = d.cutoutInsets;
+    out.push(`<section class="dgroup"><h3>Cutout</h3>${dl([
+      ['insets', `${c.l} · ${c.t} · ${c.r} · ${c.b} ${dim('left, top, right, bottom')}`],
+      ['holes', d.nodes.filter(n => n.family === 'disp-cutout').length],
+    ])}</section>`);
+  }
+
+  if(d.viewport){
+    const v = d.viewport;
+    const scaled = v.logical && v.physical
+      && (rectW(v.logical) !== rectW(v.physical) || rectH(v.logical) !== rectH(v.physical));
+    out.push(`<section class="dgroup"><h3>Input viewport</h3>${dl([
+      v.type && ['type', esc(v.type)],
+      v.orientation !== null && ['orientation', `${dmDegrees(v.orientation)}°`],
+      v.port !== null && ['physical port', v.port],
+      v.logical && ['logical frame', r(v.logical)],
+      v.physical && ['physical frame', r(v.physical)],
+      ['valid', yn(v.valid)],
+    ])}${scaled ? `<p style="margin:7px 0 0">The logical frame is being scaled
+      onto a physical frame of another size, so a touch is not one panel pixel to one
+      display pixel on this display.</p>` : ''}</section>`);
+  }
+
+  /* The one number in a bugreport that says which way round the panel is
+     glued on, and the reason this reader is worth having open beside a touch
+     trace. */
+  if(d.installRotation !== null && d.installRotation !== undefined){
+    out.push(`<section class="dgroup"><h3>How the panel is mounted</h3>${dl([
+      ['install orientation', `${d.installRotation}°`],
+    ])}<p style="margin:7px 0 0">${d.installRotation
+      ? `The panel is mounted at ${d.installRotation}° to the display it drives, which is
+         what a touch trace has to be turned by to land where it should. Play a capture
+         over this display and Telltale takes the turn from here rather than guessing.`
+      : `The panel and the display it drives are the same way up, so a touch trace
+         plays over this display without being turned.`}</p></section>`);
+  }
+
+  if(d.flags.length){
+    out.push(`<section class="dgroup"><h3>Flags</h3>${flatChips(d.flags)}</section>`);
+  }
+
+  if(d.modes.length > 1){
+    out.push(`<section class="dgroup"><h3>Modes</h3>
+      <div class="doc-scroll"><table class="doc-table">
+      <thead><tr><th>id</th><th>size</th><th>refresh</th></tr></thead>
+      <tbody>${d.modes.map(m =>
+        `<tr><td>${m.id}${d.mode && m.id === d.mode.id
+          ? ' <span style="color:var(--mark)">◂</span>' : ''}</td><td>${m.w} × ${m.h}</td><td>${
+          m.fps} Hz</td></tr>`).join('')}</tbody></table></div></section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>The service</h3>${dl([
+    ['displays', g.displays],
+    ['display devices', g.devices],
+    ['viewports', g.viewports],
+    g.stableSize && ['stable size', `${g.stableSize.w} × ${g.stableSize.h}`],
+    g.safeMode && ['safe mode', '<span class="no">on</span>'],
+  ])}</section>`);
+
+  return out;
+}
+
 /* ---- dumpsys user ---- */
 
 const userChips = (list) =>
@@ -9799,6 +11152,253 @@ function userGroupDetail(d){
       user type that are not on the device. They are listed at the end of
       <b>Whitelisted packages per user type</b>.</p></section>`);
   }
+
+  return out;
+}
+
+/* ---- system properties ---- */
+
+/* What the properties worth explaining are for. The store has two and a half
+   thousand of them and most say what they are called; these are the ones whose
+   name is a label on something that takes a sentence, and the ones people open
+   a bugreport to check. Anything not in here is left as the name and the
+   value, which is what the dump printed and all it claimed. */
+const PROP_DOCS = {
+  'ro.build.fingerprint': `The whole of the build's identity in one string —
+    brand, product, device, release, build id, incremental, build type and keys — and
+    the one value to quote in a bug report. Two devices with the same fingerprint are
+    running the same software.`,
+  'ro.build.id': `The build id, which is the platform's own name for the release
+    the device is on (<code>UQ1A.240105.004</code> and the like).`,
+  'ro.build.version.sdk': `The API level of the platform. What an app compiles
+    against and what every compatibility check in the framework is written against.`,
+  'ro.build.version.release': `The release people say out loud — 14, 15 — as against
+    the SDK number the framework actually branches on.`,
+  'ro.build.version.security_patch': `The security patch level the build claims.
+    A date far behind the build date is a device on an old patch train, which is worth
+    knowing before anything else in a report is believed.`,
+  'ro.build.version.incremental': `The build server's number for this build. Two
+    builds of the same release differ here and nowhere else.`,
+  'ro.build.type': `<code>user</code> is a shipping build. <code>userdebug</code> and
+    <code>eng</code> are not: they run with root available, more logging and asserts
+    a user build does not have, so behaviour seen on one is not proof of behaviour
+    on the other.`,
+  'ro.build.tags': `<code>release-keys</code> means the build was signed with the
+    release keys. <code>test-keys</code> means it was signed with the public AOSP
+    ones, which anybody has.`,
+  'ro.build.characteristics': `What the build was made for — <code>automotive</code>,
+    <code>tablet</code>, <code>tv</code>, <code>watch</code>, <code>nosdcard</code>.
+    Resource qualifiers and a good deal of framework behaviour turn on it.`,
+  'ro.build.date': `When the build was built.`,
+  'ro.product.first_api_level': `The API level the device first shipped at, which
+    is not the one it is running now. Vendor compatibility requirements are written
+    against this rather than against the current SDK.`,
+  'ro.product.cpu.abi': `The ABI native code has to be built for. The list of every
+    ABI the device loads is <code>ro.product.cpu.abilist</code>.`,
+  'ro.debuggable': `<code>1</code> means the build is debuggable: every app is
+    debuggable, <code>adb root</code> works, and the device is not one anything about
+    security should be concluded from.`,
+  'ro.secure': `<code>0</code> means adbd runs as root out of the box. On a shipping
+    build this is <code>1</code>.`,
+  'ro.adb.secure': `<code>1</code> means adb asks for the host key to be
+    authorised. <code>0</code> means anything that can reach the device over USB or
+    the network has a shell on it.`,
+  'ro.boot.verifiedbootstate': `What verified boot decided. <code>green</code> is a
+    stock build with the stock keys; <code>yellow</code> is signed with a key the user
+    added; <code>orange</code> is an unlocked bootloader verifying nothing; and
+    <code>red</code> is verification having failed.`,
+  'ro.boot.flash.locked': `<code>1</code> is a locked bootloader. <code>0</code>
+    means the device will flash anything, so the software on it is not necessarily the
+    software the fingerprint names.`,
+  'ro.boot.veritymode': `Whether dm-verity is enforcing over the read-only
+    partitions. <code>eio</code> or <code>logging</code> is a partition that was
+    modified, or one that was allowed to be.`,
+  'ro.treble.enabled': `Whether the device is a Treble device — the vendor image
+    talking to the framework over stable interfaces rather than being built with it.`,
+  'ro.vndk.version': `The VNDK snapshot the vendor image was built against. It says
+    how old the vendor half of a Treble device is relative to the framework half.`,
+  'ro.zygote': `Which zygote the device starts: <code>zygote64_32</code> runs a
+    64-bit primary with a 32-bit secondary, <code>zygote64</code> is 64-bit only.
+    It decides what an app process can be.`,
+  'ro.config.low_ram': `<code>true</code> puts the framework in its low-memory
+    configuration, which changes what is cached, how many processes are kept and how
+    hard the killer works — worth knowing before reading a memory dump.`,
+  'ro.sf.lcd_density': `The density the framework lays out at, in dpi. This is the
+    number every <code>dp</code> in a layout is multiplied by, so it decides the
+    geometry in a window dump as much as the panel's own size does.`,
+  'ro.hardware': `The hardware name the kernel was booted with. It is what picks
+    the HALs, the input device configuration files and a good deal else by name.`,
+  'ro.board.platform': `The SoC the board is built on.`,
+  'ro.crypto.state': `Whether the data partition is encrypted, and
+    <code>ro.crypto.type</code> says with which scheme — <code>file</code> for
+    file-based encryption, which is what a modern device uses.`,
+  'sys.boot_completed': `<code>1</code> once the framework has finished booting.
+    A dump taken while this is unset is a dump of a device that is still coming up,
+    and most of what it says about windows and processes is temporary.`,
+  'sys.boot.reason': `Why the device last booted, as the framework recorded it.
+    <code>ro.boot.bootreason</code> is the bootloader's own answer, which is the one
+    to trust after a crash.`,
+  'persist.sys.locale': `The locale the user picked, which persists across boots
+    and overrides the build's <code>ro.product.locale</code>.`,
+  'persist.sys.timezone': `The timezone the device is set to.`,
+  'sys.usb.config': `What the USB stack is currently configured as —
+    <code>adb</code>, <code>mtp</code>, <code>none</code>.
+    <code>persist.sys.usb.config</code> is what it goes back to across a boot.`,
+  'dalvik.vm.heapgrowthlimit': `The heap an ordinary app is held to. An app with
+    <code>largeHeap</code> gets <code>dalvik.vm.heapsize</code> instead, and an
+    OutOfMemory in an ANR trace is read against whichever of the two applies.`,
+  'dalvik.vm.heapsize': `The heap ceiling for an app that asked for
+    <code>largeHeap</code>.`,
+};
+
+/* The prefixes whose every property means the same thing, so the pane can say
+   it without a line per name. */
+function propDoc(name){
+  if(PROP_DOCS[name]) return PROP_DOCS[name];
+  if(INIT_SVC_RE.test(name)){
+    return `What init thinks of the service <code>${esc(name.slice('init.svc.'.length))}</code>:
+      <code>running</code>, <code>stopped</code> once it has exited, or
+      <code>restarting</code> while init waits to start it again. A service that is
+      stopped and should not be is the first thing a boot problem shows up as.`;
+  }
+  if(/^init\.svc_debug_pid\./.test(name)){
+    return `The pid init started that service with, on a build that records it.`;
+  }
+  return null;
+}
+
+/* Why a badged value is badged. The badge is the word; this is the sentence. */
+function propWhy(n){
+  if(INIT_SVC_RE.test(n.name)){
+    return `init started this service and it is <b>${esc(n.value)}</b> rather than
+      running. If it is meant to be up, whatever it serves is not being served.`;
+  }
+  const said = {
+    'ro.debuggable': `This is a debuggable build. Nothing about security or
+      performance measured on it carries over to a user build.`,
+    'ro.secure': `adbd runs as root on this device.`,
+    'ro.adb.secure': `adb does not ask for host keys to be authorised on this device.`,
+    'ro.boot.flash.locked': `The bootloader is unlocked, so the software on the
+      device is not necessarily the software the fingerprint names.`,
+    'ro.boot.verifiedbootstate': `Verified boot did not come up green, so some part
+      of what booted was not signed by the keys the device shipped with.`,
+    'ro.boot.veritymode': `dm-verity is not enforcing, which is what a modified
+      read-only partition looks like.`,
+    'ro.build.type': `This is not a user build: it runs with root available and with
+      logging and assertions a shipping build does not have.`,
+    'ro.build.tags': `Signed with the public AOSP test keys rather than with release
+      keys.`,
+    'sys.boot_completed': `The framework had not finished booting when this was
+      taken, so most of what the other dumps say is still settling.`,
+  }[n.name];
+  return said || null;
+}
+
+function propDetail(n){
+  const out = [];
+
+  if(n.ancestors.length){
+    out.push(`<section class="dgroup"><h3>Inside</h3>${
+      n.ancestors.map(a => docLink(a.hash, a.title)).join('')}</section>`);
+  }
+
+  /* `ro.` is the difference between a fact about the build and something the
+     running system put there, and it is not obvious from the name unless you
+     already know the rule. */
+  const written = (ro) => ro ? 'read-only — set once, at boot'
+                             : 'writable while the device is up';
+
+  if(n.prop){
+    out.push(`<section class="dgroup"><h3>Property</h3>${dl([
+      ['name', mono(n.name)],
+      ['value', n.value === '' ? dim('empty') : mono(trim(n.value, 300))],
+      ['namespace', esc(n.namespace)],
+      ['written', written(n.readOnly)],
+      ['at', `line ${n.at}`],
+    ])}</section>`);
+
+    if(n.flagged){
+      const why = propWhy(n);
+      out.push(`<section class="dgroup"><h3>Worth a look</h3>
+        <p style="margin:0">${why || `This value is <b>${esc(n.flag)}</b>.`}</p></section>`);
+    }
+
+    const doc = propDoc(n.name);
+    if(doc) out.push(`<section class="dgroup"><h3>What it is</h3>
+      <p style="margin:0">${doc}</p></section>`);
+  } else {
+    out.push(`<section class="dgroup"><h3>Section</h3>${dl([
+      ['namespace', esc(n.namespace)],
+      ['properties', n.subCount],
+      ['written', written(n.readOnly)],
+      ['at', `line ${n.at}`],
+    ])}</section>`);
+  }
+
+  return out;
+}
+
+/* The group is one namespace, and what is worth saying about a namespace is
+   short. What the pane is really for is the block above it: whichever
+   namespace is open, this is the dump that says what the device is, and that
+   answer belongs in front of whoever opened it. */
+function propsGroupDetail(d){
+  const g = S.data.globals;
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>Device</h3>${dl([
+    g.fingerprint && ['fingerprint', mono(g.fingerprint)],
+    g.model && ['model', esc(g.model)],
+    g.device && ['device', esc([g.device, g.product && g.product !== g.device ? g.product : null]
+      .filter(Boolean).join(' · '))],
+    g.brand && ['brand', esc([g.manufacturer, g.brand].filter(Boolean).join(' · '))],
+    g.hardware && ['hardware', esc([g.hardware, g.board].filter(Boolean).join(' · '))],
+    g.abi && ['abi', esc(g.abi)],
+    g.characteristics && ['built for', esc(g.characteristics)],
+    g.density && ['density', `${esc(g.density)} dpi`],
+    (g.locale || g.timezone) && ['set to',
+      esc([g.locale, g.timezone].filter(Boolean).join(' · '))],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Build</h3>${dl([
+    g.release && ['release', esc(g.release)],
+    g.sdk && ['sdk', esc(g.sdk)],
+    g.firstApi && g.firstApi !== g.sdk && ['shipped at', `api ${esc(g.firstApi)}`],
+    g.patch && ['security patch', esc(g.patch)],
+    g.buildId && ['build', esc([g.buildId, g.incremental].filter(Boolean).join(' · '))],
+    g.buildType && ['type', esc([g.buildType, g.tags].filter(Boolean).join(' · '))],
+    g.buildDate && ['built', esc(g.buildDate)],
+    g.treble && ['treble', esc(g.treble)],
+  ])}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Boot</h3>${dl([
+    g.bootState && ['verified boot', esc(g.bootState)],
+    g.locked && ['bootloader', g.locked === '1' ? 'locked' : 'unlocked'],
+    g.bootReason && ['last boot', esc(g.bootReason)],
+    ['boot completed', g.bootCompleted === null ? dim('not printed')
+      : g.bootCompleted === '1' ? 'yes' : 'no'],
+    g.services && ['init services', `${g.servicesRunning} of ${g.services} running`],
+  ])}</section>`);
+
+  /* Everything the rows are badged with, in one place, because the row it is
+     on may be in a namespace nobody is going to open. */
+  if(g.flagged.length){
+    out.push(`<section class="dgroup"><h3>Flagged</h3>${
+      /* The label is usually the value said in words, and where it is the
+         value itself there is nothing to add to it. */
+      dl(g.flagged.slice(0, 14).map(f =>
+        [mono(f.name), f.label === f.value ? esc(f.label)
+          : `${esc(trim(f.value, 40))} — ${esc(f.label)}`]))}${
+      g.flagged.length > 14
+        ? `<p style="margin:7px 0 0">${dim(`and ${g.flagged.length - 14} more`)}</p>` : ''}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>This namespace</h3>${dl([
+    ['namespace', esc(d.label)],
+    ['properties', d.nodes.filter(n => n.prop).length],
+    ['sections', d.nodes.filter(n => n.propSection).length],
+    ['of', `${g.count} in ${g.namespaces} namespace${g.namespaces === 1 ? '' : 's'}`],
+  ])}</section>`);
 
   return out;
 }
@@ -10473,7 +12073,7 @@ function gevLanding(n){
   const target = gevTarget();
   if(!target) return null;
   const dev = currentDisplay();
-  const P = gevProject(dev, target, S.mapRot);
+  const P = gevProject(dev, target, gevTurn(target));
   const a = n.samples[0], z = n.samples[n.samples.length - 1];
   const px = (s) => { const [x, y] = P(s.x, s.y); return { x, y }; };
   return { target, down: gevUnder(target, px(a)), up: gevUnder(target, px(z)),
@@ -10612,6 +12212,11 @@ function gevOnNode(n){
 function gevOnDisplay(){
   const stage = gevStage();
   if(!stage || stage.own) return '';
+  /* Where the display picked states how its panel is mounted, the turn is a
+     fact and the pane says so instead of apologising for a guess. */
+  const stated = stage.target && stage.target.display
+    && typeof stage.target.display.installRotation === 'number'
+    ? stage.target.display.installRotation : null;
   const rows = stage.nodes.map((st) => {
     const [x, y] = stage.P(st.samples[0].x, st.samples[0].y);
     const under = gevUnder(stage.target, { x, y });
@@ -10623,10 +12228,14 @@ function gevOnDisplay(){
     rows.length ? dl(rows)
       : `<p style="margin:0;color:var(--dim)">Nothing in the capture reported a
          position on this device.</p>`}
-    <p style="margin:7px 0 0;color:var(--dim)">The panel is scaled onto this
-      display, which is this reader's assumption and not something either dump
-      stated \u2014 turn it with the button beside the clock if the strokes land
-      at 90\u00b0 to where they should.</p></section>`;
+    <p style="margin:7px 0 0;color:var(--dim)">${stated === null
+      ? `The panel is scaled onto this display, which is this reader's assumption and
+         not something either dump stated \u2014 turn it with the button beside the
+         clock if the strokes land at 90\u00b0 to where they should.`
+      : `The panel is scaled onto this display, and turned by the
+         <b>${stated}\u00b0</b> that display's own dump says the panel is mounted at
+         \u2014 <code>installOrientation</code> in <code>dumpsys display</code>. The
+         button beside the clock still overrides it.`}</p></section>`;
 }
 
 function geteventDeviceDetail(d){
@@ -10765,6 +12374,157 @@ function logSectionDetail(d){
   return out;
 }
 
+/* ---- the event log ---- */
+
+/* One event, in the log's own columns: when it happened, which process logged
+   it, one character for what kind of thing it was, the tag the framework
+   wrote, and the sentence the tag comes to. */
+function eventRow(n){
+  const e = n.entry;
+  const kind = evKind(n.kind);
+  const when = e.time || '';
+  return `<span class="ev-when" title="${esc(logStamp(e))}">${esc(when)}</span>`
+    + `<span class="ev-who" title="logged by pid ${e.pid}">${e.pid === null ? '' : e.pid}</span>`
+    + `<span class="ev-mark" title="${esc(kind.label)}">${esc(kind.mark)}</span>`
+    + `<span class="ev-tag" title="${esc(e.tag)}">${esc(e.tag)}</span>`
+    + `<span class="ev-what">${esc(n.title)}</span>`;
+}
+
+/* What an event that is the reason the log was taken says to do next. The
+   event log records that a thing happened; the thing itself was written
+   somewhere else in the same bugreport, and saying where is most of the value
+   of having read the tag at all. */
+const EVENT_NEXT = {
+  am_anr: `The thread dump taken for this ANR is in the bugreport's
+    <b>VM TRACES AT LAST ANR</b> section, which opens as its own tab — the main thread's
+    stack there is what the ANR actually was. <code>ActivityManager</code> in the system
+    log printed the reason again with the CPU usage around it.`,
+  am_crash: `The stack trace is in the system log at the same moment, under
+    <code>AndroidRuntime</code> — this line is the framework recording that it happened,
+    not the exception itself.`,
+  am_wtf: `<code>Log.wtf</code> is something the framework decided should never
+    happen. The stack that went with it is in the system log at the same moment.`,
+  am_kill: `The process was taken by the system rather than crashing. The reason
+    field says which pressure did it, and the <code>oomAdj</code> says how expendable the
+    process was when it went.`,
+  am_low_memory: `The system ran its low-memory pass. Processes killed around
+    this line went because of it, not because of anything they did.`,
+  dvm_lock_sample: `The runtime sampled a thread waiting on a monitor for long
+    enough to be worth logging. An ANR trace taken near this line is where the lock
+    actually is.`,
+};
+
+function eventDetail(n){
+  const e = n.entry;
+  const kind = evKind(n.kind);
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>Event</h3>${dl([
+    ['what', esc(n.title)],
+    /* The tag is how the buffer is narrowed, so it is offered as the filter
+       the way a log reader offers one. */
+    ['tag', `<button class="btn btn-quiet" type="button" data-logtag="${esc(e.tag)}"
+       title="List only this tag">${esc(e.tag)}</button>`],
+    ['kind', `<span style="color:${tintFor(n)}">■</span> ${esc(kind.label)}`],
+    n.who && ['about', `<button class="btn btn-quiet" type="button" data-logtag="${esc(n.who)}"
+       title="List everything about this">${esc(n.who)}</button>`],
+    ['when', logWhen(e)],
+    e.pid !== null && ['logged by', `pid ${e.pid}${
+      e.tid !== null && e.tid !== e.pid ? ` · tid ${e.tid}` : ''}`],
+    ['dump line', n.at],
+  ])}</section>`);
+
+  /* The fields, named the way the framework declares them. This is the whole
+     of what a decoded tag is: the same numbers the row was printed with, with
+     the names they were logged under put back. */
+  const named = Object.entries(n.fields).filter(([, v]) => v !== null && v !== undefined && v !== '');
+  if(named.length){
+    out.push(`<section class="dgroup"><h3>Fields</h3>${
+      dl(named.map(([k, v]) => [esc(k), esc(trim(String(v), 200))]))}</section>`);
+  } else if(n.parts.length){
+    out.push(`<section class="dgroup"><h3>Fields</h3>
+      <p style="margin:0 0 7px">Telltale does not know this tag, so what it
+      printed is kept as it came.</p>${
+      dl(n.parts.map((v, i) => [String(i), esc(trim(String(v), 200))]))}</section>`);
+  }
+
+  if(n.kind === 'system' && e.tag === 'configuration_changed'){
+    const names = configChanges(n.fields.mask);
+    out.push(`<section class="dgroup"><h3>What changed</h3>${
+      names.length ? flatChips(names)
+        : `<p style="margin:0">${dim('the mask was empty')}</p>`}
+      <p style="margin:7px 0 0">Every activity that does not handle one of these
+      in its manifest was recreated.</p></section>`);
+  }
+
+  const next = EVENT_NEXT[e.tag];
+  if(next) out.push(`<section class="dgroup"><h3>Where the rest of it is</h3>
+    <p style="margin:0">${next}</p></section>`);
+
+  /* The line as it was printed is under everything the pane says already: the
+     raw block the details pane puts at the end of what a reader hands it. */
+  return out;
+}
+
+/* A list of events named in the pane, each one a way into the row it stands
+   for. They are in this group by construction — the pane is the group's. */
+const eventLinks = (list) => list.length
+  ? `<div class="chips">${list.slice(0, 10).map(x =>
+      `<button class="btn btn-quiet" type="button" data-logtag="${esc(x.who || x.title)}"
+        title="${esc(x.title)}">${esc(trim(x.who || x.title, 34))}</button>`).join('')}${
+      list.length > 10 ? dim(` and ${list.length - 10} more`) : ''}</div>`
+  : none;
+
+function eventLogDetail(d){
+  const g = S.data.globals;
+  const out = [];
+
+  const counts = Object.entries(d.counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${v} ${evKind(k).label}`).join(' · ');
+
+  out.push(`<section class="dgroup"><h3>${esc(cap(d.label))}</h3>${dl([
+    ['events', d.events],
+    ['tags', d.tags],
+    ['kinds', esc(counts)],
+    ['first', logWhen(d.first)],
+    ['last', logWhen(d.last)],
+  ])}</section>`);
+
+  /* The three questions the buffer is opened with. A log with none of them in
+     it says so, which is itself the answer. */
+  if(g.anrs.length || g.crashes.length || g.kills.length || g.lowMemory){
+    out.push(`<section class="dgroup"><h3>What went wrong</h3>${dl([
+      g.anrs.length && ['ANRs', eventLinks(g.anrs)],
+      g.crashes.length && ['crashes', eventLinks(g.crashes)],
+      g.kills.length && ['killed', eventLinks(g.kills)],
+      g.lowMemory && ['low memory', `${g.lowMemory} pass${g.lowMemory === 1 ? '' : 'es'}`],
+    ])}</section>`);
+  }
+
+  /* A log that caught a boot has the framework's own marks on the way up in
+     it, and the gaps between them are where a slow one went. */
+  if(g.boot.length){
+    out.push(`<section class="dgroup"><h3>Boot</h3>${
+      dl(g.boot.map(b => [esc(b.step), b.ms ? `${esc(b.ms)} ms` : dim('—')]))}
+      <p style="margin:7px 0 0">${dim('milliseconds since the kernel started, as the framework counted them')}</p>
+      </section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>The whole log</h3>${dl([
+    g.sections > 1 && ['sections', g.sections],
+    ['events', g.events],
+    ['tags', `${g.tags}${g.unknown ? ` ${dim('· ' + g.unknown + ' Telltale does not know')}` : ''}`],
+    g.started && ['processes started', g.started],
+    g.died && ['processes died', g.died],
+    g.configChanges && ['configuration changes', g.configChanges],
+    g.first && ['from', esc(g.first)],
+    g.last && ['to', esc(g.last)],
+  ])}</section>`);
+
+  return out;
+}
+
 function renderDisplayDetail(){
   const d = currentDisplay();
   const noun = S.tool.groupNoun || 'display';
@@ -10775,7 +12535,7 @@ function renderDisplayDetail(){
   const onIt = gevOnDisplay();
   if(onIt) out.push(onIt);
   if(d.raw) out.push(`<section class="dgroup"><h3>Raw block</h3><pre class="raw">${esc(d.raw)}</pre></section>`);
-  out.push(`<p style="color:var(--dim);font-family:var(--sans);margin:0">Pick a ${S.tool.noun} from the ${
+  out.push(`<p style="color:var(--dim);font-family:var(--sans);margin:0">Pick ${an(S.tool.noun)} from the ${
     S.tool.layout === 'list' ? 'list' : 'stack or click one in the layout'}.</p>`);
   $('detail').innerHTML = out.join('');
 }
@@ -10818,6 +12578,30 @@ const TOOLS = [
     parse: parseSurfaceFlingerDump,
     detail: sfDetail,
     displayDetail: sfDisplayDetail,
+  },
+  {
+    id: 'display',
+    name: 'Displays',
+    /* The one dump whose subject is the display itself, so its nodes are the
+       rectangles a display is made of and they are drawn to scale like any
+       other. It is also what makes this reader worth having open beside a
+       window dump or a touch trace: those assume a display, and this one
+       states it. */
+    layout: 'spatial',
+    noun: 'rect', nouns: 'rects', groupNoun: 'display',
+    show: 'all',            // there are four of them; nothing is buried
+    visBadge: false,
+    filterHint: 'Filter by what the rect is, or by the display it is on',
+    /* `DisplayManagerService state:` and `DisplayDeviceInfo{` are printed by
+       this service and by nothing else in a bugreport. The viewports are not
+       scored: `dumpsys input` prints those too. */
+    detect: (t) => (/\bDisplayManagerService state:/.test(t) ? 3 : 0)
+                 + (/\bDisplayDeviceInfo\{/.test(t) ? 2 : 0)
+                 + (/^\s*Logical Displays:\s*size=\d+/m.test(t) ? 2 : 0)
+                 + (/^-{4,}\s*DISPLAY MANAGER\b/m.test(t) ? 1 : 0),
+    parse: parseDisplayManagerDump,
+    detail: displayNodeDetail,
+    displayDetail: displayManagerDetail,
   },
   {
     id: 'package',
@@ -10957,6 +12741,44 @@ const TOOLS = [
     parse: parseUserDump,
     detail: userDetail,
     displayDetail: userGroupDetail,
+    attrDetail: docAttrDetail,
+  },
+  {
+    id: 'props',
+    name: 'Properties',
+    /* A document: a name and a value, two and a half thousand times, and
+       nothing that sits anywhere. The list is the shape the names already
+       have — a namespace, the things inside it, the properties they hold. */
+    layout: 'doc',
+    noun: 'property', nouns: 'properties',
+    groupNoun: 'namespace', groupNouns: 'namespaces',
+    show: 'all',
+    visBadge: false,
+    filterHint: 'Filter by property name or value, or /regex/',
+    /* What buries a property dump is its size. `runtime` drops the two
+       thousand properties the build set and cannot change, which leaves what
+       the running device put there; `flagged` is the handful whose value is a
+       finding rather than a fact. */
+    shows: {
+      all:     { label:'all',     test:() => true },
+      runtime: { label:'runtime', test:(n) => !n.readOnly },
+      flagged: { label:'flagged', test:(n) => !!n.flagged },
+    },
+    /* A namespace is the breakdown of itself rather than what it is, so it
+       opens shut and the list reads as the list of namespaces — until a
+       setting asks for the properties themselves. */
+    startCollapsed: (n) => !!n.propSection,
+    openOnShow: true,
+    rowMeta: (n) => esc(n.meta || ''),
+    /* The rule dumpstate prints, and the one property every Android device
+       has. Neither on its own is enough for a pasted fragment, so a run of
+       lines in the shape only `getprop` prints counts for as much. */
+    detect: (t) => (/^-{4,}\s*SYSTEM PROPERTIES\b/m.test(t) ? 3 : 0)
+                 + (/^\[ro\.build\.fingerprint\]:\s*\[/m.test(t) ? 2 : 0)
+                 + (/^(?:\[[A-Za-z_][A-Za-z0-9_.@-]*\]:\s*\[.*\]\s*\n){8,}/m.test(t) ? 2 : 0),
+    parse: parseSystemPropertiesDump,
+    detail: propDetail,
+    displayDetail: propsGroupDetail,
     attrDetail: docAttrDetail,
   },
   {
@@ -11174,6 +12996,38 @@ const TOOLS = [
     parse: parseGeteventCapture,
     detail: geteventDetail,
     displayDetail: geteventDeviceDetail,
+  },
+  {
+    id: 'events',
+    name: 'Events',
+    /* An event happened; it does not sit anywhere. The list is the buffer in
+       the order it was written, which is what makes it a story. */
+    layout: 'list',
+    noun: 'event', nouns: 'events', groupNoun: 'log', groupNouns: 'logs',
+    show: 'all',
+    visBadge: false,
+    filterHint: 'Filter by tag, package, activity or anything in the line, or /regex/',
+    /* The buffer is mostly bookkeeping — a uid going idle, a process measured
+       — and what it is opened for is one of three things: what the apps did,
+       what went wrong, and what the system did around them. */
+    shows: {
+      all:     { label:'all',     test:() => true },
+      apps:    { label:'apps',    test:(n) => n.kind === 'process' || n.kind === 'activity' },
+      trouble: { label:'trouble', test:(n) => n.kind === 'trouble' },
+      system:  { label:'system',  test:(n) => n.kind === 'system' },
+    },
+    row: eventRow,
+    rowClass: (n) => `is-log-row ${n.family}`,
+    listClass: 'is-log',
+    /* The rule a bugreport prints over the buffer, logd's own marker at the
+       top of a pasted one, and the tags themselves — of which a text has to
+       hold a few before it is this dump rather than a log that mentioned one. */
+    detect: (t) => (/^-{4,}\s*EVENT LOG\b/m.test(t) ? 3 : 0)
+                 + (/^-{4,}\s*beginning of events\s*$/m.test(t) ? 2 : 0)
+                 + (/\b(?:am_proc_start|am_anr|am_crash|am_kill|wm_set_resumed_activity|am_on_resume_called|boot_progress_ams_ready)\s*:/.test(t) ? 2 : 0),
+    parse: parseEventLogDump,
+    detail: eventDetail,
+    displayDetail: eventLogDetail,
   },
   {
     id: 'logcat',
@@ -11784,11 +13638,13 @@ $('selTraceDev').addEventListener('change', (e) => {
 });
 $('selMap').addEventListener('change', (e) => {
   S.mapTo = e.target.value || null;
-  if(!S.mapTo) S.mapRot = 0;
+  /* A display of its own is a turn of its own: whatever the last one was
+     turned to by hand is not this one's answer. */
+  S.mapTurn = null;
   renderPlan(); renderDetail();
 });
 $('btnMapRot').addEventListener('click', () => {
-  S.mapRot = (((S.mapRot + 90) % 360) + 360) % 360;
+  S.mapTurn = (gevStageTurn() + 90) % 360;
   renderPlan(); renderDetail();
 });
 

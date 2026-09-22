@@ -299,6 +299,57 @@ test('a trace with another dump on the desk can be drawn over its display', asyn
     'and the tap is named by the window it came down in');
 });
 
+/* Which way round a panel is mounted against the display it drives is the one
+   thing the trace reader has always had to be told by hand. `dumpsys display`
+   states it, so a capture played over one of its displays is turned by what
+   the device said rather than by what somebody guessed. */
+test('a display that says how its panel is mounted turns the trace by it', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/display-sample.txt'), 'utf8'), null, 'display.txt');
+  assert.equal(page.attach(capture()), null, 'the capture was taken');
+
+  const trace = page.S.trace;
+  const tap = trace.nodes.find((n) => n.kind === 'tap');
+  /* The sheet is what fixes the projection the playhead then writes into, so
+     it is drawn again after anything that could change it — which is what the
+     page does for itself when the turn or the display changes. */
+  const path = () => {
+    page.sheet();
+    return page.playhead(trace.globals.span).find((f) => f.hash === tap.hash).d;
+  };
+
+  /* The built-in panel is mounted the same way up as its display, so nothing
+     is turned and the pane says as much. */
+  page.display(0);
+  page.select(null);
+  assert.match(page.detail(), /installOrientation/);
+  assert.match(page.detail(), /turned by the\s+<b>0°<\/b>/);
+
+  /* The HDMI screen's own dump says a quarter turn, and the strokes take it. */
+  page.display(2);
+  page.select(null);
+  assert.match(page.detail(), /turned by the\s+<b>90°<\/b>/);
+  const turned = path();
+  page.S.mapTurn = 0;
+  assert.notEqual(turned, path(), 'the stated turn is the one being drawn with');
+  page.S.mapTurn = null;
+  assert.equal(turned, path(), 'and putting the override back gives the stated one again');
+
+  /* And the pane says the stated turn is still only a default. */
+  page.select(null);
+  assert.match(page.detail(), /The\s+button beside the clock still overrides it/);
+});
+
+/* Every other reader's display states no such thing, and the pane goes on
+   saying the scaling is an assumption rather than claiming a fact. */
+test('a display from a reader that states no mounting is still an assumption', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), null, 'window.txt');
+  assert.equal(page.attach(capture()), null);
+  page.select(null);
+  assert.match(page.detail(), /this reader's assumption/);
+});
+
 test('the playhead moves without the sheet being rebuilt', async () => {
   const page = openPage();
   await page.load(capture(), null, 'touch.txt');
@@ -381,7 +432,7 @@ test('turning the panel against the display turns the strokes with it', async ()
     .find((f) => f.hash === tap.hash).d.match(/M([\d.]+) ([\d.]+)/).slice(1).map(Number);
 
   const [x0, y0] = point();
-  page.S.mapRot = 180;
+  page.S.mapTurn = 180;
   const [x2, y2] = point();
   const display = windows.found[0].scene.displays.find((d) => d.id === 0);
   assert.ok(Math.abs((x0 + x2) - display.size.w) < 1, 'half a turn mirrors x');

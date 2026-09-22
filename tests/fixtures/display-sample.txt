@@ -1,0 +1,51 @@
+DisplayManagerService state:
+  mSafeMode=false
+  mPendingTraversal=false
+  mGlobalDisplayState=ON
+  mNextNonDefaultDisplayId=2
+  mViewports=[DisplayViewport{type=INTERNAL, valid=true, isActive=true, displayId=0, uniqueId='local:4619827259835644672', physicalPort=0, orientation=0, logicalFrame=Rect(0, 0 - 1080, 2400), physicalFrame=Rect(0, 0 - 1080, 2400), deviceWidth=1080, deviceHeight=2400}, DisplayViewport{type=EXTERNAL, valid=true, isActive=true, displayId=2, uniqueId='local:4619827259835644673', physicalPort=1, orientation=1, logicalFrame=Rect(0, 0 - 1920, 1080), physicalFrame=Rect(0, 0 - 1920, 1080), deviceWidth=1920, deviceHeight=1080}]
+  mDefaultDisplayDefaultColorMode=0
+  mWifiDisplayScanRequestCount=0
+  mStableDisplaySize=Point(1080, 2400)
+
+  Display Adapters: size=3
+    LocalDisplayAdapter
+    OverlayDisplayAdapter
+    VirtualDisplayAdapter
+
+  Display Devices: size=2
+    DisplayDeviceInfo{"Built-in Screen": uniqueId="local:4619827259835644672", 1080 x 2400, modeId 1, renderFrameRate 120.0, defaultModeId 1, supportedModes [{id=1, width=1080, height=2400, fps=120.000, alternativeRefreshRates=[60.0]}, {id=2, width=1080, height=2400, fps=60.000, alternativeRefreshRates=[120.0]}], colorMode 0, supportedColorModes [0, 7, 9], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[2, 3, 4], mMaxLuminance=1000.0, mMaxAverageLuminance=120.0, mMinLuminance=0.0005}, allmSupported false, gameContentTypeSupported false, density 420, 419.9 x 420.1 dpi, appVsyncOff 1000000, presDeadline 12500000, cutout DisplayCutout{insets=Rect(0, 136 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(464, 0 - 616, 136), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]}}, type INTERNAL, address {port=0, model=0x401ab1b39cc9}, deviceProductInfo DeviceProductInfo{name=, manufacturerPnpId=GGL, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2022}, connectionToSinkType=1}, state ON, committedState ON, frameRateOverride , brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.39, FLAG_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, installOrientation 0}
+      mAdapter=LocalDisplayAdapter
+      mUniqueId=local:4619827259835644672
+      mDisplayToken=android.os.BinderProxy@5f2a1c8
+      mCurrentLayerStack=0
+      mCurrentOrientation=0
+      mCurrentLayerStackRect=Rect(0, 0 - 1080, 2400)
+      mCurrentDisplayRect=Rect(0, 0 - 1080, 2400)
+      mCurrentSurface=null
+    DisplayDeviceInfo{"HDMI Screen": uniqueId="local:4619827259835644673", 1920 x 1080, modeId 3, renderFrameRate 60.0, defaultModeId 3, supportedModes [{id=3, width=1920, height=1080, fps=60.000, alternativeRefreshRates=[]}], colorMode 0, supportedColorModes [0], hdrCapabilities null, allmSupported false, gameContentTypeSupported false, density 213, 212.9 x 213.1 dpi, appVsyncOff 1000000, presDeadline 16666666, type EXTERNAL, address {port=1, model=0x401ab1b39cca}, state ON, committedState ON, FLAG_PRESENTATION, FLAG_TRUSTED, installOrientation 1}
+      mAdapter=LocalDisplayAdapter
+      mUniqueId=local:4619827259835644673
+      mCurrentLayerStack=2
+      mCurrentOrientation=1
+
+  Logical Displays: size=2
+    Display 0:
+      mDisplayId=0
+      mPhase=1
+      mLayerStack=0
+      mHasContent=true
+      mDesiredDisplayModeSpecs={baseModeId=1 allowGroupSwitching=false primaryRefreshRateRange=[0 120] appRequestRefreshRateRange=[0 120]}
+      mRequestedColorMode=0
+      mDisplayOffset=(0, 0)
+      mDisplayScalingDisabled=false
+      mPrimaryDisplayDevice=Built-in Screen
+      mBaseDisplayInfo=DisplayInfo{"Built-in Screen", displayId 0, displayGroupId 0, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, real 1080 x 2400, largest app 1080 x 2264, smallest app 1080 x 2264, appVsyncOff 1000000, presDeadline 12500000, mode 1, defaultMode 1, modes [{id=1, width=1080, height=2400, fps=120.000, alternativeRefreshRates=[60.0]}, {id=2, width=1080, height=2400, fps=60.000, alternativeRefreshRates=[120.0]}], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[2, 3, 4], mMaxLuminance=1000.0, mMaxAverageLuminance=120.0, mMinLuminance=0.0005}, minimalPostProcessingSupported false, rotation 0, state ON, type INTERNAL, uniqueId "local:4619827259835644672", app 1080 x 2264, density 420 (419.9 x 420.1) dpi, layerStack 0}
+      mOverrideDisplayInfo=DisplayInfo{"Built-in Screen", displayId 0, displayGroupId 0, FLAG_SECURE, real 1080 x 2400, rotation 0, state ON, type INTERNAL, uniqueId "local:4619827259835644672", app 1080 x 2264, density 420 (419.9 x 420.1) dpi, layerStack 0}
+    Display 2:
+      mDisplayId=2
+      mPhase=1
+      mLayerStack=2
+      mHasContent=false
+      mPrimaryDisplayDevice=HDMI Screen
+      mBaseDisplayInfo=DisplayInfo{"HDMI Screen", displayId 2, displayGroupId 0, FLAG_PRESENTATION, FLAG_TRUSTED, real 1920 x 1080, largest app 1920 x 1080, smallest app 1920 x 1080, mode 3, defaultMode 3, modes [{id=3, width=1920, height=1080, fps=60.000, alternativeRefreshRates=[]}], rotation 1, state ON, type EXTERNAL, uniqueId "local:4619827259835644673", app 1920 x 1080, density 213 (212.9 x 213.1) dpi, layerStack 2}

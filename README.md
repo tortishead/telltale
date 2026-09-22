@@ -19,15 +19,18 @@ per reader that recognised a section of it.
 | --- | --- | --- |
 | `adb shell dumpsys window windows` | windows | `window` |
 | `adb shell dumpsys SurfaceFlinger` | layers | `sf` |
+| `adb shell dumpsys display` | displays | `display` |
 | `adb shell dumpsys package` | packages | `package` |
 | `adb pull /data/anr/traces.txt` | threads | `anr` |
 | `adb shell dumpsys user` | users | `user` |
+| `adb shell getprop` | properties | `props` |
 | `adb shell dumpsys overlay` | overlays | `overlay` |
 | `adb shell dumpsys car_service` | sections | `car` |
 | `adb shell dumpsys input` | input windows | `input` |
 | `adb shell dumpsys input` | input devices | `inputdev` |
 | `adb shell dumpsys binder_calls_stats` | calls | `binder` |
 | `adb shell getevent -lt` | touch strokes | `getevent` |
+| `adb logcat -b events -d`, or any bugreport | framework events | `events` |
 | `adb logcat -d`, or any bugreport | log lines | `logcat` |
 
 A touch trace is the one dump a bugreport never holds — take it while the
@@ -54,9 +57,10 @@ as the same drawing:
 * **Onto a trace.** With the capture open as its own tab, pick a display under
   **over** and its windows are drawn under the strokes instead.
 
-Either way the panel is scaled onto the display, which is an assumption and not
-something either dump states: the button beside the clock turns it, for a panel
-mounted at 90° to its screen.
+Either way the panel is scaled onto the display. How far round the panel is
+mounted against that display is stated by `dumpsys display` and by nothing else
+in a bugreport, so with one of those on the desk the turn comes from it;
+otherwise it starts at none and the button beside the clock finds it.
 
 binder_calls_stats is off, sampled and nameless until told otherwise, and
 records nothing while the device is charging:

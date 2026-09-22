@@ -1,0 +1,63 @@
+tool: events
+displays: 1
+nodes: 40
+
+display 0  label=event log  size=0x0
+    meta: 40 events · 7 trouble
+    1  ev-system       vis=y                                             -                           Boot · init handed over · at 9214 ms
+    2  ev-system       vis=y                                             -                           Boot · zygote preload started · at 9895 ms
+    3  ev-system       vis=y                                             -                           Boot · zygote preload finished · at 11108 ms
+    4  ev-system       vis=y                                             -                           Boot · system server running · at 11654 ms
+    5  ev-system       vis=y                                             -                           Boot · package manager started · at 12396 ms
+    6  ev-system       vis=y                                             -                           Boot · scanning system packages · at 13765 ms
+    7  ev-system       vis=y                                             -                           Boot · scanning data packages · at 14974 ms
+    8  ev-system       vis=y                                             -                           Boot · package scan finished · at 15545 ms
+    9  ev-system       vis=y                                             -                           Boot · package manager ready · at 15896 ms
+   10  ev-system       vis=y                                             -                           Boot · activity manager ready · at 18312 ms
+   11  ev-system       vis=y                                             -                           Boot · screen enabled · at 20038 ms
+   12  ev-system       vis=y                                             -                           Boot animation stopped · at 20504 ms
+   13  ev-system       vis=y                                             -                           Switched to user 0
+   14  ev-process      vis=y                                             -                           com.android.systemui started · pid 2914 · for activity
+   15  ev-process      vis=y                                             -                           com.android.systemui bound · pid 2914
+   16  ev-activity     vis=y                                             -                           com.android.launcher3/QuickstepLauncher created
+   17  ev-activity     vis=y                                             -                           com.android.launcher3/QuickstepLauncher resumed
+   18  ev-activity     vis=y                                             -                           com.android.launcher3/QuickstepLauncher · onResume · RESUME_ACTIVITY
+   19  ev-activity     vis=y                                             -                           com.android.launcher3/QuickstepLauncher is the resumed activity · resumeTopActivity
+   20  ev-activity     vis=y                                             -                           com.android.launcher3/QuickstepLauncher launched in 802 ms
+   21  ev-activity     vis=y                                             -                           com.android.launcher3/QuickstepLauncher fully drawn in 1267 ms
+   22  ev-system       vis=y                                             -                           Screen on
+   23  ev-system       vis=y                                             -                           Battery 98% · 29.1°C
+   24  ev-process      vis=y                                             -                           com.example.tracker started · pid 5210 · for activity
+   25  ev-activity     vis=y                                             -                           com.example.tracker/MainActivity created
+   26  ev-activity     vis=y                                             -                           com.example.tracker/MainActivity resumed
+   27  ev-system       vis=y                                             -                           Configuration changed · orientation, screenSize
+   28  ev-activity     vis=y                                             -                           com.example.tracker/MainActivity · onPause · performPause
+   29  ev-activity     vis=y                                             -                           com.example.tracker/MainActivity · onResume · RESUME_ACTIVITY
+   30  ev-trouble      vis=y                                             trouble                     Lock contention in com.example.tracker · 1834 ms on main
+   31  ev-trouble      vis=y                                             trouble                     WTF in system_server · ActivityManager: Sending non-protected broadcast, from system
+   32  ev-trouble      vis=y                                             trouble                     ANR in com.example.tracker · Input dispatching timed out (5210 com.example.tracker/.MainActivity, 8004ms since last event)
+   33  ev-trouble      vis=y                                             trouble                     Crash in com.example.tracker · java.lang.IllegalStateException: Overlay not permitted, and nothing to fall back on
+   34  ev-process      vis=y                                             -                           com.example.tracker died · pid 5210
+   35  ev-trouble      vis=y                                             trouble                     Low memory · 42 processes left
+   36  ev-trouble      vis=y                                             trouble                     com.example.sync killed · empty #17
+   37  ev-process      vis=y                                             -                           uid 10233 idle
+   38  ev-trouble      vis=y                                             trouble                     Watchdog · WindowManager
+   39  ev-other        vis=y                                             -                           sysui_multi_action [757,803,799,ml,802,1,806,1]
+   40  ev-system       vis=y                                             -                           Screen off · the user asked
+
+globals:
+  events: 40
+  sections: 1
+  tags: 35
+  unknown: 1
+  counts: 5 entries
+  first: 09-21 11:01:58.220
+  last: 09-21 11:02:44.330
+  anrs: [object Object]
+  crashes: [object Object],[object Object]
+  kills: [object Object]
+  lowMemory: 1
+  boot: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+  started: 2
+  died: 1
+  configChanges: 1

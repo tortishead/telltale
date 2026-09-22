@@ -22,6 +22,9 @@ import {
   inputSources, inputWindowName, inputRegion, inputConfigOf, inputViewports,
   parseLogcatDump, logKeep, logLevel,
   parseGeteventCapture, gevSigned, gevTracks,
+  parseSystemPropertiesDump, propNamespace, propSectionOf, propReadOnly, propFlag,
+  parseEventLogDump, eventSplit, eventFields, configChanges, shortComponent,
+  parseDisplayManagerDump, dmRect, dmField, dmSize, dmBlocks, dmCutoutBounds, dmDegrees,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -403,6 +406,118 @@ test('a dataspace stops at the next field, not at the end of the line', () => {
   // the layer list writes it with a comma after it and spaces inside it
   const legacy = parseSurfaceFlingerDump(read('fixtures/sf-sample.txt'));
   assert.ok(legacy.nodes.some((n) => n.dataspace === 'BT709 sRGB Full range'));
+});
+
+/* ---------------- dumpsys display ---------------- */
+
+test('the service prints its rects, its fields and its rotations in its own way', () => {
+  assert.deepEqual(dmRect('logicalFrame=Rect(0, 0 - 1080, 2400)'),
+    { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.equal(dmRect('nothing here'), null);
+  // a viewport writes `key=value` and a DisplayInfo writes `key value`
+  assert.equal(dmField('displayId=0, uniqueId=\'local:4\'', 'displayId'), '0');
+  assert.equal(dmField('rotation 3, state ON', 'rotation'), '3');
+  assert.equal(dmField('uniqueId "local:4619"', 'uniqueId'), 'local:4619');
+  assert.equal(dmField('hdrCapabilities null', 'hdrCapabilities'), null);
+  assert.deepEqual(dmSize('real 1080 x 2400, app 1080 x 2264', 'app'), { w: 1080, h: 2264 });
+  // Android counts rotation in quarter turns
+  assert.equal(dmDegrees(0), 0);
+  assert.equal(dmDegrees(1), 90);
+  assert.equal(dmDegrees(3), 270);
+  assert.equal(dmDegrees(null), null);
+});
+
+test('a block is taken by counting braces, not to the first close', () => {
+  const text = 'DisplayDeviceInfo{"Screen": hdr HdrCapabilities{mMax=1000.0}, '
+             + 'cutout DisplayCutout{insets=Rect(0, 136 - 0, 0)}, state ON}';
+  const [block] = dmBlocks(text, 'DisplayDeviceInfo');
+
+  assert.match(block.body, /state ON$/, 'the inner blocks did not end the outer one');
+  assert.equal(dmField(block.body, 'state'), 'ON');
+});
+
+test('the holes in a panel are the bounds, not the insets above them', () => {
+  const cutout = 'insets=Rect(0, 136 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} '
+               + 'boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(464, 0 - 616, 136), '
+               + 'Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]}';
+  assert.deepEqual(dmCutoutBounds(cutout), [{ l: 464, t: 0, r: 616, b: 136 }]);
+  assert.deepEqual(dmCutoutBounds(null), []);
+});
+
+test('the display sample comes out as the displays the framework hands out', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-sample.txt'));
+
+  assert.equal(s.ok, true);
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 2]);
+
+  const [panel, hdmi] = s.displays;
+  assert.equal(panel.name, 'Built-in Screen');
+  assert.deepEqual(panel.real, { w: 1080, h: 2400 });
+  assert.deepEqual(panel.app, { w: 1080, h: 2264 }, 'which is not the panel');
+  assert.equal(panel.density, 420);
+  assert.equal(panel.rotation, '0');
+  assert.equal(panel.state, 'ON');
+  assert.equal(panel.type, 'INTERNAL');
+  assert.deepEqual(panel.mode, { id: 1, w: 1080, h: 2400, fps: 120 });
+  assert.equal(panel.modes.length, 2, 'and what else the panel could do');
+  assert.ok(panel.flags.includes('FLAG_SECURE'));
+
+  assert.equal(hdmi.name, 'HDMI Screen');
+  assert.deepEqual(hdmi.real, { w: 1920, h: 1080 });
+  assert.equal(hdmi.rotation, '90', 'in degrees, not in quarter turns');
+  assert.equal(hdmi.density, 213);
+});
+
+test('a display is drawn as the rectangles it is made of', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-sample.txt'));
+  const on = (id) => s.displays.find((d) => d.id === id).nodes;
+
+  assert.deepEqual(on(0).map((n) => n.title),
+    ['panel', 'what apps get', 'input viewport', 'cutout 1']);
+  assert.deepEqual(on(0)[0].frame, { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.deepEqual(on(0)[1].frame, { l: 0, t: 0, r: 1080, b: 2264 });
+  assert.deepEqual(on(0)[3].frame, { l: 464, t: 0, r: 616, b: 136 });
+  assert.match(on(0)[1].meta, /136px of decor/);
+
+  /* A display whose app area is the whole panel has nothing to say about the
+     difference, so it does not get a rect for it. */
+  assert.deepEqual(on(2).map((n) => n.title), ['panel', 'input viewport']);
+});
+
+/* The one field in a bugreport that says which way round a panel is glued to
+   the display it drives, and the reason this reader is worth having open
+   beside a touch trace. */
+test('a display states how its panel is mounted, in degrees', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-sample.txt'));
+  assert.equal(s.displays[0].installRotation, 0);
+  assert.equal(s.displays[1].installRotation, 90, 'installOrientation 1 is a quarter turn');
+});
+
+test('the input viewport is read as the frame a touch is mapped through', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-sample.txt'));
+  const v = s.displays[0].viewport;
+
+  assert.equal(v.type, 'INTERNAL');
+  assert.equal(v.orientation, 0);
+  assert.equal(v.port, 0);
+  assert.deepEqual(v.logical, { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.equal(v.valid, true);
+  assert.equal(s.displays[1].viewport.orientation, 1);
+});
+
+test('a dump that printed its panels and no logical displays is still read', () => {
+  const text = read('fixtures/display-sample.txt');
+  const cut = text.slice(0, text.indexOf('  Logical Displays:'));
+  const s = parseDisplayManagerDump(cut);
+
+  assert.equal(s.ok, true);
+  assert.equal(s.displays.length, 2, 'the devices are the displays it has');
+  assert.deepEqual(s.displays[0].real, { w: 1080, h: 2400 });
+});
+
+test('a text with none of this service in it is not this dump', () => {
+  assert.equal(parseDisplayManagerDump('').ok, false);
+  assert.equal(parseDisplayManagerDump('WINDOW MANAGER WINDOWS (dumpsys window windows)').ok, false);
 });
 
 /* ---------------- packages ---------------- */
@@ -1526,7 +1641,7 @@ test('the logs are read into one group per rule the bugreport printed', () => {
   const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
   assert.equal(s.ok, true);
   assert.deepEqual(s.displays.map((d) => d.label),
-    ['system log', 'event log', 'radio log', 'kernel log']);
+    ['system log', 'radio log', 'kernel log']);
   assert.equal(s.displays[0].command, 'logcat -b all -v threadtime -v printable -v uid -d *:v');
   assert.deepEqual(s.displays[0].buffers, ['main', 'crash']);
 });
@@ -1578,12 +1693,13 @@ test('the list is the lines, in the order the log printed them', () => {
   assert.ok(one.search.includes(String(one.entry.pid)), 'and the filter reaches the pid');
 });
 
-test('a crash is found by either of the two things that say so', () => {
+test('a crash is found by what the log itself says', () => {
   const s = parseLogcatDump(read('fixtures/logcat-sample.txt'));
   const crashed = [...new Set(s.nodes.filter((n) => n.crash).map((n) => n.tag))];
-  assert.deepEqual(crashed.sort(), ['AndroidRuntime', 'am_crash'],
-    'FATAL EXCEPTION in the main log, and the event the framework logged for it');
-  assert.equal(s.globals.crashes, 2);
+  assert.deepEqual(crashed.sort(), ['AndroidRuntime'],
+    'FATAL EXCEPTION in the main log; the `am_crash` the framework logged for the'
+    + ' same thing is in the event buffer, which this reader leaves alone');
+  assert.equal(s.globals.crashes, 1);
 });
 
 /* The span of a bugreport's logs is not its first and last line: the buffers
@@ -1616,6 +1732,266 @@ test('this parser says no to every dump that is not a log', () => {
                       'input-sample']) {
     assert.equal(parseLogcatDump(read(`fixtures/${name}.txt`)).ok, false, name);
   }
+});
+
+/* ---------------- system properties ---------------- */
+
+test('a property name is a namespace, a thing inside it, and the rest', () => {
+  assert.equal(propNamespace('ro.build.version.sdk'), 'ro');
+  assert.equal(propNamespace('selinux'), '', 'a name of one segment is in no namespace');
+  assert.equal(propSectionOf('ro.build.version.sdk'), 'ro.build');
+  assert.equal(propSectionOf('init.svc.adbd'), 'init.svc');
+  assert.equal(propSectionOf('sys.boot_completed'), null, 'two segments is already its own thing');
+  assert.equal(propSectionOf('selinux'), null);
+  // `ro.` is not a convention: init refuses to set one of these twice
+  assert.equal(propReadOnly('ro.debuggable'), true);
+  assert.equal(propReadOnly('persist.sys.locale'), false);
+  assert.equal(propReadOnly('vendor.ro.thing'), false, 'the prefix is the front of the name');
+});
+
+test('propFlag answers only for the values that are a finding', () => {
+  assert.equal(propFlag('init.svc.adbd', 'running'), null);
+  assert.equal(propFlag('init.svc.adbd', 'stopped'), 'stopped');
+  assert.equal(propFlag('init.svc.vendor.sensors-hal', 'restarting'), 'restarting');
+  assert.equal(propFlag('ro.debuggable', '0'), null);
+  assert.equal(propFlag('ro.debuggable', '1'), 'debuggable');
+  assert.equal(propFlag('ro.secure', '0'), 'insecure');
+  assert.equal(propFlag('ro.adb.secure', '0'), 'adb unsecured');
+  assert.equal(propFlag('ro.boot.flash.locked', '0'), 'bootloader unlocked');
+  assert.equal(propFlag('ro.boot.verifiedbootstate', 'green'), null);
+  assert.equal(propFlag('ro.boot.verifiedbootstate', 'orange'), 'verified boot orange');
+  assert.equal(propFlag('ro.build.type', 'user'), null);
+  assert.equal(propFlag('ro.build.type', 'userdebug'), 'userdebug');
+  assert.equal(propFlag('ro.build.tags', 'release-keys'), null);
+  assert.equal(propFlag('ro.build.tags', 'test-keys'), 'test-keys');
+  assert.equal(propFlag('sys.boot_completed', '1'), null);
+  assert.equal(propFlag('sys.boot_completed', ''), 'boot not completed');
+  assert.equal(propFlag('ro.product.model', 'Pixel 7'), null, 'a fact is not a finding');
+});
+
+test('the property sample comes out as its namespaces, the biggest first', () => {
+  const s = parseSystemPropertiesDump(read('fixtures/props-sample.txt'));
+
+  assert.equal(s.ok, true);
+  assert.equal(s.globals.count, 94);
+  assert.equal(s.displays[0].label, 'ro', 'which on every device is the one holding what it is');
+  assert.equal(s.displays.at(-1).label, 'no namespace', 'and a name with no dot in it still lands somewhere');
+  const counts = s.displays.map((d) => d.nodes.filter((n) => n.prop).length);
+  assert.deepEqual([...counts].sort((a, b) => b - a), counts, 'the strip is in the order of its own counts');
+  assert.equal(counts.reduce((a, b) => a + b, 0), s.globals.count, 'every property is in exactly one group');
+});
+
+test('a section is opened by the first property in it and holds all of them', () => {
+  const s = parseSystemPropertiesDump(read('fixtures/props-sample.txt'));
+  const at = (title) => s.nodes.find((n) => n.title === title);
+
+  const build = at('ro.build');
+  assert.equal(build.propSection, true);
+  assert.equal(build.subCount, 19);
+  assert.equal(at('ro.build.fingerprint').parentHash, build.hash);
+  assert.equal(at('ro.build.fingerprint').section, 'ro.build');
+  // a two-segment name has nothing to hang under, and hangs under nothing
+  assert.equal(at('sys.boot_completed').parentHash, null);
+  assert.equal(at('selinux').parentHash, null);
+  // the section reads as the run of lines it was printed as
+  assert.equal(build.body.length, 19);
+  assert.equal(build.bodyAt, build.at);
+});
+
+test('a row says which line of the file it came off', () => {
+  const lines = read('fixtures/props-sample.txt').split('\n');
+  const s = parseSystemPropertiesDump(lines.join('\n'));
+  for (const n of s.nodes.filter((x) => x.prop)) {
+    assert.equal(lines[n.at - 1], `[${n.name}]: [${n.value}]`,
+      `${n.name} points at a line it was not printed on`);
+  }
+});
+
+test('a value is whatever was between the brackets, brackets and all', () => {
+  const s = parseSystemPropertiesDump([
+    '[persist.test.rect]: [[0,0][1080,2400]]',
+    '[persist.test.empty]: []',
+    '[persist.test.colon]: [google/panther:14/UQ1A]',
+    '[persist.test.spaces]: [Fri Jan  5 11:20:41 UTC 2024]',
+  ].join('\n'));
+  const value = (name) => s.nodes.find((n) => n.name === name).value;
+
+  assert.equal(value('persist.test.rect'), '[0,0][1080,2400]');
+  assert.equal(value('persist.test.empty'), '');
+  assert.equal(value('persist.test.colon'), 'google/panther:14/UQ1A');
+  assert.equal(value('persist.test.spaces'), 'Fri Jan  5 11:20:41 UTC 2024');
+  assert.equal(s.nodes.find((n) => n.name === 'persist.test.empty').meta, '—',
+    'an empty value is said to be empty rather than left as a blank row');
+});
+
+test('the globals are the answer to what device this is', () => {
+  const g = parseSystemPropertiesDump(read('fixtures/props-sample.txt')).globals;
+
+  assert.equal(g.fingerprint,
+    'google/panther/panther:14/UQ1A.240105.004/11129216:user/release-keys');
+  assert.equal(g.model, 'Pixel 7');
+  assert.equal(g.device, 'panther');
+  assert.equal(g.sdk, '34');
+  assert.equal(g.release, '14');
+  assert.equal(g.patch, '2024-01-05');
+  assert.equal(g.buildType, 'user');
+  assert.equal(g.firstApi, '33', 'which is not the SDK it is running now');
+  assert.equal(g.locale, 'en-GB', 'what the user picked, not what the build shipped with');
+  assert.equal(g.bootState, 'green');
+  assert.equal(g.locked, '1');
+  assert.equal(g.services, 11);
+  assert.equal(g.servicesRunning, 8);
+  assert.deepEqual(g.flagged.map((f) => f.name),
+    ['init.svc.bootanim', 'init.svc.vendor.sensors-hal', 'init.svc.vendor.tcpdump_logger']);
+});
+
+test('a fingerprint is taken from whichever image printed one', () => {
+  const g = parseSystemPropertiesDump([
+    '[ro.vendor.build.fingerprint]: [google/panther/panther:14/UQ1A/9:user/release-keys]',
+    '[ro.product.model]: [Pixel 7]',
+  ].join('\n')).globals;
+  assert.match(g.fingerprint, /^google\/panther/);
+});
+
+test('a text with no properties in it is not this dump', () => {
+  assert.equal(parseSystemPropertiesDump('').ok, false);
+  assert.equal(parseSystemPropertiesDump('Users:\n  UserInfo{0:null:13}').ok, false);
+  assert.equal(parseSystemPropertiesDump('[not a property line').ok, false);
+});
+
+/* ---------------- the event log ---------------- */
+
+test('a field list splits on its own commas and on nobody else\'s', () => {
+  assert.deepEqual(eventSplit('0,5210,com.example').map((s) => s.trim()),
+    ['0', '5210', 'com.example']);
+  assert.deepEqual(eventSplit('0,[1,2],x').map((s) => s.trim()),
+    ['0', '[1,2]', 'x'], 'a field holding a list of its own is one field');
+  assert.deepEqual(eventSplit('a,(b,c)').map((s) => s.trim()), ['a', '(b,c)']);
+});
+
+test('a free-text field takes back the commas somebody typed into it', () => {
+  const names = ['user', 'pid', 'process', 'flags', 'exception', 'message', 'file', 'line'];
+  const { fields } = eventFields(
+    '[0,5210,com.example,538968133,java.lang.IllegalStateException,' +
+    'Overlay not permitted, and nothing to fall back on,Overlay.java,88]',
+    names, 'message');
+
+  assert.equal(fields.user, '0');
+  assert.equal(fields.pid, '5210');
+  assert.equal(fields.process, 'com.example');
+  assert.equal(fields.exception, 'java.lang.IllegalStateException');
+  assert.equal(fields.message, 'Overlay not permitted, and nothing to fall back on',
+    'the space after the comma is the one somebody typed, not a separator');
+  assert.equal(fields.file, 'Overlay.java', 'the fields after it are still counted from the end');
+  assert.equal(fields.line, '88');
+});
+
+test('a tag that printed fewer fields than it declares is read as far as it goes', () => {
+  const { fields } = eventFields('[0,5210]', ['user', 'pid', 'process'], null);
+  assert.equal(fields.user, '0');
+  assert.equal(fields.pid, '5210');
+  assert.equal(fields.process, null, 'and the rest is missing rather than wrong');
+});
+
+test('a configuration mask is read as which part of the configuration changed', () => {
+  assert.deepEqual(configChanges(1152), ['orientation', 'screenSize']);
+  assert.deepEqual(configChanges(4), ['locale']);
+  assert.deepEqual(configChanges(0), []);
+  // the top bit is a bit, not a sign
+  assert.deepEqual(configChanges(-2147483648), ['assetsPaths']);
+  assert.deepEqual(configChanges('not a number'), []);
+});
+
+test('an activity is named by its package and the last part of its class', () => {
+  assert.equal(shortComponent('com.android.settings/.homepage.SettingsHomepageActivity'),
+    'com.android.settings/SettingsHomepageActivity');
+  assert.equal(shortComponent('com.example/.MainActivity'), 'com.example/MainActivity');
+  assert.equal(shortComponent('com.example'), 'com.example', 'a package on its own is itself');
+  assert.equal(shortComponent(null), '');
+});
+
+test('the event sample comes out as sentences, filed by what kind of thing happened', () => {
+  const s = parseEventLogDump(read('fixtures/events-sample.txt'));
+  const at = (tag) => s.nodes.find((n) => n.tag === tag);
+
+  assert.equal(s.ok, true);
+  assert.equal(s.displays.length, 1, 'one buffer, one group');
+  assert.equal(s.globals.events, s.nodes.length);
+  assert.equal(at('am_proc_start').title, 'com.android.systemui started · pid 2914 · for activity');
+  assert.equal(at('am_proc_start').kind, 'process');
+  assert.equal(at('wm_activity_launch_time').title,
+    'com.android.launcher3/QuickstepLauncher launched in 802 ms');
+  assert.equal(at('configuration_changed').title, 'Configuration changed · orientation, screenSize');
+  assert.equal(at('am_low_memory').title, 'Low memory · 42 processes left');
+  assert.equal(at('am_kill').kind, 'trouble');
+  assert.equal(at('am_kill').who, 'com.example.sync');
+});
+
+test('the same lifecycle event is read whether the build logs it as am_ or wm_', () => {
+  const am = parseEventLogDump(
+    '--------- beginning of events\n' +
+    '09-21 11:02:12.995  1631  1668 I am_resume_activity: [0,220157453,4,com.example/.MainActivity]');
+  const wm = parseEventLogDump(
+    '--------- beginning of events\n' +
+    '09-21 11:02:12.995  1631  1668 I wm_resume_activity: [0,220157453,4,com.example/.MainActivity]');
+
+  assert.equal(am.nodes[0].title, 'com.example/MainActivity resumed');
+  assert.equal(wm.nodes[0].title, am.nodes[0].title);
+  assert.equal(wm.nodes[0].kind, 'activity');
+});
+
+test('a tag Telltale has never seen is still a line of the log', () => {
+  const s = parseEventLogDump(read('fixtures/events-sample.txt'));
+  const n = s.nodes.find((x) => x.tag === 'sysui_multi_action');
+
+  assert.equal(n.kind, 'other');
+  assert.equal(n.known, false);
+  assert.equal(n.title, 'sysui_multi_action [757,803,799,ml,802,1,806,1]',
+    'kept as it came rather than guessed at');
+  assert.deepEqual(n.fields, {});
+  assert.equal(n.parts.length, 8, 'and its fields are still there to read');
+  assert.equal(s.globals.unknown, 1);
+});
+
+test('the globals answer what crashed, what hung and what the system took', () => {
+  const g = parseEventLogDump(read('fixtures/events-sample.txt')).globals;
+
+  assert.deepEqual(g.anrs.map((a) => a.who), ['com.example.tracker']);
+  assert.deepEqual(g.crashes.map((c) => c.who), ['system_server', 'com.example.tracker']);
+  assert.deepEqual(g.kills.map((k) => k.who), ['com.example.sync']);
+  assert.equal(g.lowMemory, 1);
+  assert.equal(g.started, 2);
+  assert.equal(g.died, 1);
+  assert.equal(g.configChanges, 1);
+  assert.equal(g.boot.length, 11, 'and the marks the framework left on its way up');
+  assert.equal(g.boot[g.boot.length - 1].step, 'screen enabled');
+  assert.equal(g.boot[g.boot.length - 1].ms, '20038');
+});
+
+/* The event reader is handed the whole bugreport, and every other buffer in it
+   is prose. A reader that took any threadtime line for an event would turn a
+   system log into a few thousand events with tags it did not know. */
+test('the prose in another buffer is not read as events', () => {
+  const s = parseEventLogDump([
+    '------ SYSTEM LOG (logcat -b main -v threadtime -d *:v) ------',
+    '--------- beginning of main',
+    '09-21 11:02:31.400  1631  1668 I ActivityManager: Start proc 5210:com.example/u0a233',
+    '09-21 11:02:34.780  1631  1668 E ActivityManager: ANR in com.example.tracker',
+    '09-21 11:02:34.781  1631  1668 I chatty  : uid=1000 expire 4 lines',
+  ].join('\n'));
+
+  assert.equal(s.ok, false, 'a system log is not this dump');
+  assert.equal(s.nodes.length, 0);
+});
+
+test('an event tag printed outside the events buffer is still an event', () => {
+  /* Which is what a pasted line or a vendor log that copied one looks like,
+     and the tag is enough on its own to say what it is. */
+  const s = parseEventLogDump(
+    '09-21 11:02:34.780  1631  1668 I am_anr: [0,5210,com.example,0,Input dispatching timed out]');
+  assert.equal(s.ok, true);
+  assert.equal(s.nodes.length, 1);
+  assert.equal(s.nodes[0].kind, 'trouble');
 });
 
 /* ---------------- a reader stays inside its own section ---------------- */
@@ -1703,6 +2079,39 @@ test('an indented Current user or Users line does not open the user dump', () =>
   const s = parseUserDump(`${before}\n${own}`);
   assert.ok(!s.nodes.some((n) => n.title === 'ACTIVITY MANAGER USERS'));
   assert.equal(s.nodes[0].at, parseUserDump(own).nodes[0].at + before.split('\n').length);
+});
+
+/* The properties are printed under a rule of their own, which is what scopes
+   them — and the reason it has to is that a vendor section later in the same
+   file often prints its own `getprop`, and those are not the store the section
+   was taken at. */
+test('a getprop printed again further down the file is another section', () => {
+  const own = read('fixtures/props-sample.txt');
+  const text = [
+    '------ SYSTEM PROPERTIES ------',
+    own.trimEnd(),
+    '--------- 0.1s was the duration of system properties',
+    '',
+    '------ VENDOR PROPERTIES (getprop) ------',
+    '[vendor.later.thing]: [1]',
+    '[ro.later.thing]: [2]',
+  ].join('\n');
+  const s = parseSystemPropertiesDump(text);
+
+  assert.equal(s.globals.count, 94, 'the section stopped at the rule under it');
+  assert.ok(!s.nodes.some((n) => /\.later\./.test(n.title)));
+
+  /* The same properties, off the same lines, as the dump read on its own —
+     only shifted by the rule that now sits above them. */
+  const alone = parseSystemPropertiesDump(own);
+  assert.deepEqual(s.nodes.map((n) => n.title), alone.nodes.map((n) => n.title));
+  assert.deepEqual(s.nodes.map((n) => n.at), alone.nodes.map((n) => n.at + 1),
+    'and a row still says which line of the whole file it came off');
+});
+
+test('a pasted getprop has no rule above it and is read whole', () => {
+  const s = parseSystemPropertiesDump(read('fixtures/props-sample.txt'));
+  assert.equal(s.globals.count, 94);
 });
 
 /* ---------------- getevent ---------------- */

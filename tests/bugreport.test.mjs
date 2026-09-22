@@ -30,8 +30,8 @@ const NAME = 'bugreport-panther-UQ1A.240105.004-2026-09-21-11-04-02.txt';
    because the fixture carries a car_service dump; a bugreport off a phone
    would open with one tab fewer, which is the point of the list being derived
    from what is in the file rather than hard-coded. */
-const EXPECTED = ['window', 'sf', 'package', 'anr', 'car', 'user', 'overlay',
-                  'binder', 'input', 'inputdev', 'logcat'];
+const EXPECTED = ['window', 'sf', 'display', 'package', 'anr', 'car', 'user', 'props',
+                  'overlay', 'binder', 'input', 'inputdev', 'events', 'logcat'];
 
 test('the zip is opened to the file dumpstate named, not to the biggest one', async () => {
   const page = openPage();
@@ -101,6 +101,8 @@ test('a reader inside a bugreport finds what it finds on its own', async () => {
     ['input', 'input-sample.txt'],
     ['binder', 'binder-sample.txt'],
     ['logcat', 'logcat-sample.txt'],
+    ['props', 'props-sample.txt'],
+    ['display', 'display-sample.txt'],
   ]) {
     const tool = page.TOOLS.find((t) => t.id === id);
     const alone = tool.parse(readFileSync(dir(`fixtures/${fixture}`), 'utf8'));
@@ -109,6 +111,48 @@ test('a reader inside a bugreport finds what it finds on its own', async () => {
       `${id} read a different number of nodes out of the bugreport`);
     assert.deepEqual(inside.displays.map((d) => d.id), alone.displays.map((d) => d.id), id);
   }
+});
+
+/* Every other reader in a bugreport says what the device was doing. This one
+   says what the device is, and it says it in the pane of whichever namespace
+   is open — because the namespace somebody opened is not usually the one the
+   fingerprint is in. */
+test('the properties tab answers what device this is, from any namespace', async () => {
+  const page = openPage();
+  const { text } = await page.readDump(zipFile());
+  await page.load(text, 'props', 'bugreport');
+
+  const doc = page.docs().find((d) => d.found[0].tool.id === 'props');
+  page.open(doc);
+
+  const scene = doc.found[0].scene;
+  for (const d of scene.displays.slice(0, 3)) {
+    page.display(d.id);
+    page.select(null);
+    const pane = page.detail();
+    assert.match(pane, /UQ1A\.240105\.004/, `${d.label} did not say which build`);
+    assert.match(pane, /Pixel 7/, `${d.label} did not say which device`);
+    assert.match(pane, /2024-01-05/, `${d.label} did not say the patch level`);
+  }
+});
+
+test('a service init did not keep running is badged, and the pane says why', async () => {
+  const page = openPage();
+  const { text } = await page.readDump(zipFile());
+  await page.load(text, 'props', 'bugreport');
+  const doc = page.docs().find((d) => d.found[0].tool.id === 'props');
+  page.open(doc);
+
+  const stopped = doc.found[0].scene.nodes.find((n) => n.name === 'init.svc.vendor.sensors-hal');
+  assert.deepEqual(stopped.badges, [['restarting', 'badge-exit']]);
+
+  page.display(stopped.displayId);
+  page.select(stopped.hash);
+  const pane = page.detail();
+  assert.match(pane, /init\.svc\.vendor\.sensors-hal/);
+  assert.match(pane, /restarting/);
+  assert.match(pane, /writable while the device is up/,
+    'and says init is what writes it, rather than the build');
 });
 
 /* The logs are the reason a bugreport is taken as often as the dumps are. */
@@ -120,9 +164,42 @@ test('the logs come out as their own reader, one group per buffer', async () => 
     .find((f) => f.tool.id === 'logcat').scene;
 
   assert.deepEqual(log.displays.map((d) => d.label),
-    ['system log', 'event log', 'radio log', 'kernel log']);
+    ['system log', 'radio log', 'kernel log'],
+    'and not the event buffer, which is the event reader\'s');
   assert.ok(log.globals.crashes >= 1, 'and the crash in it is counted');
   assert.equal(log.displays[0].crashes.includes('AndroidRuntime'), true);
+});
+
+/* The event log is in the same file as the logs and the dumps, and it is the
+   one buffer the log reader hands over whole: every line in it is a tag and a
+   list of numbers, which is unreadable as a line and is what this reader is
+   for. */
+test('the event buffer opens as its own reader, and not as log lines', async () => {
+  const page = openPage();
+  const { text } = await page.readDump(zipFile());
+  await page.load(text, 'events', 'bugreport');
+
+  const doc = page.docs().find((d) => d.found[0].tool.id === 'events');
+  page.open(doc);
+  const scene = doc.found[0].scene;
+
+  assert.deepEqual(scene.displays.map((d) => d.label), ['event log'],
+    'only the events buffer, not the system log next to it');
+  assert.deepEqual(scene.nodes.map((n) => n.tag),
+    ['am_proc_start', 'wm_set_resumed_activity', 'am_crash', 'am_proc_died', 'am_low_memory']);
+
+  const crash = scene.nodes.find((n) => n.tag === 'am_crash');
+  assert.equal(crash.kind, 'trouble');
+  assert.equal(crash.who, 'com.example.tracker');
+  page.select(crash.hash);
+  const pane = page.detail();
+  assert.match(pane, /IllegalStateException/);
+  assert.match(pane, /AndroidRuntime/, 'and says where the stack that goes with it is');
+
+  /* And the log reader has left them alone, so no line is on the desk twice. */
+  const log = page.docs().find((d) => d.found[0].tool.id === 'logcat').found[0].scene;
+  assert.ok(!log.nodes.some((n) => n.tag === 'am_crash'));
+  assert.ok(!log.displays.some((d) => /event/.test(d.label)));
 });
 
 /* A bugreport that stopped copying halfway is the normal kind of broken file,

@@ -1,0 +1,41 @@
+--------- beginning of events
+09-21 11:01:58.220  1631  1631 I boot_progress_start: 9214
+09-21 11:01:58.901  1631  1631 I boot_progress_preload_start: 9895
+09-21 11:02:00.114  1631  1631 I boot_progress_preload_end: 11108
+09-21 11:02:00.660  1631  1631 I boot_progress_system_run: 11654
+09-21 11:02:01.402  1631  1631 I boot_progress_pms_start: 12396
+09-21 11:02:02.771  1631  1631 I boot_progress_pms_system_scan_start: 13765
+09-21 11:02:03.980  1631  1631 I boot_progress_pms_data_scan_start: 14974
+09-21 11:02:04.551  1631  1631 I boot_progress_pms_scan_end: 15545
+09-21 11:02:04.902  1631  1631 I boot_progress_pms_ready: 15896
+09-21 11:02:07.318  1631  1668 I boot_progress_ams_ready: 18312
+09-21 11:02:09.044  1631  1668 I boot_progress_enable_screen: 20038
+09-21 11:02:09.510   612   612 I sf_stop_bootanim: 20504
+09-21 11:02:10.226  1631  1668 I am_switch_user: [0]
+09-21 11:02:11.880  1631  1668 I am_proc_start: [0,2914,10190,com.android.systemui,activity,com.android.systemui/.wallpapers.ImageWallpaper]
+09-21 11:02:12.104  1631  1668 I am_proc_bound: [0,2914,com.android.systemui]
+09-21 11:02:12.640  1631  1668 I wm_create_activity: [0,220157453,4,com.android.launcher3/.uioverrides.QuickstepLauncher,android.intent.action.MAIN,NULL,NULL,270532608]
+09-21 11:02:12.995  1631  1668 I wm_resume_activity: [0,220157453,4,com.android.launcher3/.uioverrides.QuickstepLauncher]
+09-21 11:02:13.011  2914  2914 I wm_on_resume_called: [220157453,com.android.launcher3/.uioverrides.QuickstepLauncher,RESUME_ACTIVITY]
+09-21 11:02:13.020  1631  1668 I wm_set_resumed_activity: [0,com.android.launcher3/.uioverrides.QuickstepLauncher,resumeTopActivity]
+09-21 11:02:13.442  1631  1668 I wm_activity_launch_time: [0,220157453,com.android.launcher3/.uioverrides.QuickstepLauncher,802]
+09-21 11:02:13.907  1631  1668 I wm_activity_fully_drawn_time: [0,220157453,com.android.launcher3/.uioverrides.QuickstepLauncher,1267]
+09-21 11:02:20.501  1631  1668 I power_screen_state: [1,0,0,0,0]
+09-21 11:02:21.006  1631  1668 I battery_level: [98,4331,291]
+09-21 11:02:24.770  1631  1668 I am_proc_start: [0,5210,10233,com.example.tracker,activity,com.example.tracker/.MainActivity]
+09-21 11:02:25.118  1631  1668 I wm_create_activity: [0,118033245,7,com.example.tracker/.MainActivity,android.intent.action.MAIN,NULL,NULL,270532608]
+09-21 11:02:25.660  1631  1668 I wm_resume_activity: [0,118033245,7,com.example.tracker/.MainActivity]
+09-21 11:02:26.004  1631  1668 I configuration_changed: 1152
+09-21 11:02:26.443  5210  5210 I wm_on_paused_called: [118033245,com.example.tracker/.MainActivity,performPause]
+09-21 11:02:26.902  5210  5210 I wm_on_resume_called: [118033245,com.example.tracker/.MainActivity,RESUME_ACTIVITY]
+09-21 11:02:29.117  5210  5228 I dvm_lock_sample: [com.example.tracker,1,main,1834,SyncStore.java,142,-,-,72]
+09-21 11:02:31.560  1631  1668 I am_wtf: [0,1631,system_server,-1,ActivityManager,Sending non-protected broadcast, from system]
+09-21 11:02:34.780  1631  1668 I am_anr: [0,5210,com.example.tracker,538968133,Input dispatching timed out (5210 com.example.tracker/.MainActivity, 8004ms since last event)]
+09-21 11:02:36.115  5210  5210 I am_crash: [0,5210,com.example.tracker,538968133,java.lang.IllegalStateException,Overlay not permitted, and nothing to fall back on,Overlay.java,88]
+09-21 11:02:36.804  1631  1668 I am_proc_died: [0,5210,com.example.tracker,100,2]
+09-21 11:02:37.220  1631  1668 I am_low_memory: [42]
+09-21 11:02:37.661  1631  1668 I am_kill: [0,3318,com.example.sync,905,empty #17]
+09-21 11:02:38.009  1631  1668 I am_uid_idle: [10233]
+09-21 11:02:41.550  1631  1668 I watchdog: WindowManager
+09-21 11:02:42.117  1631  1668 I sysui_multi_action: [757,803,799,ml,802,1,806,1]
+09-21 11:02:44.330  1631  1668 I power_screen_state: [0,1,0,0,0]

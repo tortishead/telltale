@@ -37,7 +37,7 @@ Kernel: Linux version 5.10.177-android13
 --------- beginning of events
 09-21 11:02:31.400  1000  1631  1668 I am_proc_start: [0,5210,1000,com.android.settings,activity,com.android.settings/.homepage.SettingsHomepageActivity]
 09-21 11:02:31.660  1000  1631  1668 I wm_set_resumed_activity: [0,com.android.settings/.homepage.SettingsHomepageActivity,resumeTopActivity]
-09-21 11:02:34.780 10233  4471  4471 I am_crash: [4471,0,com.example.tracker,538968133,java.lang.IllegalStateException,Overlay not permitted,Overlay.java,88]
+09-21 11:02:34.780 10233  4471  4471 I am_crash: [0,4471,com.example.tracker,538968133,java.lang.IllegalStateException,Overlay not permitted,Overlay.java,88]
 09-21 11:02:35.099  1000  1631  1668 I am_proc_died: [0,4471,com.example.tracker,100,2]
 09-21 11:02:35.220  1000  1631  1668 I am_low_memory: [42]
 

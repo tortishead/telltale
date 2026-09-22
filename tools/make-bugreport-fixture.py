@@ -22,8 +22,10 @@ NAME = 'bugreport-panther-UQ1A.240105.004-2026-09-21-11-04-02.txt'
 
 # The rule dumpstate prints above each one, and the fixture that goes under it.
 SECTIONS = [
+    ('SYSTEM PROPERTIES',                               'props-sample.txt'),
     ('WINDOW MANAGER WINDOWS (dumpsys window windows)', 'window-sample.txt'),
     ('SURFACEFLINGER (dumpsys SurfaceFlinger)',         'sf-sample.txt'),
+    ('DISPLAY MANAGER (dumpsys display)',               'display-sample.txt'),
     ('PACKAGE MANAGER (dumpsys package)',               'package-sample.txt'),
     ('USERS (dumpsys user)',                            'user-sample.txt'),
     ('OVERLAY MANAGER (dumpsys overlay)',                'overlay-sample.txt'),
