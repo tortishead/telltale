@@ -1,4 +1,4 @@
-# Telltale
+# AOSP Telltale
 
 What the device says about itself.
 
@@ -94,7 +94,12 @@ is case-insensitive whether or not you write `i`.
 ## Host it
 
 Copy `index.html` into a repository and turn on GitHub Pages. It opens from
-`file://` just as well.
+`file://` just as well. The header carries the build the page was stamped at,
+which is what to quote in a bug report about Telltale itself:
+
+```
+python3 tools/stamp-build.py     # before publishing a copy
+```
 
 ## Tests
 

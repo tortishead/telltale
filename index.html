@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Telltale — AOSP dump toolkit</title>
+<title>AOSP Telltale — dumps, made legible</title>
 <meta name="description" content="Drop a dumpsys window, SurfaceFlinger or package dump, or an ANR trace, and read it: the stack drawn to scale, or the thread that blocks main. Runs entirely in your browser.">
 <!-- The mark is the device on the left and what it reports streaming off it:
      amber for the signal, the way an instrument cluster draws a telltale.
@@ -125,6 +125,14 @@ button,input,select,textarea{font:inherit;color:inherit}
   mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%23000'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Cg%20stroke='%23000'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E") 50%/contain no-repeat;
 }
 .tagline{color:var(--dim); font-family:var(--sans); font-size:13px}
+/* Which copy of the file this is. Telltale ships as one static page that gets
+   copied into repositories and served from anywhere, so the one thing a bug
+   report about it has to carry is which build was open. Quiet, and selectable,
+   because the point is to be read back. */
+.build{
+  font-family:var(--mono); font-size:11px; color:var(--graphite);
+  letter-spacing:0.01em; cursor:default;
+}
 .bar-actions{margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 .btn{
   background:var(--ink-3); border:1px solid var(--rule); color:var(--fg);
@@ -1051,6 +1059,8 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
 <header class="bar">
   <div class="mark">telltale</div>
   <div class="tagline">AOSP dumps, made legible</div>
+  <!-- Bumped by tools/stamp-build.py, which is the only thing that writes it. -->
+  <div class="build" id="build" title="AOSP Telltale build 2026.09.22 (f1d02c1)">build 2026.09.22</div>
   <div class="bar-actions">
     <div class="mobile-tabs">
       <button class="tab" id="tabStack" type="button" aria-pressed="false">Stack</button>
