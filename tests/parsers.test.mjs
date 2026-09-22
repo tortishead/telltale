@@ -228,6 +228,69 @@ test('the composition list is read in the direction its header states', () => {
   assert.equal(topmost('top to bottom'), 'Back#1');
 });
 
+/* The new frontend prints a rect as four numbers in braces, and prints them
+   left, top, BOTTOM, right — the order the struct is laid out in rather than
+   the order every other rect in the dump comes in. Read as l,t,r,b a bottom
+   bar comes out as an impossible rect, which `rectValid` then drops, so the
+   layer silently loses its geometry. The HWC table in the same dump is what
+   proves the order: it prints the same rect as LTRB. */
+test('a braced bounds is read left, top, bottom, right', () => {
+  const dump = [
+    'Active Layers - layers with client handles (count = 2)',
+    '',
+    'Composition list (top to bottom)',
+    'LayerStack=0',
+    '  Layer [74] BottomCarSystemBar#74',
+    '    visible reason= buffer=10574209482756 frame=55',
+    '    bounds={0,2124,2220,956} toDisplayTransform={ tx=0.0000 ty=2124.0000 }',
+    '    input{(NOT_FOCUSABLE) touchableRegion={0,2124,2220,956}}',
+    '  Layer [69] TopCarSystemBar#69',
+    '    visible reason= buffer=10574209482753 frame=6',
+    '    bounds={0,0,76,956}',
+    '',
+    'Layer Hierarchy',
+    ' ROOT',
+    ' ├─ BottomCarSystemBar#74 pid=1854 uid=1000',
+    ' └─ TopCarSystemBar#69 pid=1854 uid=1000',
+  ].join('\n');
+
+  const s = parseSurfaceFlingerDump(dump);
+  const at = (t) => s.nodes.find((n) => n.title === t);
+
+  // the HWC table of the dump this came from prints 0 2124 956 2220
+  assert.deepEqual(at('BottomCarSystemBar#74').rects.bounds,
+    { l: 0, t: 2124, r: 956, b: 2220 });
+  assert.deepEqual(at('TopCarSystemBar#69').rects.bounds,
+    { l: 0, t: 0, r: 956, b: 76 });
+  // a touchable region is printed the same way round
+  assert.deepEqual(at('BottomCarSystemBar#74').touchable,
+    { l: 0, t: 2124, r: 956, b: 2220 });
+});
+
+/* Reordering a rect without saying so reads, to anyone holding the pane next
+   to the dump, as a rect that is not there at all. */
+test('the numbers the dump printed come back with the rect', () => {
+  const dump = [
+    'Active Layers - layers with client handles (count = 1)',
+    '',
+    'Composition list (top to bottom)',
+    'LayerStack=0',
+    '  Layer [108] CarLauncher#108',
+    '    visible reason= buffer=11965778886660 frame=14',
+    '    bounds={0,0,2220,956}',
+    '    input{(TRUSTED_OVERLAY) touchableRegion={0,0,2220,956}}',
+  ].join('\n');
+
+  const n = parseSurfaceFlingerDump(dump).nodes.find((x) => x.title === 'CarLauncher#108');
+
+  assert.deepEqual(n.rects.bounds, { l: 0, t: 0, r: 956, b: 2220 });
+  assert.equal(n.printed.bounds, '0,0,2220,956');
+  assert.equal(n.printed['touchable region'], '0,0,2220,956');
+  // a dump that printed no braced rect carries no printed text either
+  const legacy = parseSurfaceFlingerDump(read('fixtures/sf-sample.txt'));
+  assert.deepEqual(legacy.nodes[0].printed, {});
+});
+
 /* ---------------- packages ---------------- */
 
 test('the package sample splits on Android user and shares uids', () => {

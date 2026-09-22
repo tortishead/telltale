@@ -2339,16 +2339,23 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId, front) {
      coordinates — and prints them left, top, bottom, right, the order the
      struct is laid out in rather than the order every other rect in the dump
      comes in. Same for a touchable region. */
-  const braceRect = (re, from) => {
+  /* The four numbers as the dump wrote them come back with the rect, because
+     anyone reading the pane against the dump is looking for those numbers and
+     not for the ones they mean: a rect that quietly reorders itself reads as a
+     rect that is missing. */
+  const printed = {};
+  const braceRect = (re, from, as) => {
     const m = from.match(re);
-    return m ? sfRect(m[1], m[2], m[4], m[3]) : null;
+    if (!m) return null;
+    printed[as] = `${m[1]},${m[2]},${m[3]},${m[4]}`;
+    return sfRect(m[1], m[2], m[4], m[3]);
   };
-  const snapBounds = braceRect(/\bbounds=\{\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\s*\}/, block);
+  const snapBounds = braceRect(/\bbounds=\{\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\s*\}/, block, 'bounds');
   if (!rects.bounds && rectValid(snapBounds)) rects.bounds = snapBounds;
   if (x !== null && w > 0 && h > 0) rects['pos+size'] = { l: x, t: y, r: x + w, b: y + h };
   const seen = unionRect(sfVisibleRects(regions));
   if (rectValid(seen)) rects['visible region'] = seen;
-  const touchRect = braceRect(/\btouchableRegion=\{\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\s*\}/, inputLine);
+  const touchRect = braceRect(/\btouchableRegion=\{\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\s*\}/, inputLine, 'touchable region');
   if (rectValid(touchRect)) rects['touchable region'] = touchRect;
   if (bufferSize && x !== null) {
     rects.buffer = { l: x, t: y, r: x + +buffer[1], b: y + +buffer[2] };
@@ -2453,6 +2460,9 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId, front) {
     /* Why the frontend drew it, or why it did not. Empty on a visible layer
        that is nothing but a buffer, which is most of them. */
     reason: why,
+    /* Keyed by the same names `rects` uses, for the rects the new frontend
+       printed in its own order. */
+    printed,
     inputFlags: inputFlags ? inputFlags.split(/\s*\|\s*/).map((f) => f.trim()).filter(Boolean) : null,
     touchable: rectValid(touchRect) ? touchRect : null,
     touchCropId: (inputLine.match(/touchCropId=(\d+)/) || [])[1] || null,
@@ -8952,13 +8962,22 @@ function sfDetail(n){
     ])}</section>`);
   }
 
+  /* A rect the new frontend printed is shown as it was printed as well as as
+     it resolves. The dump writes those four numbers left, top, bottom, right,
+     so anyone holding the pane next to the dump is looking for numbers the
+     pane would otherwise never show. */
+  const asPrinted = (k, html) => (n.printed && n.printed[k])
+    ? `${html}<br>${dim(`printed {${esc(n.printed[k])}} — left, top, bottom, right`)}`
+    : html;
+
   out.push(`<section class="dgroup"><h3>Geometry</h3>${dl([
-    n.frame && [`frame ${dim('(' + esc(n.frameSource) + ')')}`, r(n.frame)],
+    n.frame && [`frame ${dim('(' + esc(n.frameSource) + ')')}`,
+                asPrinted(n.frameSource, r(n.frame))],
     n.pos && ['pos', `${n.pos.x}, ${n.pos.y}`],
     n.size && ['size', `${n.size.w} × ${n.size.h}`],
     ...Object.entries(n.rects)
       .filter(([k]) => k !== n.frameSource)
-      .map(([k, rc]) => [esc(k), r(rc)]),
+      .map(([k, rc]) => [esc(k), asPrinted(k, r(rc))]),
     n.transform && ['transform', `[${n.transform.map(v => v.toFixed(2)).join(', ')}] ${dim('(dsdx dtdx dtdy dsdy)')}`],
     n.toDisplay && ['to display', [
       n.toDisplay.rotate,
@@ -9015,7 +9034,7 @@ function sfDetail(n){
   if(n.inputFlags){
     out.push(`<section class="dgroup"><h3>Input</h3>${dl([
       ['config', chips(n.inputFlags, 'input')],
-      n.touchable && ['touchable region', r(n.touchable)],
+      n.touchable && ['touchable region', asPrinted('touchable region', r(n.touchable))],
       n.touchCrop && ['touchable region', 'replaced with the layer crop'],
       n.touchCropId && ['crop taken from', `layer ${esc(n.touchCropId)}`],
       n.dropInput && ['drop input mode', n.dropInput],
