@@ -1080,8 +1080,8 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
     <div class="sheet-blank">
       <h1>Drop an AOSP dump here</h1>
       <p>Reads <code>dumpsys window</code>, <code>SurfaceFlinger</code>, <code>package</code>,
-      <code>user</code>, <code>input</code>, <code>car_service</code> and
-      <code>binder_calls_stats</code>, ANR traces, logcat, and a whole
+      <code>user</code>, <code>overlay</code>, <code>input</code>, <code>car_service</code>
+      and <code>binder_calls_stats</code>, ANR traces, logcat, and a whole
       <code>adb bugreport</code> zip as it came off the device.
       The file never leaves your browser.</p>
       <div class="empty-actions">
@@ -1096,6 +1096,7 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
 adb shell dumpsys SurfaceFlinger  &gt; sf.txt
 adb shell dumpsys package         &gt; packages.txt
 adb shell dumpsys user            &gt; users.txt
+adb shell dumpsys overlay         &gt; overlays.txt
 adb shell dumpsys input           &gt; input.txt
 adb shell dumpsys car_service     &gt; car.txt
 adb logcat -d                     &gt; logcat.txt
@@ -4171,6 +4172,252 @@ function userTypeNode(head, body, shared) {
   };
 }
 
+/* ================ parse: dumpsys overlay ================ */
+
+/* The overlay manager prints one block per runtime resource overlay it knows
+   about, for one user, and almost nothing else. The question the dump gets
+   opened with is nearly always the same one — an overlay is installed and the
+   target still looks the way it did — and the answer is one of four: it is
+   disabled, its target is not on the device, the idmap never built, or
+   something above it in the stack won. So the list is built the way that
+   question is asked: a target package, and the overlays over it, the one that
+   wins first.
+
+   The block's head line is the one shape only this service prints —
+   `<overlay>:<user> {` — and it is what the reader scopes itself by inside a
+   bugreport. The heading above the blocks is `Settings`, which is far too
+   common a word to hand a bugreport's worth of text to. */
+const OVERLAY_HEAD_RE = /^(\s*)(\S+):(-?\d+)\s*\{\s*$/;
+
+/* The states OverlayInfo prints that mean the overlay is not over anything and
+   will not be until something outside this dump changes. `STATE_DISABLED` is
+   not one of them: it is off because something turned it off. */
+const OVERLAY_BROKEN = {
+  STATE_MISSING_TARGET: 'no target',
+  STATE_NO_IDMAP: 'no idmap',
+  STATE_UNKNOWN: 'unknown state',
+};
+
+/* The fields of one block. The service pads its names out with dots so the
+   values line up, and the dots are not part of the name. */
+function overlayFields(body) {
+  const out = new Map();
+  for (const line of body) {
+    const m = line.trim().match(PAIR_RE);
+    if (!m) continue;
+    const key = m[1].replace(/\.+$/, '').trim();
+    if (!out.has(key)) out.set(key, m[2].trim());
+  }
+  return out;
+}
+
+/* A head line on its own is a shape another dump could print. What makes it
+   this one's is what is directly under it: the manager prints its fields as
+   `m<Name>` padded out with dots, and prints them first. */
+function overlayHeadAt(lines, i) {
+  if (!OVERLAY_HEAD_RE.test(lines[i])) return false;
+  for (let k = i + 1; k < Math.min(i + 4, lines.length); k++) {
+    if (/^\s*m[A-Z]\w*\.*\s*:/.test(lines[k])) return true;
+  }
+  return false;
+}
+
+/* The part of a bugreport this dump is in: from the first block's head — or
+   the heading the blocks are printed under, when there is one — to the next
+   thing that is plainly another service. A text with no block in it at all is
+   not this dump, and says so by having no span. */
+function overlaySection(lines) {
+  const at = lines.findIndex((l, i) => overlayHeadAt(lines, i));
+  if (at < 0) return null;
+  const above = at > 0 ? lines[at - 1] : null;
+  const start = above && above.trim() && indentOf(above) === 0
+             && !DUMP_BOUNDARY_RE.test(above) ? at - 1 : at;
+  let end = lines.length;
+  for (let i = at + 1; i < lines.length; i++) {
+    if (DUMP_BOUNDARY_RE.test(lines[i])) { end = i; break; }
+  }
+  return { start, end };
+}
+
+function parseOverlayDump(input) {
+  const lines = dumpLines(input);
+  const span = overlaySection(lines);
+  if (!span) return finaliseScene('overlay', [], [], {});
+  const { start: from, end: to } = span;
+  const text = lines.slice(from, to).join('\n');
+
+  /* Every block in the span: from its head to the `}` printed back at the
+     head's own indent, or to wherever the dump stopped, because a truncated
+     one never printed that brace. */
+  const items = [];
+  const covered = new Set();
+  for (let i = from; i < to; i++) {
+    if (!overlayHeadAt(lines, i)) continue;
+    const m = lines[i].match(OVERLAY_HEAD_RE);
+    const pad = m[1].length;
+    let end = i + 1;
+    while (end < to && !(lines[end].trim() && indentOf(lines[end]) <= pad)) end++;
+    const closed = end < to && lines[end].trim() === '}';
+    for (let k = i; k <= (closed ? end : end - 1); k++) covered.add(k);
+    items.push({ at: i, id: m[2], userId: +m[3], head: lines[i],
+                 body: lines.slice(i + 1, end) });
+    i = closed ? end : end - 1;
+  }
+  if (!items.length) return finaliseScene('overlay', [], [], {});
+
+  const overlays = items.map(overlayRead);
+  const nodes = [];
+  const displays = [];
+  let z = 0;
+
+  for (const uid of [...new Set(overlays.map((o) => o.userId))].sort((a, b) => a - b)) {
+    const mine = overlays.filter((o) => o.userId === uid);
+    let targets = 0;
+    for (const target of [...new Set(mine.map((o) => o.target))].sort()) {
+      /* Highest priority is applied last, so it is the one that wins a
+         conflict, so it is the one that goes at the top of its stack. */
+      const over = mine.filter((o) => o.target === target)
+        .sort((a, b) => (b.priority === null ? -1 : b.priority) - (a.priority === null ? -1 : a.priority)
+                     || a.title.localeCompare(b.title));
+      const on = over.filter((o) => o.on);
+      const broken = over.filter((o) => o.broken);
+      targets++;
+
+      const head = overlayNode({
+        hash: `overlay:u${uid}:${target}`, title: target, head: null, body: [],
+        userId: uid, z: -z++, at: over[0].at,
+        family: 'overlay-target', typeLabel: 'target',
+        visible: on.length > 0,
+        subCount: over.length,
+        searchExtra: over.map((o) => o.title).join(' '),
+        badges: [
+          ...(broken.length ? [[`${broken.length} broken`, 'badge-exit']] : []),
+          ...(on.length ? [[`${on.length} on`, 'badge-focus']] : [['none enabled', 'badge-comp']]),
+        ],
+        meta: `${over.length} overlay${over.length === 1 ? '' : 's'} · ${on.length} enabled`,
+      });
+      Object.assign(head, {
+        targetNode: true, userId: uid, target,
+        overlays: over, enabled: on.length, brokenCount: broken.length,
+      });
+      nodes.push(head);
+      const ancestors = [{ hash: head.hash, title: target }];
+
+      over.forEach((n) => {
+        /* Two enabled overlays over one target is the case the priority is
+           there to settle, so the winner is marked rather than left to be read
+           off the numbers. */
+        n.z = -z++;
+        n.parentHash = head.hash;
+        n.ancestors = ancestors;
+        if (on.length > 1 && n === on[0]) n.badges = [['wins', 'badge-focus'], ...n.badges];
+        nodes.push(n);
+      });
+    }
+    displays.push({
+      id: uid, label: `user ${uid}`, name: null,
+      size: { w: 0, h: 0 }, insets: [], raw: '',
+      meta: `${mine.length} overlay${mine.length === 1 ? '' : 's'} · ${
+        mine.filter((o) => o.on).length} enabled · ${targets} target${targets === 1 ? '' : 's'}`,
+    });
+  }
+
+  /* Whatever the dump printed outside the blocks. `Default overlays` is the
+     one line of it worth a name of its own; the rest is kept as printed, so a
+     build that starts printing something new is not silently dropped. */
+  const defaults = (text.match(/^\s*Default overlays:\s*(.*)$/m) || [])[1] || null;
+  const tail = [];
+  for (let i = from; i < to; i++) {
+    const line = lines[i];
+    if (covered.has(i) || !line.trim() || indentOf(line) !== 0) continue;
+    if (/^Settings\b/.test(line.trim()) || /^Default overlays:/.test(line.trim())) continue;
+    tail.push(line.trim());
+  }
+
+  const globals = {
+    users: displays.length,
+    overlays: overlays.length,
+    targets: nodes.filter((n) => n.targetNode).length,
+    enabled: overlays.filter((o) => o.on).length,
+    broken: overlays.filter((o) => o.broken).length,
+    fabricated: overlays.filter((o) => o.fabricated).length,
+    defaults: defaults ? defaults.replace(/;/g, ' · ') : null,
+    tail: tail.join(' · ') || null,
+    lines: to - from,
+  };
+
+  return finaliseScene('overlay', displays, nodes, globals);
+}
+
+/* One block, read. What comes back is the node, with the few facts the
+   grouping above needs hung off it: an overlay's place in the list depends on
+   its siblings, which are not known until every block has been read. */
+function overlayRead(it) {
+  const f = overlayFields(it.body);
+  const get = (k) => (f.has(k) && f.get(k) !== 'null' ? f.get(k) : null) || null;
+  const sep = it.id.indexOf(':');
+  const pkg = get('mPackageName') || (sep < 0 ? it.id : it.id.slice(0, sep));
+  /* A fabricated overlay is not a package on the device, so the manager names
+     it `<owner>:<name>`; anything else is named by its package alone. */
+  const name = sep < 0 ? null : it.id.slice(sep + 1);
+  const target = get('mTargetPackageName') || pkg;
+  const state = get('mState') || '';
+  const priority = /^-?\d+$/.test(get('mPriority') || '') ? +get('mPriority') : null;
+  const mutable = f.get('mIsMutable') !== 'false';
+  const fabricated = f.get('mIsFabricated') === 'true';
+  const broken = OVERLAY_BROKEN[state] || null;
+  /* `mIsEnabled` is what was asked for and the state is what came of it, so
+     the state wins wherever the dump printed one. */
+  const on = state ? /^STATE_ENABLED/.test(state) : f.get('mIsEnabled') === 'true';
+  const title = name ? `${pkg} · ${name}` : pkg;
+
+  const node = overlayNode({
+    hash: `overlay:${it.at}`, title, head: it.head, body: it.body,
+    userId: it.userId, z: 0, at: it.at + 1, bodyAt: it.at + 2,
+    family: broken ? 'overlay-broken' : !on ? 'overlay-off'
+          : !mutable ? 'overlay-fixed' : 'overlay-on',
+    typeLabel: fabricated ? 'fabricated overlay' : 'overlay',
+    visible: on,
+    searchExtra: `${target} ${state} ${get('mCategory') || ''} ${get('mBaseCodePath') || ''}`,
+    badges: [
+      ...(broken ? [[broken, 'badge-exit']] : []),
+      ...(!broken && !on ? [[overlayStateLabel(state) || 'off', 'badge-exit']] : []),
+      ...(fabricated ? [['fabricated', 'badge-comp']] : []),
+      ...(!mutable ? [['immutable', 'badge-comp']] : []),
+    ],
+    meta: [overlayStateLabel(state), priority === null ? null : `priority ${priority}`,
+           get('mCategory')].filter(Boolean).join(' · '),
+  });
+  Object.assign(node, {
+    overlay: true, userId: it.userId, overlayPkg: pkg, overlayName: name,
+    target, state, priority, on, broken, fabricated, mutable,
+    category: get('mCategory'), overlayable: get('mTargetOverlayableName'),
+    path: get('mBaseCodePath'),
+  });
+  return node;
+}
+
+/* `STATE_MISSING_TARGET` is how the constant is spelled and not how anyone
+   says it. */
+const overlayStateLabel = (state) => state
+  ? state.replace(/^STATE_/, '').toLowerCase().replace(/_/g, ' ') : null;
+
+function overlayNode(opts) {
+  const { hash, title, head, body } = opts;
+  return {
+    hash, title, displayId: opts.userId,
+    frame: null, frameSource: null, z: opts.z,
+    family: opts.family, typeLabel: opts.typeLabel, badges: opts.badges,
+    search: `${title} ${opts.searchExtra || ''} ${head || ''}\n${body.join('\n')}`.toLowerCase(),
+    raw: [head, ...body].filter((l) => l !== null).join('\n').replace(/\n+$/, ''),
+    visible: opts.visible !== false, focused: false,
+    parentHash: opts.parentHash || null, ancestors: opts.ancestors || [],
+    body, bodyAt: opts.bodyAt, subCount: opts.subCount || 0,
+    own: body.length, lines: body.length + (head ? 1 : 0),
+    at: opts.at, meta: opts.meta,
+  };
+}
+
 /* ================ parse: dumpsys binder_calls_stats ================ */
 
 /* binder_calls_stats is not a document and nothing in it sits anywhere: it is
@@ -6266,6 +6513,11 @@ const FAMILY_COLORS = {
      by being one. */
   'user-system':'#55636f', 'user-full':'#2f6f8f', 'user-profile':'#6b5b95',
   'user-guest':'#b4622a', 'user-section':'#55636f',
+  /* An overlay is coloured by whether it is over anything: on, off, held on by
+     being immutable, or broken in a way nothing on the device will fix. A
+     target is the package they are all over. */
+  'overlay-target':'#6b5b95', 'overlay-on':'#2e7d5b', 'overlay-off':'#55636f',
+  'overlay-fixed':'#2f6f8f', 'overlay-broken':'#a3352f',
   /* A binder row is coloured by what it is worth knowing about it: the caller
      it hangs under, a call that came back with an exception, a call whose
      method the dump did not record, and everything else. */
@@ -9334,6 +9586,132 @@ function userGroupDetail(d){
   return out;
 }
 
+/* ---- dumpsys overlay ---- */
+
+/* Why an overlay is over nothing. The state is a constant and the answer is a
+   sentence, and an overlay dump is opened by someone who has the constant
+   already and wants the sentence. */
+const OVERLAY_WHY = {
+  STATE_MISSING_TARGET: `The target package is not installed for this user, so there is
+    nothing to overlay. Nothing is wrong with the overlay itself — it applies the moment
+    the target arrives.`,
+  STATE_NO_IDMAP: `The idmap between this overlay and its target never built, so the
+    resources were never mapped. A target updated without the overlay being rebuilt
+    against it is the usual cause; so is an overlay signed with a different key to a
+    target whose <code>&lt;overlayable&gt;</code> asks for the same one.`,
+  STATE_DISABLED: `The overlay is installed and usable, and something turned it off.
+    A mutable one goes back on with <code>cmd overlay enable</code>; an immutable one
+    is decided by the build and not by the device.`,
+  STATE_UNKNOWN: `The manager has no state for this overlay, which is what it prints
+    before it has looked.`,
+  STATE_TARGET_IS_BEING_REPLACED: `The target is mid-update. This is a state the dump
+    passes through rather than one it sits in — take it again.`,
+  STATE_OVERLAY_IS_BEING_REPLACED: `The overlay is mid-update. This is a state the dump
+    passes through rather than one it sits in — take it again.`,
+};
+
+/* The overlays over the same target as this one, which is the only context in
+   which a priority means anything. */
+const overlayStack = (n) =>
+  S.data.nodes.filter(x => x.overlay && x.parentHash === n.parentHash);
+
+const overlayPrio = (n) => n.priority === null ? -1 : n.priority;
+
+function overlayDetail(n){
+  const out = [];
+
+  if(n.ancestors.length){
+    out.push(`<section class="dgroup"><h3>Over</h3>${
+      n.ancestors.map(a => docLink(a.hash, a.title)).join('')}</section>`);
+  }
+
+  if(n.targetNode){
+    out.push(`<section class="dgroup"><h3>Target</h3>${dl([
+      ['package', esc(n.title)],
+      ['user', n.userId],
+      ['overlays', n.overlays.length],
+      ['enabled', n.enabled],
+      n.brokenCount ? ['broken', n.brokenCount] : null,
+    ])}</section>`);
+    /* The order the manager applies them in, highest priority last — so the
+       top of this list is the one whose value a resource ends up with. */
+    out.push(`<section class="dgroup"><h3>Stack</h3>${n.overlays.map(o =>
+      docLink(o.hash, `${o.title} — ${o.on ? 'on' : (o.broken || 'off')}${
+        o.priority === null ? '' : `, priority ${o.priority}`}`)).join('')}</section>`);
+    return out;
+  }
+
+  out.push(`<section class="dgroup"><h3>Overlay</h3>${dl([
+    ['package', esc(n.overlayPkg)],
+    n.overlayName ? ['name', esc(n.overlayName)] : null,
+    ['target', esc(n.target)],
+    n.overlayable ? ['overlayable', esc(n.overlayable)] : null,
+    ['user', n.userId],
+    ['category', n.category ? esc(n.category) : none],
+    ['priority', n.priority === null ? dim('not printed') : n.priority],
+    ['state', esc(n.state || '—')],
+    ['applied', yn(n.on)],
+    ['mutable', yn(n.mutable)],
+    ['fabricated', yn(n.fabricated)],
+    n.path ? ['path', esc(n.path)] : null,
+  ])}</section>`);
+
+  if(!n.on && OVERLAY_WHY[n.state]){
+    out.push(`<section class="dgroup"><h3>Not applied</h3>
+      <p style="margin:0">${OVERLAY_WHY[n.state]}</p></section>`);
+  }
+
+  /* An overlay that is applied can still lose: the one with the highest
+     priority is applied last, and last wins wherever two of them set the same
+     resource. That is the second question this dump gets asked and it cannot
+     be answered from one block, so it is answered here. */
+  const above = n.on ? overlayStack(n).filter(o =>
+    o !== n && o.on && overlayPrio(o) > overlayPrio(n)) : [];
+  if(above.length){
+    out.push(`<section class="dgroup"><h3>Outranked</h3>
+      <p style="margin:0 0 6px">This one is applied, but ${above.length === 1
+        ? 'another overlay is applied over it at a higher priority, so it wins'
+        : `${above.length} overlays are applied over it at a higher priority, so they win`}
+        wherever they set the same resource.</p>${
+      above.map(o => docLink(o.hash, `${o.title} — priority ${o.priority}`)).join('')}</section>`);
+  }
+
+  return out;
+}
+
+function overlayGroupDetail(d){
+  const g = S.data.globals;
+  const mine = d.nodes.filter(n => n.overlay);
+  const broke = mine.filter(n => n.broken);
+  const out = [];
+
+  out.push(`<section class="dgroup"><h3>User ${d.id}</h3>${dl([
+    ['overlays', mine.length],
+    ['applied', mine.filter(n => n.on).length],
+    ['targets', d.nodes.filter(n => n.targetNode).length],
+    mine.some(n => n.fabricated)
+      ? ['fabricated', mine.filter(n => n.fabricated).length] : null,
+    mine.some(n => !n.mutable)
+      ? ['immutable', mine.filter(n => !n.mutable).length] : null,
+  ])}</section>`);
+
+  /* An overlay that is over nothing is the reason the dump was taken, so this
+     user's are collected rather than left to be found a target at a time. */
+  if(broke.length){
+    out.push(`<section class="dgroup"><h3>Over nothing</h3>${
+      broke.map(n => docLink(n.hash, `${n.title} — ${n.broken}`)).join('')}</section>`);
+  }
+
+  out.push(`<section class="dgroup"><h3>Dump</h3>${dl([
+    ['users', g.users],
+    ['overlays', g.overlays],
+    g.defaults ? ['default overlays', esc(g.defaults)] : null,
+    g.tail ? ['also printed', esc(g.tail)] : null,
+  ])}</section>`);
+
+  return out;
+}
+
 /* ---- binder_calls_stats ---- */
 
 /* Whether the dump is worth reading at all is two facts about how it was
@@ -10336,6 +10714,46 @@ const TOOLS = [
     parse: parseUserDump,
     detail: userDetail,
     displayDetail: userGroupDetail,
+    attrDetail: docAttrDetail,
+  },
+  {
+    id: 'overlay',
+    /* A document: blocks of printed fields and nothing to draw. The list is
+       the shape the dump is read in — a target package, and the overlays over
+       it — and the reading pane is the block each one printed. */
+    layout: 'doc',
+    name: 'Overlays',
+    noun: 'overlay', nouns: 'overlays', groupNoun: 'user',
+    show: 'all',
+    /* Half the overlays on a device are off on purpose — every theme the
+       picker did not pick — so a green v on the other half says nothing. An
+       overlay that is off still dims, and one that is off for a reason nobody
+       chose carries a badge. */
+    visBadge: false,
+    filterHint: 'Filter by overlay, target, category or path',
+    /* What buries an overlay dump is that a device ships sixty of them and
+       cares about four. `applied` is the four; `problems` is the dump's own
+       answer to why an overlay that should be one of them is not. */
+    shows: {
+      all:      { label:'all',      test:() => true },
+      applied:  { label:'applied',  test:(n) => !!n.overlay && n.on },
+      problems: { label:'problems', test:(n) => !!n.overlay && !!n.broken },
+    },
+    /* The overlays over a target are the breakdown of it rather than what it
+       is, so a target opens shut and the list reads as the list of targets —
+       until a setting asks for the overlays themselves. */
+    startCollapsed: (n) => !!n.targetNode,
+    openOnShow: true,
+    rowMeta: (n) => [esc(n.typeLabel), n.meta && esc(n.meta)].filter(Boolean).join(' \u00b7 '),
+    /* `mTargetPackageName` is printed by this service and by nothing else in a
+       bugreport, dots and all. The rest only add to a score. */
+    detect: (t) => (/^\s*mTargetPackageName\.*\s*:/m.test(t) ? 3 : 0)
+                 + (/^\s*mIsMutable\.*\s*:\s*(?:true|false)\s*$/m.test(t) ? 2 : 0)
+                 + (/\bSTATE_(?:ENABLED|DISABLED|MISSING_TARGET|NO_IDMAP)\b/.test(t) ? 2 : 0)
+                 + (/^\s*mBaseCodePath\.*\s*:/m.test(t) ? 1 : 0),
+    parse: parseOverlayDump,
+    detail: overlayDetail,
+    displayDetail: overlayGroupDetail,
     attrDetail: docAttrDetail,
   },
   {

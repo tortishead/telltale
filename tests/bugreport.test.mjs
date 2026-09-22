@@ -30,7 +30,7 @@ const NAME = 'bugreport-panther-UQ1A.240105.004-2026-09-21-11-04-02.txt';
    because the fixture carries a car_service dump; a bugreport off a phone
    would open with one tab fewer, which is the point of the list being derived
    from what is in the file rather than hard-coded. */
-const EXPECTED = ['window', 'sf', 'package', 'anr', 'car', 'user',
+const EXPECTED = ['window', 'sf', 'package', 'anr', 'car', 'user', 'overlay',
                   'binder', 'input', 'inputdev', 'logcat'];
 
 test('the zip is opened to the file dumpstate named, not to the biggest one', async () => {

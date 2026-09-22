@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 
 import { openPage } from '../tools/page-harness.mjs';
 import {
-  parseWindowDump, parseUserDump, parseCarServiceDump, parseInputDump,
+  parseWindowDump, parseUserDump, parseOverlayDump, parseCarServiceDump, parseInputDump,
   parseLogcatDump, parsePackageDump, parseAnrDump, parseSurfaceFlingerDump,
   parseBinderCallsStatsDump, parseInputDevicesDump,
 } from '../tools/parse-layer.mjs';
@@ -30,6 +30,7 @@ const zipBytes = readFileSync(dir('fixtures/bugreport-sample.zip'));
 const PARSERS = {
   window: parseWindowDump, sf: parseSurfaceFlingerDump, package: parsePackageDump,
   anr: parseAnrDump, car: parseCarServiceDump, user: parseUserDump,
+  overlay: parseOverlayDump,
   binder: parseBinderCallsStatsDump, input: parseInputDump,
   inputdev: parseInputDevicesDump, logcat: parseLogcatDump,
 };

@@ -11,10 +11,10 @@ import { fileURLToPath } from 'node:url';
 
 import {
   parseWindowDump, parseSurfaceFlingerDump, parsePackageDump, parseAnrDump,
-  parseCarServiceDump, parseUserDump,
+  parseCarServiceDump, parseUserDump, parseOverlayDump,
   indentOf, deriveFrame, shortType, sfFlagNames, anrLock,
   carHeadName, carPairs, lineFields, blockRuns, blockEntries, carPropNames,
-  userFlagNames, userListUnder, TYPE_INTS,
+  userFlagNames, userListUnder, overlayFields, overlayStateLabel, TYPE_INTS,
   parseBinderCallsStatsDump,
   binderCaller, binderCall, binderTxn, binderTime, binderBytes,
   parseInputDump, parseInputDevicesDump,
@@ -874,6 +874,117 @@ test('this parser says no to every other dump it is shown', () => {
   }
 });
 
+
+/* ---------------- dumpsys overlay ---------------- */
+
+test('overlayFields reads a name the service padded out with dots', () => {
+  const f = overlayFields([
+    '    mTargetPackageName.....: com.android.systemui',
+    '    mTargetOverlayableName.: ',
+    '    mPriority..............: 11',
+  ]);
+
+  assert.equal(f.get('mTargetPackageName'), 'com.android.systemui');
+  assert.equal(f.get('mPriority'), '11');
+  // a field the service printed empty is printed, and empty
+  assert.equal(f.get('mTargetOverlayableName'), '');
+  assert.equal(f.has('mNotPrinted'), false);
+});
+
+test('overlayStateLabel says the constant the way a person would', () => {
+  assert.equal(overlayStateLabel('STATE_MISSING_TARGET'), 'missing target');
+  assert.equal(overlayStateLabel('STATE_ENABLED'), 'enabled');
+  assert.equal(overlayStateLabel(''), null);
+});
+
+test('the overlay sample groups its overlays under the package each is over', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
+  const at = (title, user) => s.nodes.find((n) => n.title === title && n.userId === user);
+
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 10], 'a display is a user');
+  assert.equal(s.globals.overlays, 12);
+  assert.equal(s.globals.targets, 6);
+
+  const android = at('android', 0);
+  assert.equal(android.targetNode, true);
+  assert.equal(android.subCount, 4);
+  assert.equal(android.enabled, 2);
+  assert.equal(at('com.android.theme.color.cinnamon', 0).parentHash, android.hash);
+
+  // the same overlay for two users is two blocks and two nodes
+  const forBoth = s.nodes.filter((n) =>
+    n.title === 'com.android.theme.icon_pack.rounded.android');
+  assert.deepEqual(forBoth.map((n) => n.userId), [0, 10]);
+  assert.notEqual(forBoth[0].hash, forBoth[1].hash);
+});
+
+test('an overlay is read for whether it is over anything, and why not', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
+  const at = (title) => s.nodes.find((n) => n.title === title);
+
+  const gone = at('com.example.brand.settings');
+  assert.equal(gone.on, false);
+  assert.equal(gone.broken, 'no target');
+  assert.equal(gone.family, 'overlay-broken');
+  assert.deepEqual(gone.badges, [['no target', 'badge-exit']]);
+
+  // enabled by the settings and still not applied: the idmap never built
+  const noIdmap = at('com.android.theme.color.cinnamon');
+  assert.equal(noIdmap.state, 'STATE_NO_IDMAP');
+  assert.equal(noIdmap.on, false, 'the state is what came of mIsEnabled, so it wins');
+  assert.equal(noIdmap.broken, 'no idmap');
+
+  const off = at('com.android.internal.display.cutout.emulation.corner');
+  assert.equal(off.broken, null, 'turned off is not broken');
+  assert.deepEqual(off.badges, [['disabled', 'badge-exit']]);
+
+  const fixed = s.nodes.find((n) => n.title === 'com.google.android.overlay.modules.android');
+  assert.equal(fixed.mutable, false);
+  assert.equal(fixed.on, true, 'STATE_ENABLED_IMMUTABLE is enabled');
+  assert.equal(fixed.family, 'overlay-fixed');
+});
+
+/* A fabricated overlay is not a package on the device: the manager names it
+   after the thing that made it, which is the one place the head line carries
+   two colons rather than one. */
+test('a fabricated overlay keeps the name it was registered under', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
+  const frro = s.nodes.find((n) => n.fabricated);
+
+  assert.equal(frro.overlayPkg, 'com.android.systemui');
+  assert.equal(frro.overlayName, 'ThemeOverlayController_accent');
+  assert.equal(frro.title, 'com.android.systemui · ThemeOverlayController_accent');
+  assert.equal(frro.userId, 0);
+});
+
+/* Highest priority is applied last, so it is the one whose value a resource
+   ends up with — and the only one of a stack that is marked. */
+test('the overlay applied last is the one marked as winning', () => {
+  const s = parseOverlayDump(read('fixtures/overlay-sample.txt'));
+  const under = (target, user) => s.nodes.filter((n) =>
+    n.overlay && n.target === target && n.userId === user);
+
+  const android = under('android', 0);
+  assert.deepEqual(android.map((n) => n.priority), [9, 3, 1, 0],
+    'a stack is listed with the one that wins on top');
+  assert.ok(android[0].badges.some((b) => b[0] === 'wins'));
+  assert.equal(android.filter((n) => n.badges.some((b) => b[0] === 'wins')).length, 1);
+
+  // one overlay applied is not a contest, so nothing is marked
+  const settings = under('com.android.settings', 10);
+  assert.equal(settings.length, 1);
+  assert.equal(settings[0].badges.length, 0);
+});
+
+test('a block the dump never closed is still read', () => {
+  const cut = read('fixtures/overlay-sample.txt')
+    .split('\n').slice(0, 8).join('\n');
+  const s = parseOverlayDump(cut);
+
+  assert.equal(s.ok, true);
+  assert.equal(s.nodes.filter((n) => n.overlay).length, 1);
+  assert.equal(s.nodes[1].state, 'STATE_DISABLED');
+});
 
 /* ---------------- dumpsys input: the dispatcher's windows ---------------- */
 

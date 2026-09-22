@@ -26,6 +26,7 @@ SECTIONS = [
     ('SURFACEFLINGER (dumpsys SurfaceFlinger)',         'sf-sample.txt'),
     ('PACKAGE MANAGER (dumpsys package)',               'package-sample.txt'),
     ('USERS (dumpsys user)',                            'user-sample.txt'),
+    ('OVERLAY MANAGER (dumpsys overlay)',                'overlay-sample.txt'),
     ('INPUT (dumpsys input)',                           'input-sample.txt'),
     ('CAR SERVICE (dumpsys car_service)',               'car-service-sample.txt'),
     ('BINDER CALLS STATS (dumpsys binder_calls_stats)', 'binder-sample.txt'),
