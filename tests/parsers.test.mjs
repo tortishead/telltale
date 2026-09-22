@@ -291,6 +291,120 @@ test('the numbers the dump printed come back with the rect', () => {
   assert.deepEqual(legacy.nodes[0].printed, {});
 });
 
+/* A rect is only wrong against the display it is on, and a layer left in the
+   other rotation is the case the braced print order hides best: the numbers
+   look plausible either way round until they are held against the screen. */
+const offDisplayDump = (bounds, dispFrame) => [
+  'Active Layers - layers with client handles (count = 1)',
+  '',
+  'Composition list (top to bottom)',
+  'LayerStack=0',
+  '  Layer [108] CarLauncher#108',
+  '    visible reason= buffer=11965778886660 frame=14',
+  `    bounds={${bounds}}`,
+  '',
+  'Display 4630947222266796161 (physical, "DSI_0")',
+  '   layerFilter={layerStack=0 toInternalDisplay=true skipScreenshot=false }',
+  '   displaySpace=ProjectionSpace{bounds=Rect(0, 0, 956, 2220), content=Rect(0, 0, 956, 2220), orientation=ROTATION_0}',
+  '',
+  'Display 4630947222266796161 HWC layers (top to bottom):',
+  ' Layer name',
+  '           Z |  Window Type |  Comp Type |  Transform |   Disp Frame (LTRB) |          Source Crop (LTRB) |',
+  ' CarLauncher#108',
+  `           2 |            1 |     DEVICE |          0 | ${dispFrame} |    0.0    0.0  956.0 2220.0 |`,
+].join('\n');
+
+test('a layer that fits the display is not flagged for not fitting it', () => {
+  // the numbers the car dump really printed: left, top, bottom, right
+  const s = parseSurfaceFlingerDump(offDisplayDump('0,0,2220,956', '   0    0  956 2220'));
+  const n = s.nodes.find((x) => x.title === 'CarLauncher#108');
+  assert.deepEqual(s.displays[0].size, { w: 956, h: 2220 });
+  assert.deepEqual(n.frame, { l: 0, t: 0, r: 956, b: 2220 });
+  assert.equal(n.offDisplay, undefined);
+  assert.ok(!n.badges.some(([label]) => /display|transposed/.test(label)));
+});
+
+test('a layer still in the other rotation is called transposed', () => {
+  const s = parseSurfaceFlingerDump(offDisplayDump('0,0,956,2220', '   0    0 2220  956'));
+  const n = s.nodes.find((x) => x.title === 'CarLauncher#108');
+  assert.deepEqual(n.frame, { l: 0, t: 0, r: 2220, b: 956 });
+  assert.equal(n.offDisplay.transposed, true);
+  assert.equal(n.offDisplay.clear, false);
+  assert.deepEqual(n.offDisplay.size, { w: 956, h: 2220 });
+  assert.equal(n.offDisplay.over.r, 1264);
+  assert.ok(n.badges.some(([label]) => label === 'transposed'));
+});
+
+test('a layer with nothing on the display at all says so', () => {
+  const s = parseSurfaceFlingerDump(offDisplayDump('0,0,956,2220', '1200    0 2000  900'));
+  const n = s.nodes.find((x) => x.title === 'CarLauncher#108');
+  assert.equal(n.offDisplay.clear, true);
+  assert.equal(n.offDisplay.transposed, false);
+  assert.ok(n.badges.some(([label]) => label === 'off display'));
+});
+
+/* The size Telltale works out from how far the layers reach cannot be overrun
+   by the layers it was worked out from, so a dump that never stated a display
+   size says nothing about fit either. */
+test('a display whose size was guessed flags nothing', () => {
+  const dump = [
+    'Active Layers - layers with client handles (count = 1)',
+    '',
+    'Composition list (top to bottom)',
+    'LayerStack=0',
+    '  Layer [108] CarLauncher#108',
+    '    visible reason= buffer=11965778886660 frame=14',
+    '    bounds={0,0,956,2220}',
+  ].join('\n');
+  const s = parseSurfaceFlingerDump(dump);
+  assert.ok(s.displays[0].synthesised);
+  assert.equal(s.nodes[0].offDisplay, undefined);
+});
+
+/* An input sink's bounds are larger than any screen on purpose, and it is
+   drawn by nothing. Flagging it would put the badge on half a modern dump. */
+test('an invisible layer is not flagged for reaching past the display', () => {
+  const s = parseSurfaceFlingerDump([
+    'Active Layers - layers with client handles (count = 1)',
+    '',
+    'Input list',
+    'LayerStack=0',
+    '  Layer [40] PointerEventDispatcherOverlay0#40',
+    '    invisible reason=nothing to draw',
+    '    bounds={-9560,-22200,22200,9560}',
+    '',
+    'Display 4630947222266796161 (physical, "DSI_0")',
+    '   layerFilter={layerStack=0 toInternalDisplay=true skipScreenshot=false }',
+    '   displaySpace=ProjectionSpace{bounds=Rect(0, 0, 956, 2220), content=Rect(0, 0, 956, 2220), orientation=ROTATION_0}',
+  ].join('\n'));
+  assert.equal(s.nodes[0].visible, false);
+  assert.equal(s.nodes[0].offDisplay, undefined);
+});
+
+/* An output layer writes the dataspace mid-line with the next field right
+   behind it, and the value itself has spaces in it. */
+test('a dataspace stops at the next field, not at the end of the line', () => {
+  const s = parseSurfaceFlingerDump([
+    'Active Layers - layers with client handles (count = 1)',
+    '',
+    'Composition list (top to bottom)',
+    'LayerStack=0',
+    '  Layer [108] CarLauncher#108',
+    '    visible reason= buffer=1 frame=14',
+    '    bounds={0,0,2220,956}',
+    '',
+    'Display 0',
+    '  - Output Layer 0xb40000723ea1b220(CarLauncher#108)',
+    '      forceClientComposition=false displayFrame=[0 0 956 2220] bufferTransform=0 (0) '
+    + 'dataspace=V0_SRGB (142671872) whitePointNits=-1.000000 dimmingRatio=1.000000 '
+    + 'override dataspace=UNKNOWN (0) override display space=ProjectionSpace{bounds=Rect(0, 0, -1, -1)}',
+  ].join('\n'));
+  assert.equal(s.nodes[0].dataspace, 'V0_SRGB (142671872)');
+  // the layer list writes it with a comma after it and spaces inside it
+  const legacy = parseSurfaceFlingerDump(read('fixtures/sf-sample.txt'));
+  assert.ok(legacy.nodes.some((n) => n.dataspace === 'BT709 sRGB Full range'));
+});
+
 /* ---------------- packages ---------------- */
 
 test('the package sample splits on Android user and shares uids', () => {

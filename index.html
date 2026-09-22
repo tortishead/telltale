@@ -2446,7 +2446,12 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId, front) {
     cornerRadius: flt(/\bcornerRadius=([\d.]+)/),
     blurRadius: int(/\bbackgroundBlurRadius=(\d+)/),
     shadowRadius: flt(/\bshadowRadius=([\d.]+)/),
-    dataspace: notNull((one(/\bdataspace=([^,\n]+)/) || '').trim() || null),
+    /* The layer list ends the value at a comma, but an output layer writes
+       it mid-line with the next field right behind it — `dataspace=V0_SRGB
+       (142671872) whitePointNits=-1.0`. The value itself has spaces in it
+       (`BT709 sRGB Full range`), so it runs to the comma, the end of the
+       line, or the next `name=`, whichever comes first. */
+    dataspace: notNull((one(/\bdataspace=(.*?)(?=,|$|\s+[\w.]+=)/m) || '').trim() || null),
     pixelFormat: one(/\b(?:defaultPixelFormat|pixelFormat)=([^,\s]+)/),
     buffer: bufferSize ? { w: +buffer[1], h: +buffer[2], stride: +buffer[3], format: buffer[4].trim() } : null,
     hasBuffer,
@@ -2486,6 +2491,40 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId, front) {
     ],
     search: `${name} ${cls || ''} ${kind} ${winType || ''} ${comp || ''} ${why || ''} ${inputFlags || ''}`.toLowerCase(),
     raw: block,
+  };
+}
+
+/* ---- what does not fit on the display ------------------------------------
+
+   A layer's rect is only wrong relative to something, and the something is the
+   display. Two readings go wrong without it: the new frontend prints bounds
+   left, top, bottom, right, so a layer that kept the previous rotation reads
+   as a perfectly plausible rect in the list, and a layer that has walked off
+   the screen entirely reads as one too.
+
+   Only where the display stated a size of its own — a size Telltale worked out
+   from how far the layers reach cannot be overrun, and flagging it would flag
+   the layer the size was taken from. Only visible layers, because a modern
+   dump is full of input sinks whose bounds are deliberately larger than any
+   screen and which are drawn by nothing. */
+function sfOffDisplay(display, n) {
+  if (!display || !display.size || display.synthesised) return null;
+  if (!n.visible || !rectValid(n.frame)) return null;
+  const { w, h } = display.size;
+  const over = {
+    l: Math.max(0, -n.frame.l), t: Math.max(0, -n.frame.t),
+    r: Math.max(0, n.frame.r - w), b: Math.max(0, n.frame.b - h),
+  };
+  if (!(over.l || over.t || over.r || over.b)) return null;
+  const fw = n.frame.r - n.frame.l, fh = n.frame.b - n.frame.t;
+  return {
+    size: { w, h },
+    over,
+    /* The frame is the display's own size the other way round, which is what a
+       layer left in the other rotation looks like. */
+    transposed: w !== h && fw === h && fh === w,
+    /* No part of it is on the display at all. */
+    clear: n.frame.l >= w || n.frame.t >= h || n.frame.r <= 0 || n.frame.b <= 0,
   };
 }
 
@@ -2618,6 +2657,20 @@ function parseSurfaceFlingerDump(input) {
   displays.forEach((d, i) => {
     d.hwc = (d.composerId && tables.find((t) => t.label.includes(d.composerId))) || spare.shift() || null;
   });
+
+  /* Held against the display at last: which visible layers do not fit on it.
+     Nothing before this point knows how big the display is. */
+  for (const d of displays) {
+    for (const l of layers) {
+      if (l.displayId !== d.id) continue;
+      const off = sfOffDisplay(d, l);
+      if (!off) continue;
+      l.offDisplay = off;
+      l.badges.push([off.transposed ? 'transposed' : off.clear ? 'off display' : 'past display',
+                     'badge-exit']);
+      l.search += ' off display';
+    }
+  }
 
   const one = (re) => { const m = text.match(re); return m ? m[1].trim() : null; };
   const globals = {
@@ -9004,9 +9057,26 @@ function sfDetail(n){
     ? `${html}<br>${dim(`printed {${esc(n.printed[k])}} — left, top, bottom, right`)}`
     : html;
 
+  /* A frame is only wrong against the display it is on, so where it does not
+     fit, say so next to the frame itself rather than leaving the reader to
+     hold the two sets of numbers against each other. */
+  const offDisplay = (off) => {
+    const past = [[off.over.l, 'left'], [off.over.t, 'above'],
+                  [off.over.r, 'right of'], [off.over.b, 'below']]
+      .filter(([px]) => px > 0).map(([px, side]) => `${px} px ${side}`).join(', ');
+    return [
+      `does not fit the display ${dim(`(${off.size.w} × ${off.size.h})`)}`,
+      off.transposed
+        ? dim('this frame is that size transposed — what a layer still in the other rotation looks like')
+        : off.clear ? dim('no part of this frame is on the display')
+        : dim(`past it: ${esc(past)}`),
+    ].join('<br>');
+  };
+
   out.push(`<section class="dgroup"><h3>Geometry</h3>${dl([
     n.frame && [`frame ${dim('(' + esc(n.frameSource) + ')')}`,
                 asPrinted(n.frameSource, r(n.frame))],
+    n.offDisplay && ['fit', offDisplay(n.offDisplay)],
     n.pos && ['pos', `${n.pos.x}, ${n.pos.y}`],
     n.size && ['size', `${n.size.w} × ${n.size.h}`],
     ...Object.entries(n.rects)
