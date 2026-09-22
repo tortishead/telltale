@@ -32,6 +32,7 @@ const CASES = [
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
   { name: 'car-service-sample', parse: 'parseCarServiceDump' },
   { name: 'user-sample', parse: 'parseUserDump' },
+  { name: 'overlay-sample', parse: 'parseOverlayDump' },
   { name: 'binder-sample', parse: 'parseBinderCallsStatsDump' },
   /* One text, two readers: `dumpsys input` prints the dispatcher's windows
      and the reader's devices one after the other, and each is its own scene.
@@ -75,6 +76,7 @@ const OWN = {
   parseSurfaceFlingerDump: ['sf-sample', 'sf-a16-sample'],
   parsePackageDump: ['package-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
+  parseOverlayDump: ['overlay-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],
   parseInputDump: ['input-sample'],
   parseInputDevicesDump: ['input-sample'],

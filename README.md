@@ -22,6 +22,7 @@ per reader that recognised a section of it.
 | `adb shell dumpsys package` | packages | `package` |
 | `adb pull /data/anr/traces.txt` | threads | `anr` |
 | `adb shell dumpsys user` | users | `user` |
+| `adb shell dumpsys overlay` | overlays | `overlay` |
 | `adb shell dumpsys car_service` | sections | `car` |
 | `adb shell dumpsys input` | input windows | `input` |
 | `adb shell dumpsys input` | input devices | `inputdev` |
