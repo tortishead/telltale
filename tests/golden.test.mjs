@@ -24,6 +24,9 @@ const UPDATE = process.env.UPDATE_GOLDEN === '1';
 const CASES = [
   { name: 'window-sample',  parse: 'parseWindowDump' },
   { name: 'sf-sample',      parse: 'parseSurfaceFlingerDump' },
+  /* The same reader on an Android 16 dump, which prints none of the lists the
+     one above is made of. */
+  { name: 'sf-a16-sample',  parse: 'parseSurfaceFlingerDump' },
   { name: 'package-sample', parse: 'parsePackageDump' },
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
@@ -36,6 +39,7 @@ const CASES = [
   { name: 'input-sample', parse: 'parseInputDump' },
   { name: 'input-devices', file: 'input-sample', parse: 'parseInputDevicesDump' },
   { name: 'logcat-sample', parse: 'parseLogcatDump' },
+  { name: 'getevent-sample', parse: 'parseGeteventCapture' },
 ];
 
 /* Every golden is `tests/golden/<name>.txt` and every fixture is
@@ -68,7 +72,7 @@ for (const c of CASES) {
    returning nothing. */
 const OWN = {
   parseWindowDump: ['window-sample'],
-  parseSurfaceFlingerDump: ['sf-sample'],
+  parseSurfaceFlingerDump: ['sf-sample', 'sf-a16-sample'],
   parsePackageDump: ['package-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],

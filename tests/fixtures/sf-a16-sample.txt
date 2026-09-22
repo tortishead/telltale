@@ -1,0 +1,275 @@
+Build configuration: [sf PRESENT_TIME_OFFSET=0 FORCE_HWC_FOR_RBG_TO_YUV=0 MAX_VIRT_DISPLAY_DIM=0 RUNNING_WITHOUT_SYNC_FRAMEWORK=0 NUM_FRAMEBUFFER_SURFACE_BUFFERS=2]
+
+Display identification data:
+Display 4619827259835644672 (HWC display 0): port=0 pnpId=GGL screenPartStatus=UNSUPPORTED displayName="EMU_display_0"
+
+Active Layers - layers with client handles (count = 80)
+
+Composition list (top to bottom)
+LayerStack=0
+  Layer [109] ScreenDecorOverlayBottom#109
+    visible reason= buffer=4617089843211 frame=1
+    bounds={0,2337,2400,1080} toDisplayTransform={ tx=0.0000 ty=2337.0000 }
+    input{(NOT_FOCUSABLE | NOT_TOUCHABLE | TRUSTED_OVERLAY | SLIPPERY) touchableRegion={0,2337,2337,0}}
+  Layer [108] ScreenDecorOverlay#108
+    visible reason= buffer=4617089843208 frame=1
+    bounds={0,0,63,1080}
+    input{(NOT_FOCUSABLE | NOT_TOUCHABLE | TRUSTED_OVERLAY | SLIPPERY) touchableRegion={0,0,0,0}}
+  Layer [83] StatusBar#83
+    visible reason= buffer=4617089843202 frame=7
+    bounds={0,0,63,1080}
+    input{(NOT_FOCUSABLE | TRUSTED_OVERLAY) touchableRegion={0,0,63,1080}}
+  Layer [105] com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#105
+    visible reason= buffer=5884105195564 frame=82 contentDirty
+    bounds={0,0,2400,1080}
+    input{(DUPLICATE_TOUCH_TO_WALLPAPER) touchableRegion={0,0,2400,1080}}
+  Layer [65] Wallpaper BBQ wrapper#65
+    visible reason= buffer=4617089843200 frame=1
+    bounds={-54,-120,2520,2323.1} toDisplayTransform={ scale x=2.5782 y=2.5781  tx=-54.0000 ty=-120.0000 }
+    input{(NO_INPUT_CHANNEL) touchableRegion={-53,-119,-119,-53}}
+
+Input list
+LayerStack=0
+  Layer [109] ScreenDecorOverlayBottom#109
+    visible reason= buffer=4617089843211 frame=1
+    bounds={0,2337,2400,1080} toDisplayTransform={ tx=0.0000 ty=2337.0000 }
+    input{(NOT_FOCUSABLE | NOT_TOUCHABLE | TRUSTED_OVERLAY | SLIPPERY) touchableRegion={0,2337,2337,0}}
+  Layer [108] ScreenDecorOverlay#108
+    visible reason= buffer=4617089843208 frame=1
+    bounds={0,0,63,1080}
+    input{(NOT_FOCUSABLE | NOT_TOUCHABLE | TRUSTED_OVERLAY | SLIPPERY) touchableRegion={0,0,0,0}}
+  Layer [40] PointerEventDispatcherOverlay0#40
+    invisible reason=nothing to draw
+    bounds={-10800,-24000,24000,10800}
+    input{(NOT_FOCUSABLE | TRUSTED_OVERLAY | SPY | DO_NOT_PILFER) replaceTouchableRegionWithCrop touchableRegion={-10800,-24000,24000,10800}}
+  Layer [89] IME Handwriting Surface#89
+    invisible reason=nothing to draw
+    bounds={0,0,2400,1080}
+    input{(NOT_FOCUSABLE | NOT_TOUCHABLE | TRUSTED_OVERLAY | SPY | INTERCEPTS_STYLUS) touchCropId=89 touchableRegion={0,0,2400,1080}}
+  Layer [82] [Gesture Monitor] swipe-up#82
+    invisible reason=nothing to draw
+    bounds={-10800,-24000,24000,10800}
+    input{(NOT_FOCUSABLE | TRUSTED_OVERLAY | SPY) replaceTouchableRegionWithCrop touchableRegion={-10800,-24000,24000,10800}}
+  Layer [83] StatusBar#83
+    visible reason= buffer=4617089843202 frame=7
+    bounds={0,0,63,1080}
+    input{(NOT_FOCUSABLE | TRUSTED_OVERLAY) touchableRegion={0,0,63,1080}}
+  Layer [60] Dim layer#60
+    invisible reason=hidden by parent or layer flag
+    bounds={-10800,-24000,24000,10800}
+    input{(NO_INPUT_CHANNEL | NOT_VISIBLE) touchableRegion={0,0,0,0}}
+  Layer [51] Dim layer#51
+    invisible reason=hidden by parent or layer flag
+    bounds={-10800,-24000,24000,10800}
+    input{(NO_INPUT_CHANNEL | NOT_VISIBLE) touchableRegion={0,0,0,0}}
+  Layer [105] com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#105
+    visible reason= buffer=5884105195564 frame=82 contentDirty
+    bounds={0,0,2400,1080}
+    input{(DUPLICATE_TOUCH_TO_WALLPAPER) touchableRegion={0,0,2400,1080}}
+  Layer [59] 708ccc9 ActivityRecordInputSink com.google.android.apps.nexuslauncher/.NexusLauncherActivity#59
+    invisible reason=nothing to draw
+    bounds={-10800,-24000,24000,10800}
+    input{(NO_INPUT_CHANNEL | NOT_FOCUSABLE) replaceTouchableRegionWithCrop touchableRegion={-10800,-24000,24000,10800}}
+  Layer [65] Wallpaper BBQ wrapper#65
+    visible reason= buffer=4617089843200 frame=1
+    bounds={-54,-120,2520,2323.1} toDisplayTransform={ scale x=2.5782 y=2.5781  tx=-54.0000 ty=-120.0000 }
+    input{(NO_INPUT_CHANNEL) touchableRegion={-53,-119,-119,-53}}
+  Layer [63] com.android.systemui.wallpapers.ImageWallpaper#63
+    invisible reason=nothing to draw
+    bounds={-10800,-24000,24000,10800} toDisplayTransform={ scale x=2.5782 y=2.5781  tx=-54.0000 ty=-120.0000 }
+    input{(NOT_FOCUSABLE | NOT_TOUCHABLE | IS_WALLPAPER) touchableRegion={-53,-119,-119,-53}}
+
+Layer Hierarchy
+ ROOT
+ ├─ Display 0 name="Built-in Screen"#37 pid=707 uid=1000
+ │  ├─ WindowedMagnification:0:31#1 pid=707 uid=1000
+ │  │  ├─ HideDisplayCutout:0:14#2 pid=707 uid=1000
+ │  │  │  └─ OneHanded:0:14#3 pid=707 uid=1000
+ │  │  │     ├─ AppZoomOut:0:0#4 pid=707 uid=1000
+ │  │  │     │  └─ Leaf:0:0#5 pid=707 uid=1000
+ │  │  │     ├─ Leaf:1:1#6 pid=707 uid=1000
+ │  │  │     │  └─ WallpaperWindowToken{f46b2d3}#61 pid=707 uid=1000
+ │  │  │     │     └─ d433a85 com.android.systemui.wallpapers.ImageWallpaper#62 pid=707 uid=1000
+ │  │  │     │        └─ com.android.systemui.wallpapers.ImageWallpaper#63 pid=1075 uid=10194
+ │  │  │     │           └─ Wallpaper Transform wrapper#64 pid=1075 uid=10194
+ │  │  │     │              └─ Wallpaper BBQ wrapper#65 pid=1075 uid=10194
+ │  │  │     └─ AppZoomOut:2:14#7 pid=707 uid=1000
+ │  │  │        ├─ DefaultTaskDisplayArea#8 pid=707 uid=1000
+ │  │  │        │  ├─ Task=1#42 pid=707 uid=1000
+ │  │  │        │  │  ├─ Task=6#52 pid=707 uid=1000
+ │  │  │        │  │  │  └─ ActivityRecord{161128398 u0 com.goog[...]uncher/.NexusLauncherActivity t6}#53 pid=707 uid=1000
+ │  │  │        │  │  │     ├─ 708ccc9 ActivityRecordInputSink com.[...]uslauncher/.NexusLauncherActivity#59 pid=707 uid=1000
+ │  │  │        │  │  │     ├─ 35f3ed com.google.android.apps.nexus[...]uslauncher.NexusLauncherActivity#103 pid=707 uid=1000
+ │  │  │        │  │  │     │  ├─ com.google.android.apps.nexuslaunche[...]uslauncher.NexusLauncherActivity#105 requestedFrameRate: {0.00 Hz FrameRateCompatibility::Default FrameRateCategory::HighHint} pid=1370 uid=10191
+ │  │  │        │  │  │     │  └─ (Relative) ImeContainer#11 parent=53 pid=707 uid=1000
+ │  │  │        │  │  │     │     └─ WindowToken{b4b3ccb type=2011 android.os.Binder@6fe80bc}#81 pid=707 uid=1000
+ │  │  │        │  │  │     │        └─ Surface(name=7ec54e6 InputMethod#91)[...]mation-leash of insets_animation#114 pid=707 uid=1000
+ │  │  │        │  │  │     │           └─ 7ec54e6 InputMethod#91 pid=707 uid=1000
+ │  │  │        │  │  └─ home_task_overlay_container#43 pid=1075 uid=10194
+ │  │  │        │  └─ Task=3(SplitRoot)#46 pid=707 uid=1000
+ │  │  │        │     ├─ Task=4(main)#47 pid=707 uid=1000
+ │  │  │        │     │  └─ Dim layer#51 pid=1075 uid=10194
+ │  │  │        │     └─ Task=5(side)#48 pid=707 uid=1000
+ │  │  │        │        └─ Dim layer#60 pid=1075 uid=10194
+ │  │  │        ├─ Leaf:3:12#9 pid=707 uid=1000
+ │  │  │        │  └─ WindowToken{c1fecde type=2038 android.os.BinderProxy@bba5f15}#49 pid=707 uid=1000
+ │  │  │        │     └─ d267f63 ShellDropTarget#50 pid=707 uid=1000
+ │  │  │        └─ ImePlaceholder:13:14#10 pid=707 uid=1000
+ │  │  ├─ OneHanded:15:15#12 pid=707 uid=1000
+ │  │  │  └─ Leaf:15:15#13 pid=707 uid=1000
+ │  │  │     └─ WindowToken{93f1fe3 type=2000 android.os.BinderProxy@9ac6647}#75 pid=707 uid=1000
+ │  │  │        └─ Surface(name=829ede0 StatusBar#76)/@[...]mation-leash of insets_animation#107 pid=707 uid=1000
+ │  │  │           └─ 829ede0 StatusBar#76 pid=707 uid=1000
+ │  │  │              └─ StatusBar#83 requestedFrameRate: {0.00 Hz FrameRateCompatibility::Default FrameRateCategory::NoPreference} pid=1075 uid=10194
+ │  │  ├─ HideDisplayCutout:16:16#14 pid=707 uid=1000
+ │  │  │  └─ OneHanded:16:16#15 pid=707 uid=1000
+ │  │  │     └─ AppZoomOut:16:16#16 pid=707 uid=1000
+ │  │  │        └─ Leaf:16:16#17 pid=707 uid=1000
+ │  │  ├─ OneHanded:17:17#18 pid=707 uid=1000
+ │  │  │  └─ Leaf:17:17#19 pid=707 uid=1000
+ │  │  │     └─ WindowToken{a44b522 type=2040 android.os.BinderProxy@ed8d596}#78 pid=707 uid=1000
+ │  │  │        └─ 33ed04 NotificationShade#79 pid=707 uid=1000
+ │  │  ├─ HideDisplayCutout:18:23#20 pid=707 uid=1000
+ │  │  │  └─ OneHanded:18:23#21 pid=707 uid=1000
+ │  │  │     ├─ Leaf:18:19#22 pid=707 uid=1000
+ │  │  │     ├─ AppZoomOut:20:22#23 pid=707 uid=1000
+ │  │  │     │  └─ Leaf:20:22#24 pid=707 uid=1000
+ │  │  │     └─ Leaf:23:23#25 pid=707 uid=1000
+ │  │  ├─ Leaf:24:25#26 pid=707 uid=1000
+ │  │  └─ HideDisplayCutout:26:31#27 pid=707 uid=1000
+ │  │     └─ OneHanded:26:31#28 pid=707 uid=1000
+ │  │        └─ Leaf:26:31#29 pid=707 uid=1000
+ │  ├─ HideDisplayCutout:32:35#30 pid=707 uid=1000
+ │  │  ├─ OneHanded:32:32#31 pid=707 uid=1000
+ │  │  │  └─ Leaf:32:32#32 pid=707 uid=1000
+ │  │  ├─ Leaf:33:33#33 pid=707 uid=1000
+ │  │  └─ OneHanded:34:35#34 pid=707 uid=1000
+ │  │     └─ Leaf:34:35#35 pid=707 uid=1000
+ │  ├─ Leaf:36:36#36 pid=707 uid=1000
+ │  ├─ Accessibility Overlays#41 pid=707 uid=1000
+ │  ├─ Input Overlays#39 pid=707 uid=1000
+ │  │  ├─ [Gesture Monitor] swipe-up#82 pid=707 uid=1000
+ │  │  ├─ IME Handwriting Surface#89 pid=707 uid=1000
+ │  │  └─ PointerEventDispatcherOverlay0#40 pid=707 uid=1000
+ │  └─ Display Overlays#38 pid=707 uid=1000
+ ├─ Input Consumer recents_animation_input_consumer#87 pid=707 uid=1000
+ ├─ WindowToken{9be7b53 type=2024 android.os.BinderProxy@8ce7f42}#66 pid=707 uid=1000
+ │  └─ 4dffc90 ScreenDecorOverlay#67 pid=707 uid=1000
+ │     └─ ScreenDecorOverlay#108 requestedFrameRate: {0.00 Hz FrameRateCompatibility::Default FrameRateCategory::High} pid=1075 uid=10194
+ └─ WindowToken{b4f784a type=2024 android.os.BinderProxy@fb809b5}#68 pid=707 uid=1000
+    └─ ab8f3bb ScreenDecorOverlayBottom#69 pid=707 uid=1000
+       └─ ScreenDecorOverlayBottom#109 requestedFrameRate: {0.00 Hz FrameRateCompatibility::Default FrameRateCategory::High} pid=1075 uid=10194
+Offscreen Hierarchy
+ ROOT
+ ├─ NotificationShade#85 requestedFrameRate: {0.00 Hz FrameRateCompatibility::Default FrameRateCategory::High} pid=1075 uid=10194
+ └─ [Gesture Monitor] minus-one#104 pid=707 uid=1000
+
+
+Mergeable Hierarchies
+
+
+Display 4619827259835644672 HWC layers (top to bottom):
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Layer name
+           Z |  Window Type |  Comp Type |  Transform |   Disp Frame (LTRB) |          Source Crop (LTRB) |     Frame Rate (Explicit) (Seamlessness) [Focused]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ScreenDecorOverlayBottom#109
+          11 |         2024 |     DEVICE |          0 |    0 2337 1080 2400 |    0.0    0.0 1080.0   63.0 |              Cat::High           Default    [ ]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ScreenDecorOverlay#108
+          10 |         2024 |     DEVICE |          0 |    0    0 1080   63 |    0.0    0.0 1080.0   63.0 |              Cat::High           Default    [ ]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ StatusBar#83
+           6 |         2000 |     DEVICE |          0 |    0    0 1080   63 |    0.0    0.0 1080.0   63.0 |        Cat::NoPreference           Default    [ ]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ com.google.android.apps.nexuslaunche[...]uslauncher.NexusLauncherActivity#105
+           3 |            1 |     DEVICE |          0 |    0    0 1080 2400 |    0.0    0.0 1080.0 2400.0 |          Cat::HighHint           Default    [*]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Wallpaper BBQ wrapper#65
+           1 |            0 |     DEVICE |          0 |    0    0 1080 2400 |   21.0   47.0  440.0  977.0 |                                              [ ]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Window Infos:
+  max send vsync id: -1
+  max send delay (ns): 0 ns
+  unsent messages: 0
+
+Displays (1 entries)
+Display 4619827259835644672
+    port=0
+    connectionType=Internal
+    colorModes=
+        ColorMode::NATIVE
+    deviceProductInfo={name="EMU_display_0", manufacturerPnpId=GGL, productId=1, manufactureWeek=27, manufactureYear=2006, relativeAddress=[]}
+    name="EMU_display_0"
+    powerMode=On
+    optimizationPolicy=optimizeForPerformance
+    renderRate=60.00 Hz
+    activeMode={id=0, hwcId=0, resolution=1080x2400, vsyncRate=60.00 Hz, dpi=420.00x420.00, group=0, vrrConfig=N/A, hdrOutputType=SYSTEM}
+    displayModes=
+        {id=0, hwcId=0, resolution=1080x2400, vsyncRate=60.00 Hz, dpi=420.00x420.00, group=0, vrrConfig=N/A, hdrOutputType=SYSTEM}
+    displayManagerPolicy={defaultModeId=0, allowGroupSwitching=false, primaryRanges={physical=[0.00 Hz, inf Hz], render=[0.00 Hz, 60.00 Hz]}, appRequestRanges={physical=[0.00 Hz, inf Hz], render=[0.00 Hz, inf Hz]} idleScreenConfig=nullptr}
+    enableFrameRateOverride=true
+    idleTimer=
+        interval=nullopt
+        controller=Platform
+
+Display 4619827259835644672 (physical, "EMU_display_0")
+   Composition Display State:
+   isEnabled=true isSecure=true usesDeviceComposition=true 
+   usesClientComposition=false flipClientTarget=false reusedClientComposition=false 
+   layerFilter={layerStack=0 toInternalDisplay=true skipScreenshot=false }
+   transform (ROT_0) (IDENTITY)
+   layerStackSpace=ProjectionSpace{bounds=Rect(0, 0, 1080, 2400), content=Rect(0, 0, 1080, 2400), orientation=ROTATION_0} 
+   framebufferSpace=ProjectionSpace{bounds=Rect(0, 0, 1080, 2400), content=Rect(0, 0, 1080, 2400), orientation=ROTATION_0} 
+   orientedDisplaySpace=ProjectionSpace{bounds=Rect(0, 0, 1080, 2400), content=Rect(0, 0, 1080, 2400), orientation=ROTATION_0} 
+   displaySpace=ProjectionSpace{bounds=Rect(0, 0, 1080, 2400), content=Rect(0, 0, 1080, 2400), orientation=ROTATION_0} 
+   needsFiltering=false 
+   colorMode=NATIVE (0) renderIntent=COLORIMETRIC (0) dataspace=UNKNOWN (0) 
+   colorTransformMatrix=[[1.000,0.000,0.000,0.000][0.000,1.000,0.000,0.000][0.000,0.000,1.000,0.000][0.000,0.000,0.000,1.000]] 
+   displayBrightnessNits=-1.000000 sdrWhitePointNits=-1.000000 clientTargetBrightness=1.000000 displayBrightness=nullopt 
+   compositionStrategyPredictionState=DISABLED 
+   
+   treat170mAsSrgb=false 
+
+   Composition Display Color State:
+   5 Layers
+  - Output Layer 0xb400007845822250(Wallpaper BBQ wrapper#65)
+        Region visibleRegion (this=0xb400007845822268, count=1)
+    [-54, -120, 2323, 2520]
+        Region visibleNonTransparentRegion (this=0xb4000078458222d0, count=1)
+    [-54, -120, 2323, 2520]
+        Region coveredRegion (this=0xb400007845822338, count=1)
+    [  0,   0, 1080, 2400]
+        Region output visibleRegion (this=0xb400007845822410, count=1)
+    [  0,   0, 1080, 2400]
+        Region shadowRegion (this=0xb400007845822478, count=1)
+    [  0,   0,   0,   0]
+        Region outputSpaceBlockingRegionHint (this=0xb400007845822510, count=1)
+    [  0,   0,   0,   0]
+      forceClientComposition=false clearClientTarget=false displayFrame=[0 0 1080 2400] sourceCrop=[21.000000 47.000000 440.000000 977.000000] bufferTransform=0 (0) dataspace=V0_SRGB (142671872) whitePointNits=-1.000000 dimmingRatio=1.000000 override buffer=0x0 override acquire fence=0x0 override display frame=[0 0 -1 -1] override dataspace=UNKNOWN (0) override display space=ProjectionSpace{bounds=Rect(0, 0, -1, -1), content=Rect(0, 0, -1, -1), orientation=ROTATION_0} override damage region=  Region  (this=0xb4000078458225d0, count=1)
+    [  0,   0,  -1,  -1]
+ override visible region=  Region  (this=0xb400007845822638, count=1)
+    [  0,   0,   0,   0]
+ override peekThroughLayer=0x0 override disableBackgroundBlur=false 
+      hwc: layer=0x0810 composition=DEVICE (2) 
+  - Output Layer 0xb4000078458235a0(com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#105)
+        Region visibleRegion (this=0xb4000078458235b8, count=1)
+    [  0,   0, 1080, 2400]
+        Region visibleNonTransparentRegion (this=0xb400007845823620, count=1)
+    [  0,   0, 1080, 2400]
+        Region coveredRegion (this=0xb400007845823688, count=2)
+    [  0,   0, 1080,  63]
+    [  0, 2337, 1080, 2400]
+        Region output visibleRegion (this=0xb400007845823760, count=1)
+    [  0,   0, 1080, 2400]
+        Region shadowRegion (this=0xb4000078458237c8, count=1)
+    [  0,   0,   0,   0]
+        Region outputSpaceBlockingRegionHint (this=0xb400007845823860, count=1)
+    [  0,   0,   0,   0]
+      forceClientComposition=false clearClientTarget=false displayFrame=[0 0 1080 2400] sourceCrop=[0.000000 0.000000 1080.000000 2400.000000] bufferTransform=0 (0) dataspace=V0_SRGB (142671872) whitePointNits=-1.000000 dimmingRatio=1.000000 override buffer=0x0 override acquire fence=0x0 override display frame=[0 0 -1 -1] override dataspace=UNKNOWN (0) override display space=ProjectionSpace{bounds=Rect(0, 0, -1, -1), content=Rect(0, 0, -1, -1), orientation=ROTATION_0} override damage region=  Region  (this=0xb400007845823920, count=1)
+    [  0,   0,  -1,  -1]
+ override visible region=  Region  (this=0xb400007845823988, count=1)
+    [  0,   0,   0,   0]
+ override peekThroughLayer=0x0 override disableBackgroundBlur=false 
+      hwc: layer=0x08f composition=DEVICE (2) 

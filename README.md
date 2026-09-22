@@ -26,7 +26,36 @@ per reader that recognised a section of it.
 | `adb shell dumpsys input` | input windows | `input` |
 | `adb shell dumpsys input` | input devices | `inputdev` |
 | `adb shell dumpsys binder_calls_stats` | calls | `binder` |
+| `adb shell getevent -lt` | touch strokes | `getevent` |
 | `adb logcat -d`, or any bugreport | log lines | `logcat` |
+
+A touch trace is the one dump a bugreport never holds — take it while the
+gesture happens, and take the ranges with it so the strokes come out in the
+panel's own coordinates:
+
+```
+adb shell getevent -lp > touch.txt     # the axes and their ranges
+adb shell getevent -lt >> touch.txt    # then reproduce the gesture, ^C
+```
+
+It opens as the gesture rather than as the events: a stroke per finger, named
+tap, long press, swipe or pinch, with a clock under the drawing to play it
+against.
+
+A trace and a layout can be brought together from either end, and both end up
+as the same drawing:
+
+* **Onto a layout.** With a window, input or SurfaceFlinger dump open, press
+  **Play a touch log** under the sheet and paste the capture in. The gesture
+  plays over that dump's own windows, in the plan and in the z-order view.
+  Picking a window then says which strokes came down on it — and for an input
+  dump, which of them something above it would have taken instead.
+* **Onto a trace.** With the capture open as its own tab, pick a display under
+  **over** and its windows are drawn under the strokes instead.
+
+Either way the panel is scaled onto the display, which is an assumption and not
+something either dump states: the button beside the clock turns it, for a panel
+mounted at 90° to its screen.
 
 binder_calls_stats is off, sampled and nameless until told otherwise, and
 records nothing while the device is charging:

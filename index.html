@@ -638,6 +638,83 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
   flex:none; padding:7px 14px; border-top:1px solid var(--rule-soft);
   color:var(--dim); font-size:12px; display:flex; gap:20px; flex-wrap:wrap;
 }
+/* ---------- a touch trace ---------- */
+/* The clock under the drawing. One row, and it wraps onto a second before it
+   squeezes the scrubber, which is the control the whole bar is for. */
+.tracebar{
+  flex:none; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:6px 14px; border-top:1px solid var(--rule-soft); background:var(--ink);
+  font-size:12px; color:var(--dim);
+}
+.tracebar[hidden]{display:none}
+.tracebar input[type=range]{
+  flex:1 1 180px; min-width:120px; accent-color:var(--redline); margin:0;
+}
+.trace-play{min-width:34px; text-align:center; font-size:11px}
+.trace-time{font-family:var(--mono); font-size:11.5px; white-space:nowrap}
+.trace-opt{display:inline-flex; align-items:center; gap:5px; white-space:nowrap}
+.trace-opt select{
+  font:inherit; font-size:11.5px; color:var(--fg); background:var(--ink-2);
+  border:1px solid var(--rule); border-radius:3px; padding:2px 4px; max-width:210px;
+}
+.trace-over{min-width:0}
+.trace-over select{text-overflow:ellipsis}
+.trace-dev{
+  font:inherit; font-size:11.5px; color:var(--fg); background:var(--ink-2);
+  border:1px solid var(--rule); border-radius:3px; padding:2px 4px; max-width:190px;
+}
+.tracebar [hidden]{display:none}
+/* Where a capture is pasted onto a layout. It is a drawer under the bar, not a
+   dialog over the sheet: what the log is about stays on screen while it goes
+   in. */
+.trace-paste{
+  flex:none; display:grid; gap:6px; padding:8px 14px 10px;
+  border-top:1px solid var(--rule-soft); background:var(--ink);
+}
+.trace-paste[hidden]{display:none}
+.trace-paste textarea{
+  width:100%; resize:vertical; min-height:72px; box-sizing:border-box;
+  font-family:var(--mono); font-size:11.5px; line-height:1.45;
+  color:var(--fg); background:var(--paper); border:1px solid var(--rule);
+  border-radius:3px; padding:7px 8px;
+}
+.trace-paste-foot{display:flex; align-items:center; gap:8px; justify-content:flex-end}
+.trace-err{flex:1; color:var(--redline); font-size:11.5px; overflow-wrap:anywhere}
+/* The trace over somebody else's drawing. It is a note on that drawing: it
+   takes no clicks, so the window under it is still the thing being picked. */
+.gev-over{pointer-events:none}
+/* The borrowed layout: another dump's windows, under this dump's strokes. Grey
+   and thin, because it is the paper and not the drawing. */
+.gev-under{
+  fill:var(--graphite); fill-opacity:.05; stroke:var(--graphite); stroke-width:1;
+  stroke-opacity:.45; vector-effect:non-scaling-stroke;
+}
+.gev-under.is-off{stroke-dasharray:5 4; fill-opacity:0}
+/* Where the finger went, in full, at rest: the whole stroke is always there so
+   the shape of the gesture reads without waiting for the playback. */
+.gev-path{
+  fill:none; stroke:currentColor; stroke-width:1.5; stroke-opacity:.34;
+  stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+/* The part of it that has happened by the moment the playhead is at. */
+.gev-live{
+  fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round;
+  stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+.gev-down{fill:currentColor; fill-opacity:.9; stroke:none}
+.gev-up{fill:none; stroke:currentColor; stroke-width:1.5; vector-effect:non-scaling-stroke}
+/* The finger itself, at this instant. */
+.gev-tip{
+  fill:currentColor; fill-opacity:.32; stroke:currentColor; stroke-width:2;
+  vector-effect:non-scaling-stroke;
+}
+.gev-g.is-sel .gev-path{stroke-opacity:.75}
+.gev-g.is-sel .gev-live{stroke-width:4}
+.gev-g.is-sel .gev-down{stroke:var(--redline); stroke-width:2; vector-effect:non-scaling-stroke}
+.gev-hit{stroke:transparent; fill:none; stroke-linecap:round; stroke-linejoin:round}
+/* Four hundred samples is a scroll, not a page. */
+.gev-samples{max-height:320px; overflow:auto}
+
 .legend{
   flex:none; padding:7px 14px; border-top:1px solid var(--rule-soft);
   display:flex; gap:8px 16px; flex-wrap:wrap; font-size:11.5px; color:var(--dim);
@@ -1103,6 +1180,50 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
              aria-label="Filter what this section printed">
     </div>
     <div class="sheet" id="sheet"></div>
+    <!-- The clock a trace is played against. It belongs under the sheet rather
+         than with the controls on the left, because what it moves is the
+         drawing. -->
+    <div class="tracebar" id="traceBar" hidden>
+      <button class="tab" id="btnTracePaste" type="button">Play a touch log</button>
+      <button class="tab trace-play" id="btnPlay" type="button" aria-pressed="false">▶</button>
+      <input type="range" id="rngPlay" min="0" max="1000" step="1" value="0"
+             aria-label="Where the playhead is in the capture">
+      <span class="trace-time" id="traceTime"></span>
+      <label class="trace-opt" id="trkSpeed">speed
+        <select id="selSpeed" aria-label="Playback speed">
+          <option value="0.1">0.1×</option>
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+        </select>
+      </label>
+      <label class="trace-opt" id="trkLoop"><input type="checkbox" id="optLoop" checked> loop</label>
+      <!-- Two halves of the same question, one for each direction the trace
+           and the display can be brought together in. -->
+      <label class="trace-opt trace-over" id="trkOver">over
+        <select id="selMap" aria-label="Which display to draw the trace over"></select>
+      </label>
+      <select id="selTraceDev" class="trace-dev"
+              aria-label="Which device in the capture is playing" hidden></select>
+      <button class="tab" id="btnMapRot" type="button"
+              title="Turn the panel against the display">0°</button>
+      <button class="tab" id="btnTraceDrop" type="button" hidden
+              title="Take the touch log off this dump">×</button>
+    </div>
+    <!-- Where a capture is pasted onto a dump that draws. It opens under the
+         bar rather than over the sheet, so the layout it is about stays on
+         screen while the text goes in. -->
+    <div class="trace-paste" id="tracePaste" hidden>
+      <textarea id="traceText" spellcheck="false" rows="4"
+        placeholder="Paste `adb shell getevent -lt` here — and the `getevent -lp` ranges above it, if you took them, so the strokes land in the panel's real coordinates."></textarea>
+      <div class="trace-paste-foot">
+        <span class="trace-err" id="traceErr"></span>
+        <button class="tab" id="btnTraceCancel" type="button">Cancel</button>
+        <button class="tab" id="btnTraceAttach" type="button">Play it</button>
+      </div>
+    </div>
     <div class="legend" id="legend"></div>
     <div class="sheet-foot" id="sheetFoot"></div>
   </section>
@@ -1744,9 +1865,27 @@ function parseWindowDump(input) {
  *   reached the compositor: its z, its window type, how it was composited and
  *   the frame it was composited into.
  *
+ * Android 15 replaced the first two of those with the new frontend's own
+ * lists, and Android 16 is the first release where nothing else is left:
+ *
+ *   the composition list — `Layer [105] Name#105` under `Composition list`,
+ *   one entry per layer with something to draw, carrying the bounds already
+ *   in display coordinates, the transform that got them there, the input
+ *   config, and a `reason=` that spells out what the layer is made of.
+ *
+ *   the input list — the same entries for every layer input knows about,
+ *   invisible ones included, each with the reason it is not drawn.
+ *
+ *   the hierarchy — `Layer Hierarchy`, a drawn tree of every layer there is,
+ *   which is where a modern dump keeps parentage, the owning pid and uid, and
+ *   the layers that reach neither the screen nor input. `Offscreen Hierarchy`
+ *   is the same tree for the layers detached from any display.
+ *
  * A layer's blocks are collected in the order the file prints them and parsed
  * as one, so the first block to state a field is the one that wins and a
- * build that only prints half of them still resolves. */
+ * build that only prints half of them still resolves. The lists disagree on
+ * how much of a long name they print, so they are joined on the layer id in
+ * the `#12` every one of them ends with rather than on the name itself. */
 
 /* One head shape covers all four lists: an optional class (one or two words),
    an optional handle, and a parenthesised name ending in the sequence number
@@ -1755,9 +1894,30 @@ function parseWindowDump(input) {
    (organized)` lines a window dump prints in the same shape. */
 const SF_LAYER_HEAD =
   /^(\s*)[-+*]\s+((?:[A-Za-z]\w*\s+)*?)(0x[0-9a-fA-F]+)?\s*\((.+#\d+)\)(?:\s+uid=(\d+))?\s*$/;
+/* The new frontend's head: no bullet, no class and no parentheses — the
+   layer's own id in brackets, the roots it is mirrored from if it is a
+   mirror, a `(Secure)` marker if it holds protected content, then the name. */
+const SF_SNAP_HEAD =
+  /^(\s*)Layer \[(\d+)(?:\s+mirrored from\s+([\d,\s]*?))?\]\s+(?:(\(Secure\))\s+)?(\S.*?)\s*$/;
+/* The lists the new frontend prints, and the layer stack header inside them.
+   Which way round a list is printed changed between Android 16 and its first
+   quarterly release, so the direction is read rather than assumed. */
+const SF_LIST_HEAD = /^(Composition list|Input list)(?:\s+\((top to bottom|bottom to top)\))?\s*$/;
+const SF_STACK_HEAD = /^\s*LayerStack=(\d+)\s*$/;
+const SF_TREE_HEAD = /^(Layer Hierarchy|Offscreen Hierarchy|Mergeable Hierarchies)\s*$/;
+/* A row of one of those trees: the box-drawing prefix says how deep it is. */
+const SF_TREE_ROW = /^([ \u2502]*)(?:\u251c\u2500|\u2514\u2500)\s(.*)$/;
+/* What a tree row says about a layer, in the order RequestedLayerState prints
+   it: the name, then whatever of these the layer has, then pid and uid. */
+const SF_TREE_BODY =
+  /^(?:\((Relative|Mirroring)\)\s+)?(.+?)(?:\s+parent=(\d+))?(\s+handleNotAlive)?(?:\s+requestedFrameRate:\s*\{([^}]*)\})?(?:\s+dropInputMode=(\d+))?\s+pid=(-?\d+)\s+uid=(-?\d+)\s*$/;
 const SF_DISPLAY_HEAD = /^(\s*)(?:[-+*]\s+)?(?:DisplayDevice|CompositionDisplay|Display)\b(.*)$/;
 const SF_DISPLAY_LIST = /^\s*(?:Virtual\s+)?Display\s+(\d+)\s*$/;
-const SF_HWC_HEAD = /^\s*Display\s+\S+.*\bHWC layers:\s*$/;
+/* Android 16's quarterly release prints `HWC layers (top to bottom):`, and
+   the releases either side of it print `HWC layers:`. Neither the marker in
+   the middle — `(active)` on some builds — nor the one on the end is worth
+   losing the table over. */
+const SF_HWC_HEAD = /^\s*Display\s+\S+.*\bHWC layers\b.*:\s*$/;
 const SF_REGION_HEAD = /Region (\w+) \(.*?count=(\d+)\)/;
 const SF_REGION_RECT = /^\s*\[\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\]\s*$/;
 const SF_RULE = /^-{4,}\s*$/;
@@ -1765,6 +1925,31 @@ const SF_RULE = /^-{4,}\s*$/;
    never past this many lines — a dump that loses its shape should cost one
    wrong block, not the whole file. */
 const SF_BLOCK_MAX = 400;
+
+/* One head, whichever list printed it, read into the same shape: what the
+   layer is called, the class and handle the older lists give it, and the id
+   and markers the newer ones do. */
+function sfHead(line) {
+  const m = line.match(SF_LAYER_HEAD);
+  if (m) {
+    return { indent: m[1].length, cls: (m[2] || '').trim() || null, handle: m[3] || null,
+             name: m[4].trim(), uid: m[5] === undefined ? null : +m[5],
+             id: null, secure: false, mirrorOf: null };
+  }
+  const s = line.match(SF_SNAP_HEAD);
+  if (!s) return null;
+  return { indent: s[1].length, cls: null, handle: null, name: s[5].trim(), uid: null,
+           id: +s[2], secure: !!s[4],
+           mirrorOf: s[3] ? s[3].split(/[,\s]+/).filter(Boolean) : null };
+}
+
+/* The key every list agrees on. The hierarchy and the HWC table elide the
+   middle of a long name, so the name itself will not join them; the layer id
+   in the trailing `#12` will. */
+function sfKey(name) {
+  const m = name.match(/#(\d+)$/);
+  return m ? m[1] : name;
+}
 
 /* The bits `flags=` prints, from layer_state_t. The text is what
    SurfaceControl documents each one as doing. */
@@ -1872,18 +2057,84 @@ function sfHwcTables(lines) {
 /* The table elides the middle of a long name — `com.foo/com.f[...]Activity#301`
    — so a name that carries the marker is matched on its two ends instead. */
 function sfHwcLookup(tables) {
-  const exact = new Map(), elided = [];
+  const exact = new Map(), byId = new Map(), elided = [];
   for (const t of tables) {
     for (const row of t.rows) {
       if (!row.name) continue;
+      /* Whatever the table did to the middle of the name, the layer id on the
+         end of it survives, and that is what the other lists are keyed on. */
+      const id = sfKey(row.name);
+      if (id !== row.name && !byId.has(id)) byId.set(id, row);
       const cut = row.name.indexOf('[...]');
       if (cut < 0) { if (!exact.has(row.name)) exact.set(row.name, row); continue; }
       elided.push({ head: row.name.slice(0, cut), tail: row.name.slice(cut + 5), row });
     }
   }
   return (name) => exact.get(name)
+    || byId.get(sfKey(name))
     || (elided.find((e) => name.startsWith(e.head) && name.endsWith(e.tail)) || {}).row
     || null;
+}
+
+/* ---- the hierarchy -------------------------------------------------------
+
+   The tree under `Layer Hierarchy` is the only list a modern dump prints that
+   holds every layer: the composition list stops at what is drawn and the input
+   list at what can be touched. It is also the only place parentage is left,
+   now that a layer block no longer prints `parent=`. Siblings are printed in
+   z order, back to front, so the order this reads them in is the order they
+   are drawn in — which is what the older lists were being read for too.
+
+   `Offscreen Hierarchy` is the same tree for the layers hanging off no
+   display at all; they are kept, marked, and left without a frame. */
+function sfHierarchy(lines) {
+  const out = [];
+  const seen = new Set();
+  for (let i = 0; i < lines.length; i++) {
+    const head = lines[i].match(SF_TREE_HEAD);
+    if (!head) continue;
+    const offscreen = head[1] !== 'Layer Hierarchy';
+    /* The layer at each depth, and the display its subtree belongs to: a row
+       is a child of whatever was last seen one step shallower. */
+    const parents = [], stacks = [];
+    let j = i + 1;
+    for (; j < lines.length; j++) {
+      if (/^\s*ROOT\s*$/.test(lines[j])) continue;
+      const row = lines[j].match(SF_TREE_ROW);
+      if (!row) break;                       // a blank line ends the tree
+      const body = row[2].match(SF_TREE_BODY);
+      if (!body) continue;                   // the `...` under a mirror root
+      const depth = Math.floor(row[1].length / 3);   // `│  ` or three spaces a level
+      const name = body[2].trim();
+      const id = (name.match(/#(\d+)$/) || [])[1] || null;
+      /* A tree's top layer is the display itself, and SurfaceFlinger names it
+         after the layer stack everything under it is on. */
+      const display = name.match(/^Display\s+(\d+)\b/);
+      const parentId = depth > 0 ? parents[depth - 1] ?? null : null;
+      const displayId = display ? +display[1] : depth > 0 ? stacks[depth - 1] ?? null : null;
+      parents[depth] = id;
+      stacks[depth] = displayId;
+      parents.length = stacks.length = depth + 1;
+      if (!id || seen.has(id)) continue;     // a mirror shows up under both roots
+      seen.add(id);
+      out.push({
+        id, name, parentId, displayId, offscreen,
+        order: out.length,
+        /* A row printed `(Relative)` is z-ordered against a layer other than
+           its parent, and that is the layer the `parent=` after it names. */
+        relativeParent: body[3] || null,
+        handleAlive: !body[4],
+        frameRate: body[5] ? body[5].trim() : null,
+        dropInputMode: body[6] ? +body[6] : null,
+        pid: +body[7],
+        uid: +body[8],
+      });
+    }
+    /* Back one, so the line the tree stopped at — the next tree's own head,
+       when two are printed one after the other — is looked at again. */
+    i = j - 1;
+  }
+  return out;
 }
 
 /* ---- displays ------------------------------------------------------------
@@ -1914,7 +2165,7 @@ function sfDisplayList(lines) {
 function sfDisplayBlocks(lines, byComposerId) {
   const out = [];
   for (let i = 0; i < lines.length; i++) {
-    if (!SF_DISPLAY_HEAD.test(lines[i]) || SF_LAYER_HEAD.test(lines[i])) continue;
+    if (!SF_DISPLAY_HEAD.test(lines[i]) || sfHead(lines[i])) continue;
     /* Two extents. The display's own text stops where the first output layer
        starts — that is what the details pane shows. The section runs on to
        the next line at column 0, output layers included, and which section a
@@ -1924,7 +2175,7 @@ function sfDisplayBlocks(lines, byComposerId) {
     let end = i + 1;
     while (end < lines.length && end - i < SF_BLOCK_MAX) {
       const line = lines[end];
-      if (line.trim() && (indentOf(line) <= head || SF_LAYER_HEAD.test(line))) break;
+      if (line.trim() && (indentOf(line) <= head || sfHead(line))) break;
       end++;
     }
     let section = end;
@@ -1998,18 +2249,48 @@ const sfVisibleRects = (regions) =>
   Object.entries(regions).filter(([k]) => SF_VISIBLE_REGION.test(k)).flatMap(([, v]) => v);
 const sfHasVisibleRegion = (regions) => Object.keys(regions).some((k) => SF_VISIBLE_REGION.test(k));
 
-function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
+/* ---- one layer -----------------------------------------------------------
+
+   `front` is what the lists outside this block said about the layer: its row
+   in the hierarchy, which of the new frontend's lists it turned up in, and
+   the markers its head carried. Everything else is read out of the block. */
+function parseSfLayer(name, block, heads, index, hwcRow, sectionId, front) {
   const one = (re) => { const m = block.match(re); return m ? m[1] : null; };
   const int = (re) => { const v = one(re); return v === null ? null : Math.round(+v); };
   const flt = (re) => { const v = one(re); return v === null ? null : +v; };
+  const tree = (front && front.tree) || null;
 
   /* Of the class names the several lists give one layer, the useful one is
      whichever is more specific than the bare `Layer` they all fall back to. */
-  const classes = heads.map((h) => (h[2] || '').trim()).filter(Boolean);
+  const classes = heads.map((h) => h.cls).filter(Boolean);
   const cls = classes.find((c) => /Layer$/.test(c) && c !== 'Layer' && c !== 'Output Layer')
            || classes.find((c) => c !== 'Output Layer') || null;
-  const handle = (heads.find((h) => h[3]) || [])[3] || null;
-  const uid = int(/\buid=(\d+)/);
+  const handle = (heads.find((h) => h.handle) || {}).handle || null;
+  const uid = int(/\buid=(\d+)/) ?? (tree ? tree.uid : null);
+
+  /* The new frontend prints one line per layer, and what it draws is spelled
+     out in the `reason=` on it: `visible reason= buffer=99 frame=7 alpha=0.5
+     contentDirty`, or `invisible reason=nothing to draw`. */
+  const snap = block.match(/^\s*(visible|invisible) reason=(.*)$/m);
+  const why = snap ? snap[2].trim() : null;
+  const snapColor = snap && block.match(/\bcolor\{\s*(-?[\d.]+)[,\s]+(-?[\d.]+)[,\s]+(-?[\d.]+)/);
+  const snapBuffer = snap ? one(/^\s*visible reason=.*?\bbuffer=(\d+)/m) : null;
+
+  /* The input config the snapshot carries is the same set of flags the input
+     dispatcher prints, and the only thing in a modern dump that says what a
+     layer is for when the HWC table does not name a window type. */
+  const inputLine = (block.match(/^\s*input\{.*$/m) || [''])[0];
+  const inputFlags = (inputLine.match(/^\s*input\{\(([^)]*)\)/) || [])[1];
+
+  /* What it took to get the layer's own coordinates onto the display: a
+     rotation, a scale, a translation, or any two of them. */
+  const td = (block.match(/toDisplayTransform=\{([^}]*)\}/) || [])[1] || null;
+  const tdNum = (re) => { const m = td && td.match(re); return m ? +m[1] : null; };
+  const toDisplay = td ? {
+    rotate: (td.match(/\b(ROT_\d+|FLIP_[HV]|ROT_INVALID)\b/) || [])[1] || null,
+    sx: tdNum(/\bscale x=(-?[\d.]+)/), sy: tdNum(/\by=(-?[\d.]+)/),
+    tx: tdNum(/\btx=(-?[\d.]+)/), ty: tdNum(/\bty=(-?[\d.]+)/),
+  } : null;
 
   const pos = block.match(/\bpos=\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/);
   const size = block.match(/\bsize=\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/);
@@ -2023,7 +2304,8 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
      holding a buffer handle, which tells a buffer layer from a container even
      though it gives no size. */
   const bufferSize = !!(buffer && +buffer[1] > 0 && +buffer[2] > 0);
-  const hasBuffer = bufferSize || /\bbuffer:\s*buffer=0x0*[1-9a-f]/.test(block);
+  const hasBuffer = bufferSize || /\bbuffer:\s*buffer=0x0*[1-9a-f]/.test(block)
+    || +snapBuffer > 0;
 
   const x = pos ? Math.round(+pos[1]) : null;
   const y = pos ? Math.round(+pos[2]) : null;
@@ -2042,9 +2324,21 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
     const rc = sfNamedRect(block, key);
     if (rectValid(rc)) rects[as] = rc;
   }
+  /* The new frontend prints a layer's bounds already transformed into display
+     coordinates — and prints them left, top, bottom, right, the order the
+     struct is laid out in rather than the order every other rect in the dump
+     comes in. Same for a touchable region. */
+  const braceRect = (re, from) => {
+    const m = from.match(re);
+    return m ? sfRect(m[1], m[2], m[4], m[3]) : null;
+  };
+  const snapBounds = braceRect(/\bbounds=\{\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\s*\}/, block);
+  if (!rects.bounds && rectValid(snapBounds)) rects.bounds = snapBounds;
   if (x !== null && w > 0 && h > 0) rects['pos+size'] = { l: x, t: y, r: x + w, b: y + h };
   const seen = unionRect(sfVisibleRects(regions));
   if (rectValid(seen)) rects['visible region'] = seen;
+  const touchRect = braceRect(/\btouchableRegion=\{\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)\s*\}/, inputLine);
+  if (rectValid(touchRect)) rects['touchable region'] = touchRect;
   if (bufferSize && x !== null) {
     rects.buffer = { l: x, t: y, r: x + +buffer[1], b: y + +buffer[2] };
   }
@@ -2067,15 +2361,25 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
   const flagNames = sfFlagNames(flags);
   /* A colour of -1 is how an unset colour prints; alpha is stated on its own
      by the composition list and as the fourth channel by the layer list. */
-  const rgb = color && +color[1] >= 0 ? [+color[1], +color[2], +color[3]] : null;
+  const rgb = color && +color[1] >= 0 ? [+color[1], +color[2], +color[3]]
+    : snapColor ? [+snapColor[1], +snapColor[2], +snapColor[3]] : null;
   const alpha = flt(/(?:^|[^\w])alpha=([\d.]+)/) ?? (color && color[4] !== undefined ? +color[4] : null);
-  const visible = flagNames.includes('HIDDEN') || alpha === 0 ? false
+  /* The new frontend says outright whether a layer is visible, and why it is
+     not. A layer it knows only from the hierarchy reached neither the screen
+     nor input, and the dump says no more about it than that. */
+  const visible = snap ? snap[1] === 'visible'
+    : tree && !block ? false
+    : flagNames.includes('HIDDEN') || alpha === 0 ? false
     : sfHasVisibleRegion(regions) ? sfVisibleRects(regions).some(rectValid)
     : true;
+  const secure = flagNames.includes('SECURE') || heads.some((h) => h.secure);
 
   /* Newer builds print every layer as plain `Layer`, so where the class name
      says nothing, say what the layer is made of instead. */
-  const kind = cls && cls !== 'Layer' ? cls : hasBuffer ? 'Buffer layer' : 'Container layer';
+  const kind = cls && cls !== 'Layer' ? cls
+    : hasBuffer ? 'Buffer layer'
+    : snapColor ? 'Effect layer'
+    : 'Container layer';
 
   /* The HWC table's window type is the one thing in a SurfaceFlinger dump that
      says what a layer is *for*, and it is the same number `dumpsys window`
@@ -2095,11 +2399,19 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
     title: name,
     layerId: (name.match(/#(\d+)$/) || [])[1] || null,
     cls, handle, uid,
-    displayId: int(/\blayerStack=\s*(-?\d+)/) ?? sectionId ?? 0,
+    pid: tree ? tree.pid : null,
+    displayId: int(/\blayerStack=\s*(-?\d+)/) ?? (tree && tree.displayId) ?? sectionId ?? 0,
     z: index,                       // the lists are printed back to front
-    layerZ: int(/(?:^|[,\s])z=\s*(-?\d+)/),
+    layerZ: int(/(?:^|[,\s])z=\s*(-?\d+)/) ?? (hwcRow ? hwcRow.z : null),
     parent: notNull((one(/^\s*parent=(.+)$/m) || '').trim() || null),
+    parentId: tree ? tree.parentId : null,
     relativeOf: notNull((one(/^\s*zOrderRelativeOf=(.+)$/m) || '').trim() || null),
+    relativeParent: tree ? tree.relativeParent : null,
+    offscreen: !!(tree && tree.offscreen),
+    mirrorOf: (heads.find((h) => h.mirrorOf) || {}).mirrorOf || null,
+    frameRate: tree ? tree.frameRate : null,
+    handleAlive: tree ? tree.handleAlive : null,
+    dropInput: tree ? tree.dropInputMode : null,
     frame: key ? rects[key] : null,
     frameSource: key,
     frameDerived: !!key && !exact.has(key),
@@ -2120,9 +2432,21 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
     pixelFormat: one(/\b(?:defaultPixelFormat|pixelFormat)=([^,\s]+)/),
     buffer: bufferSize ? { w: +buffer[1], h: +buffer[2], stride: +buffer[3], format: buffer[4].trim() } : null,
     hasBuffer,
+    bufferId: snapBuffer,
+    frameNumber: snap ? int(/^\s*visible reason=.*?\bframe=(\d+)/m) : null,
+    contentDirty: /\bcontentDirty\b/.test(block),
     queued: int(/queued-frames=(\d+)/),
     transform: tr ? [+tr[1], +tr[2], +tr[3], +tr[4]] : null,
+    toDisplay,
     regions,
+    /* Why the frontend drew it, or why it did not. Empty on a visible layer
+       that is nothing but a buffer, which is most of them. */
+    reason: why,
+    inputFlags: inputFlags ? inputFlags.split(/\s*\|\s*/).map((f) => f.trim()).filter(Boolean) : null,
+    touchable: rectValid(touchRect) ? touchRect : null,
+    touchCropId: (inputLine.match(/touchCropId=(\d+)/) || [])[1] || null,
+    touchCrop: /replaceTouchableRegionWithCrop/.test(inputLine),
+    secure,
     comp: comp === 'INVALID' ? null : comp,
     winType, winTypeNum, kind,
     hwcTransform: hwcRow ? hwcRow.transform : null,
@@ -2136,9 +2460,10 @@ function parseSfLayer(name, block, heads, index, hwcRow, sectionId) {
     badges: [
       ...(comp && comp !== 'INVALID' ? [[comp.toLowerCase(), 'badge-comp']] : []),
       ...(flagNames.includes('HIDDEN') ? [['hidden', 'badge-exit']] : []),
-      ...(flagNames.includes('SECURE') ? [['secure', 'badge-exit']] : []),
+      ...(secure ? [['secure', 'badge-exit']] : []),
+      ...(tree && tree.offscreen ? [['offscreen', 'badge-exit']] : []),
     ],
-    search: `${name} ${cls || ''} ${kind} ${winType || ''} ${comp || ''}`.toLowerCase(),
+    search: `${name} ${cls || ''} ${kind} ${winType || ''} ${comp || ''} ${why || ''} ${inputFlags || ''}`.toLowerCase(),
     raw: block,
   };
 }
@@ -2155,50 +2480,106 @@ function parseSurfaceFlingerDump(input) {
     return d ? d.id : null;
   };
 
+  const tree = sfHierarchy(lines);
+  const treeFor = new Map(tree.map((t) => [t.id, t]));
+
   /* Collect every block each layer appears in, in the order the file prints
      them, then parse the lot as one text. First to state a field wins, which
-     puts the lists in the order they were printed — and the composition list,
-     which a modern dump prints first, is also the z order. */
+     puts the lists in the order they were printed. Blocks are filed under the
+     layer id rather than the name, because the lists that elide a long name
+     are not the lists that print the fields. */
   const order = [], blocks = new Map(), heads = new Map(), section = new Map();
+  const names = new Map(), lists = new Map();
+  /* Two things only the lines between the heads say: which layer stack the
+     entries that follow are on, and which of the new frontend's lists they
+     belong to. Both last until the next unindented line. */
+  let listStack = null, list = null, topFirst = false;
   for (let i = 0; i < lines.length; i++) {
-    const head = lines[i].match(SF_LAYER_HEAD);
+    const stack = lines[i].match(SF_STACK_HEAD);
+    if (stack) { listStack = +stack[1]; continue; }
+    const listHead = lines[i].match(SF_LIST_HEAD);
+    if (listHead) {
+      list = listHead[1];
+      if (listHead[2] && list === 'Composition list') topFirst = listHead[2] === 'top to bottom';
+      listStack = null;
+      continue;
+    }
+    if (lines[i].trim() && indentOf(lines[i]) === 0) { list = null; listStack = null; }
+
+    const head = sfHead(lines[i]);
     if (!head) continue;
     let end = i + 1;
     while (end < lines.length && end - i < SF_BLOCK_MAX) {
       const line = lines[end];
-      if (line.trim() && (indentOf(line) === 0 || SF_LAYER_HEAD.test(line))) break;
+      if (line.trim() && (indentOf(line) === 0 || sfHead(line))) break;
       end++;
     }
     while (end > i + 1 && !lines[end - 1].trim()) end--;
-    const name = head[4].trim();
-    if (!blocks.has(name)) { order.push(name); blocks.set(name, []); heads.set(name, []); }
-    blocks.get(name).push(lines.slice(i, end).join('\n'));
-    heads.get(name).push(head);
+    const key = sfKey(head.name);
+    if (!blocks.has(key)) {
+      order.push(key);
+      blocks.set(key, []); heads.set(key, []); lists.set(key, new Set());
+    }
+    const block = lines.slice(i, end).join('\n');
+    /* The composition list and the input list print the same entry twice, word
+       for word, when a layer is in both. Reading it twice changes nothing;
+       showing it twice in the raw block only makes it harder to read. */
+    if (!blocks.get(key).includes(block)) blocks.get(key).push(block);
+    heads.get(key).push(head);
+    /* The hierarchy elides the middle of a long name and the lists that carry
+       the fields do not, so the longest name any list gave it wins. */
+    if ((names.get(key) || '').length < head.name.length) names.set(key, head.name);
+    if (list) lists.get(key).add(list);
     // The composition list is printed outside any display's section, so keep
     // looking until a block turns up inside one.
-    if (section.get(name) == null) section.set(name, stackAt(i));
+    if (section.get(key) == null) section.set(key, stackAt(i) ?? listStack);
     i = end - 1;
   }
+
+  /* Which layers there are, and in which order. A dump with a hierarchy in it
+     has every layer there, drawn back to front, including the ones no other
+     list mentions because they reach neither the screen nor input; without
+     one, the lists themselves are all there is. */
+  const keys = [];
+  const taken = new Set();
+  /* Offscreen first, so the layers hanging off no display at all sit under
+     everything that is on one rather than on top of it. */
+  for (const t of [...tree].sort((a, b) => (a.offscreen ? 0 : 1) - (b.offscreen ? 0 : 1))) {
+    keys.push(t.id); taken.add(t.id);
+  }
+  /* Which way round the composition list is printed changed between Android
+     16 and its first quarterly release, and the header says which it is. A
+     dump with no hierarchy in it has nothing else to go on. */
+  const rest = topFirst && !tree.length ? [...order].reverse() : order;
+  for (const k of rest) if (!taken.has(k)) { keys.push(k); taken.add(k); }
+
   /* Through finaliseScene rather than by hand: the shape a parser hands back
      is stated in one place, so an empty reading of this dump is the same kind
      of thing as an empty reading of any other. */
-  if (!order.length) return finaliseScene('sf', [], [], {});
+  if (!keys.length) return finaliseScene('sf', [], [], {});
 
-  const layers = order.map((name, i) =>
-    parseSfLayer(name, blocks.get(name).join('\n\n'), heads.get(name), i,
-                 hwcFor(name), section.get(name)));
+  const layers = keys.map((key, i) => {
+    const name = names.get(key) || (treeFor.get(key) || {}).name || key;
+    return parseSfLayer(name, (blocks.get(key) || []).join('\n\n'),
+                        heads.get(key) || [], i, hwcFor(name), section.get(key),
+                        { tree: treeFor.get(key) || null,
+                          lists: lists.get(key) || new Set() });
+  });
 
-  /* Resolve `parent=` to the layers it names. A modern dump parents
+  /* Resolve parentage to the layers it names. A modern dump parents
      everything to something — a task, a window token, an animation leash —
      and walking that chain is usually how you find out why a layer is where
-     it is, or why it is nowhere. */
+     it is, or why it is nowhere. The older lists name the parent; the
+     hierarchy gives its id, which is the one the lists elide nothing of. */
   const byTitle = new Map(layers.map((l) => [l.title, l]));
+  const byLayerId = new Map(layers.map((l) => [l.layerId, l]));
+  const up = (l) => (l.parentId ? byLayerId.get(l.parentId) : byTitle.get(l.parent)) || null;
   const kids = new Map();
   for (const l of layers) {
-    const chain = [], seen = new Set([l.title]);
-    for (let up = byTitle.get(l.parent); up && !seen.has(up.title); up = byTitle.get(up.parent)) {
-      seen.add(up.title);
-      chain.unshift(up);
+    const chain = [], seen = new Set([l.hash]);
+    for (let a = up(l); a && !seen.has(a.hash); a = up(a)) {
+      seen.add(a.hash);
+      chain.unshift(a);
     }
     l.ancestors = chain.map((a) => ({ hash: a.hash, title: a.title }));
     l.parentHash = chain.length ? chain[chain.length - 1].hash : null;
@@ -2223,6 +2604,10 @@ function parseSurfaceFlingerDump(input) {
     hwcVersion: one(/Hardware Composer state \(version ([^)]+)\)/),
     visibleLayers: one(/Visible layers \(count = (\d+)\)/),
     totalLayers: one(/Total layers \(count = (\d+)\)/),
+    /* What Android 15 and up print instead of those two, and what says the
+       dump came from the new frontend at all. */
+    activeLayers: one(/Active Layers[^(\n]*\(count = (\d+)\)/),
+    frontend: tree.length || /New Frontend Enabled:\s*true/.test(text) ? 'new' : null,
   };
 
   return finaliseScene('sf', displays, layers, globals);
@@ -5193,6 +5578,577 @@ function parseLogcatDump(input) {
   return finaliseScene('logcat', displays, nodes, globals);
 }
 
+/* ================ parse: getevent ================ */
+
+/* `adb shell getevent -lt` is the kernel's own account of a gesture: one line
+   per event — a type, a code, a value, and the monotonic clock in front of it.
+   Nothing in it is a touch. A touch is what a run of those lines adds up to,
+   so this is the one reader that has to rebuild its subject rather than read
+   it off a line.
+
+   Three multitouch protocols reach the same file. Protocol B names a slot and
+   a tracking id and states only what changed, which is what every phone made
+   in the last decade emits. Protocol A states every contact in every frame and
+   separates them with SYN_MT_REPORT, which cheap panels and emulated devices
+   still do. A single-touch device states ABS_X/ABS_Y with BTN_TOUCH around
+   them. All three are read here into the same thing: a stroke, which is one
+   finger from the moment it lands to the moment it leaves, with every sample
+   it reported stamped.
+
+   The labels are what `-l` adds and the stamps are what `-t` adds; a capture
+   missing either still reads, and one missing the stamps simply has no clock
+   to play back against.
+
+       adb shell getevent -lp                  # the ranges, so raw units scale
+       adb shell getevent -lt                  # every device, labelled, stamped
+       adb shell getevent -lt /dev/input/event2
+
+   Paste the `-lp` output above the capture and the strokes come out in the
+   panel's own coordinate space rather than one inferred from how far the
+   finger happened to travel. */
+
+const GEV_EVENT_RE =
+  /^(?:\[\s*(\d+(?:\.\d+)?)\s*\]\s*)?(\/dev\/input\/[\w.-]+)\s*:\s*(EV_[A-Z]+|[0-9a-fA-F]{4})\s+(\w+)\s+([0-9a-fA-F]{1,8})\s*$/;
+const GEV_ADD_RE  = /^add device\s+\d+\s*:\s*(\/dev\/input\/[\w.-]+)\s*$/;
+const GEV_NAME_RE = /^\s+name:\s*"(.*)"\s*$/;
+/* A range line out of `getevent -p`, with or without the `ABS (0003):` that
+   opens the first of them and with or without the labels `-l` puts on. */
+const GEV_RANGE_RE =
+  /^\s*(?:[A-Z]+\s*\(\d{4}\)\s*:\s*)?(ABS_[A-Z0-9_]+|[0-9a-fA-F]{4})\s*:\s*value\s+(-?\d+),\s*min\s+(-?\d+),\s*max\s+(-?\d+)/;
+
+/* Enough of `input-event-codes.h` to read a capture taken without `-l`.
+   Anything not in here keeps its hex, which is still something to search for. */
+const GEV_TYPES = { 0x00:'EV_SYN', 0x01:'EV_KEY', 0x02:'EV_REL', 0x03:'EV_ABS',
+                    0x04:'EV_MSC', 0x05:'EV_SW', 0x11:'EV_LED', 0x15:'EV_FF' };
+const GEV_CODES = {
+  EV_SYN: { 0:'SYN_REPORT', 1:'SYN_CONFIG', 2:'SYN_MT_REPORT', 3:'SYN_DROPPED' },
+  EV_ABS: {
+    0x00:'ABS_X', 0x01:'ABS_Y', 0x18:'ABS_PRESSURE', 0x19:'ABS_DISTANCE',
+    0x28:'ABS_MISC',
+    0x2f:'ABS_MT_SLOT', 0x30:'ABS_MT_TOUCH_MAJOR', 0x31:'ABS_MT_TOUCH_MINOR',
+    0x32:'ABS_MT_WIDTH_MAJOR', 0x33:'ABS_MT_WIDTH_MINOR', 0x34:'ABS_MT_ORIENTATION',
+    0x35:'ABS_MT_POSITION_X', 0x36:'ABS_MT_POSITION_Y', 0x37:'ABS_MT_TOOL_TYPE',
+    0x38:'ABS_MT_BLOB_ID', 0x39:'ABS_MT_TRACKING_ID', 0x3a:'ABS_MT_PRESSURE',
+    0x3b:'ABS_MT_DISTANCE', 0x3c:'ABS_MT_TOOL_X', 0x3d:'ABS_MT_TOOL_Y',
+  },
+  EV_KEY: {
+    0x66:'KEY_HOME', 0x72:'KEY_VOLUMEDOWN', 0x73:'KEY_VOLUMEUP', 0x74:'KEY_POWER',
+    0x8b:'KEY_MENU', 0x8f:'KEY_WAKEUP', 0x9e:'KEY_BACK', 0xac:'KEY_HOMEPAGE',
+    0x110:'BTN_LEFT', 0x111:'BTN_RIGHT', 0x112:'BTN_MIDDLE',
+    0x140:'BTN_TOOL_PEN', 0x145:'BTN_TOOL_FINGER', 0x14a:'BTN_TOUCH',
+    0x14d:'BTN_TOOL_DOUBLETAP', 0x14e:'BTN_TOOL_TRIPLETAP', 0x14f:'BTN_TOOL_QUADTAP',
+    0x244:'KEY_APPSELECT',
+  },
+  EV_REL: { 0x00:'REL_X', 0x01:'REL_Y', 0x06:'REL_HWHEEL', 0x08:'REL_WHEEL' },
+};
+
+/* A value is eight hex digits of two's complement. The one that matters is
+   ABS_MT_TRACKING_ID's ffffffff, which is the kernel saying a finger left. */
+function gevSigned(hex) {
+  const v = parseInt(hex, 16);
+  if (!Number.isFinite(v)) return 0;
+  return hex.length >= 8 && v > 0x7fffffff ? v - 0x100000000 : v;
+}
+
+/* The name a code goes by, whichever way the capture was taken: `-l` printed
+   it already, and without `-l` it is four hex digits to look up. */
+function gevLabel(table, raw) {
+  if (/^[A-Za-z]/.test(raw) && !/^[0-9a-fA-F]{4}$/.test(raw)) return raw;
+  const n = parseInt(raw, 16);
+  return (table && table[n]) || `0x${raw}`;
+}
+
+/* One pass over the file: the add-device lines that name the nodes, the range
+   lines that scale them, and the events themselves, kept per device. */
+function gevRead(input) {
+  const lines = String(input || '').split(/\r?\n/);
+  const devs = new Map();
+  const dev = (path) => {
+    if (!devs.has(path)) devs.set(path, { path, name:null, ranges:new Map(), events:[], head:[] });
+    return devs.get(path);
+  };
+
+  let head = null;               // the device whose `add device` block we are in
+  for (const line of lines) {
+    const add = line.match(GEV_ADD_RE);
+    if (add) { head = dev(add[1]); head.head.push(line.trim()); continue; }
+
+    const m = line.match(GEV_EVENT_RE);
+    if (m) {
+      head = null;
+      const d = dev(m[2]);
+      const type = gevLabel(GEV_TYPES, m[3]);
+      d.events.push({
+        t: m[1] === undefined ? null : +m[1],
+        type,
+        code: gevLabel(GEV_CODES[type], m[4]),
+        value: gevSigned(m[5]),
+      });
+      continue;
+    }
+
+    if (!head) continue;
+    head.head.push(line.trim());
+    const nm = line.match(GEV_NAME_RE);
+    if (nm) { head.name = nm[1]; continue; }
+    const rg = line.match(GEV_RANGE_RE);
+    if (rg) head.ranges.set(gevLabel(GEV_CODES.EV_ABS, rg[1]),
+                            { value:+rg[2], min:+rg[3], max:+rg[4] });
+  }
+  return devs;
+}
+
+/* ---- from events to strokes ---- */
+
+/* A contact being built: what the last frame said about it, and where it has
+   been. `id` is the kernel's tracking id where there is one and the slot
+   otherwise, which is all a protocol A or single-touch device gives. */
+function gevStroke(seq, slot, id, t) {
+  return { seq, slot, id, start:t, end:t, samples:[], open:true };
+}
+
+function gevPush(s, t, p) {
+  if (p.x === null || p.y === null) return;
+  const last = s.samples[s.samples.length - 1];
+  s.end = t;
+  /* A device that reports at 120Hz with a finger held still prints the same
+     point a hundred times. One sample per position keeps the path honest and
+     the duration is still read off `start` and `end`. */
+  if (last && last.x === p.x && last.y === p.y && last.pressure === p.pressure) {
+    last.held = (last.held || 1) + 1;
+    last.tEnd = t;
+    return;
+  }
+  s.samples.push({ t, x:p.x, y:p.y, pressure:p.pressure, major:p.major, tEnd:t });
+}
+
+/* The three protocols, read in one pass. Which one a device speaks is not
+   declared anywhere — it is whichever codes turn up — so all three are
+   followed at once and the one that produced strokes is the one it spoke. */
+function gevTracks(events) {
+  const strokes = [], keys = [];
+  const openBySlot = new Map();          // protocol B: slot -> stroke
+  const pending = new Map();             // slot -> what this frame has said
+  const at = (slot) => {
+    if (!pending.has(slot)) pending.set(slot, { x:null, y:null, pressure:null, major:null });
+    return pending.get(slot);
+  };
+  const keyDown = new Map();
+  let slot = 0, seq = 0, clock = 0;
+  let protoB = false, protoA = false, legacy = false;
+  let frameA = [];                       // protocol A: contacts stated this frame
+  let single = null;                     // single-touch: the one open stroke
+  let touching = false;
+
+  const nearest = (pt, pool) => {
+    let best = null, bestD = Infinity;
+    for (const s of pool) {
+      const l = s.samples[s.samples.length - 1];
+      const d = l ? Math.hypot(l.x - pt.x, l.y - pt.y) : Infinity;
+      if (d < bestD) { bestD = d; best = s; }
+    }
+    return best;
+  };
+
+  for (const e of events) {
+    if (e.t !== null) clock = e.t;
+    const t = e.t === null ? clock : e.t;
+
+    if (e.type === 'EV_ABS') {
+      const c = at(slot);
+      switch (e.code) {
+        case 'ABS_MT_SLOT': slot = e.value; break;
+        case 'ABS_MT_TRACKING_ID': {
+          protoB = true;
+          if (e.value < 0) {
+            const s = openBySlot.get(slot);
+            if (s) { s.open = false; openBySlot.delete(slot); }
+            pending.delete(slot);
+          } else {
+            const s = gevStroke(seq++, slot, e.value, t);
+            strokes.push(s);
+            openBySlot.set(slot, s);
+          }
+          break;
+        }
+        case 'ABS_MT_POSITION_X': case 'ABS_MT_TOOL_X': c.x = e.value; break;
+        case 'ABS_MT_POSITION_Y': case 'ABS_MT_TOOL_Y': c.y = e.value; break;
+        case 'ABS_MT_PRESSURE': c.pressure = e.value; break;
+        case 'ABS_MT_TOUCH_MAJOR': c.major = e.value; break;
+        case 'ABS_X': legacy = true; at(0).x = e.value; break;
+        case 'ABS_Y': legacy = true; at(0).y = e.value; break;
+        case 'ABS_PRESSURE': at(0).pressure = e.value; break;
+        default: break;
+      }
+      continue;
+    }
+
+    if (e.type === 'EV_KEY') {
+      if (e.code === 'BTN_TOUCH') {
+        touching = e.value > 0;
+        if (!touching && single) { single.open = false; single = null; }
+        continue;
+      }
+      if (/^BTN_TOOL_/.test(e.code)) continue;      // how many fingers, not a key
+      if (e.value === 1) keyDown.set(e.code, t);
+      else if (e.value === 0) {
+        const down = keyDown.get(e.code);
+        keys.push({ seq:seq++, code:e.code, start:down === undefined ? t : down, end:t,
+                    held:down !== undefined });
+        keyDown.delete(e.code);
+      }
+      continue;
+    }
+
+    if (e.type !== 'EV_SYN') continue;
+
+    if (e.code === 'SYN_MT_REPORT') {
+      protoA = true;
+      const c = pending.get(0) || pending.get(slot);
+      if (c && c.x !== null && c.y !== null) frameA.push({ ...c });
+      pending.delete(0); pending.delete(slot);
+      continue;
+    }
+    if (e.code !== 'SYN_REPORT') continue;
+
+    /* A frame is over. Protocol B commits whatever each open slot has said,
+       protocol A matches this frame's contacts onto the strokes still open,
+       and a single-touch device commits the one point it has. */
+    if (protoB) {
+      for (const [sl, s] of openBySlot) {
+        const c = pending.get(sl);
+        const last = s.samples[s.samples.length - 1];
+        const pt = {
+          x: c && c.x !== null ? c.x : last ? last.x : null,
+          y: c && c.y !== null ? c.y : last ? last.y : null,
+          pressure: c && c.pressure !== null ? c.pressure : last ? last.pressure : null,
+          major: c && c.major !== null ? c.major : last ? last.major : null,
+        };
+        gevPush(s, t, pt);
+      }
+      pending.clear();
+    }
+
+    if (frameA.length || (protoA && !frameA.length)) {
+      const live = strokes.filter(s => s.open && s.proto === 'a');
+      const spare = [...live];
+      for (const pt of frameA) {
+        const s = nearest(pt, spare);
+        const use = s || (() => {
+          const made = gevStroke(seq, -1, seq, t); seq++;
+          made.proto = 'a';
+          strokes.push(made);
+          return made;
+        })();
+        if (s) spare.splice(spare.indexOf(s), 1);
+        gevPush(use, t, pt);
+      }
+      for (const s of spare) s.open = false;         // a finger that stopped being reported
+      frameA = [];
+    }
+
+    if (legacy && !protoB && !protoA) {
+      const c = pending.get(0);
+      if (touching && !single) {
+        single = gevStroke(seq, 0, seq, t); seq++;
+        strokes.push(single);
+      }
+      if (single && c) gevPush(single, t, {
+        x: c.x, y: c.y, pressure: c.pressure, major: null,
+      });
+    }
+  }
+
+  for (const s of strokes) s.open = false;           // the capture ended mid-gesture
+  return { strokes: strokes.filter(s => s.samples.length), keys,
+           protocol: protoB ? 'B' : protoA ? 'A' : legacy ? 'single-touch' : null };
+}
+
+/* ---- what a stroke turned out to be ---- */
+
+/* A gesture is named from its own numbers and nothing else: how long the
+   finger was down, how far it went, and whether where it ended is where it was
+   heading the whole time. The thresholds are the ones Android itself uses in
+   spirit — a tap is a touch that did not move, a long press is one that stayed
+   — scaled to the panel rather than fixed in device units, because a 1080-wide
+   panel and a 4096-wide digitiser count the same finger differently. */
+const GEV_TAP_MS   = 180;    // under this and a still finger is a tap
+const GEV_PRESS_MS = 500;    // over this and a still finger is a long press
+
+function gevGeometry(samples) {
+  let travel = 0;
+  const box = { l:Infinity, t:Infinity, r:-Infinity, b:-Infinity };
+  for (let i = 0; i < samples.length; i++) {
+    const s = samples[i];
+    box.l = Math.min(box.l, s.x); box.r = Math.max(box.r, s.x);
+    box.t = Math.min(box.t, s.y); box.b = Math.max(box.b, s.y);
+    if (i) travel += Math.hypot(s.x - samples[i-1].x, s.y - samples[i-1].y);
+  }
+  const a = samples[0], z = samples[samples.length - 1];
+  return { box, travel, net: Math.hypot(z.x - a.x, z.y - a.y),
+           dx: z.x - a.x, dy: z.y - a.y };
+}
+
+function gevDirection(dx, dy) {
+  return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 'right' : 'left')
+                                      : (dy >= 0 ? 'down' : 'up');
+}
+
+/* The speed the finger was doing as it left, which is what decides whether the
+   list keeps scrolling after it. Measured over the last 100ms of the stroke
+   rather than the whole of it, the way a VelocityTracker does. */
+function gevFling(samples) {
+  const z = samples[samples.length - 1];
+  if (samples.length < 2 || z.t === null) return null;
+  let i = samples.length - 1;
+  while (i > 0 && z.t - samples[i - 1].t < 0.1) i--;
+  const a = samples[i === samples.length - 1 ? samples.length - 2 : i];
+  const dt = z.t - a.t;
+  if (!(dt > 0)) return null;
+  return { x: (z.x - a.x) / dt, y: (z.y - a.y) / dt,
+           speed: Math.hypot(z.x - a.x, z.y - a.y) / dt };
+}
+
+function gevClassify(s, slop) {
+  const ms = (s.end - s.start) * 1000;
+  if (s.geo.travel <= slop) {
+    return ms >= GEV_PRESS_MS ? { kind:'long press', family:'gev-press' }
+                              : { kind:'tap', family:'gev-tap' };
+  }
+  /* A stroke that ended where it was heading is a swipe; one that wandered and
+     came back is a drag, and the difference is the only thing that tells a
+     fling apart from a scribble. */
+  if (s.geo.net > s.geo.travel * 0.7) {
+    return { kind:`swipe ${gevDirection(s.geo.dx, s.geo.dy)}`, family:'gev-swipe',
+             direction: gevDirection(s.geo.dx, s.geo.dy) };
+  }
+  return { kind:'drag', family:'gev-drag' };
+}
+
+/* Strokes that were down at the same time are one gesture. Two fingers whose
+   distance apart changed by more than a third of what it started at is a
+   pinch, which is the one multi-finger gesture worth naming; the rest is said
+   as what it is, which is several fingers at once. */
+function gevGroup(strokes) {
+  const sorted = [...strokes].sort((a, b) => a.start - b.start);
+  const groups = [];
+  for (const s of sorted) {
+    const g = groups[groups.length - 1];
+    if (g && s.start <= g.end) { g.members.push(s); g.end = Math.max(g.end, s.end); }
+    else groups.push({ members:[s], start:s.start, end:s.end });
+  }
+  for (const g of groups) {
+    if (g.members.length < 2) { g.kind = g.members[0].kind; continue; }
+    const span = (a) => {
+      const pts = g.members.map(s => a === 'first' ? s.samples[0] : s.samples[s.samples.length - 1]);
+      let most = 0;
+      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+        most = Math.max(most, Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y));
+      }
+      return most;
+    };
+    const from = span('first'), to = span('last');
+    const dirs = new Set(g.members.map(s => s.direction).filter(Boolean));
+    g.kind = to > from * 1.33 ? 'pinch out'
+           : from > to * 1.33 ? 'pinch in'
+           : dirs.size === 1 ? `${g.members.length}-finger swipe ${[...dirs][0]}`
+           : `${g.members.length} fingers`;
+    g.pinch = to > from * 1.33 || from > to * 1.33;
+    g.from = from; g.to = to;
+  }
+  return groups;
+}
+
+/* ---- the scene ---- */
+
+/* The coordinate space a stroke is drawn in. `getevent -p` states it outright;
+   without it the only honest answer is how far the fingers in this capture
+   actually reached, which is said to be inferred wherever it is shown. */
+function gevSpace(dev, strokes) {
+  const rx = dev.ranges.get('ABS_MT_POSITION_X') || dev.ranges.get('ABS_X');
+  const ry = dev.ranges.get('ABS_MT_POSITION_Y') || dev.ranges.get('ABS_Y');
+  if (rx && ry && rx.max > rx.min && ry.max > ry.min) {
+    return { x0:rx.min, y0:ry.min, w:rx.max - rx.min + 1, h:ry.max - ry.min + 1,
+             synthesised:false };
+  }
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  for (const s of strokes) {
+    l = Math.min(l, s.geo.box.l); t = Math.min(t, s.geo.box.t);
+    r = Math.max(r, s.geo.box.r); b = Math.max(b, s.geo.box.b);
+  }
+  if (!Number.isFinite(l)) return { x0:0, y0:0, w:1080, h:1920, synthesised:true };
+  /* Round out to something that reads like a panel rather than to the exact
+     pixel the finger happened to stop at. */
+  const round = (v) => Math.max(1, Math.ceil(v / 16) * 16);
+  return { x0:0, y0:0, w:round(r + 1), h:round(b + 1), synthesised:true };
+}
+
+const gevMs = (s) => s < 0.1 ? `${Math.round(s * 1000)} ms`
+                   : s < 60 ? `${s.toFixed(s < 10 ? 2 : 1)} s`
+                   : `${Math.floor(s / 60)}m ${(s % 60).toFixed(1)}s`;
+const gevPt = (p) => `${Math.round(p.x)}, ${Math.round(p.y)}`;
+
+function parseGeteventCapture(input) {
+  const devs = gevRead(input);
+  const displays = [];
+  const nodes = [];
+  let first = Infinity, last = -Infinity, events = 0, stamped = false;
+
+  /* A device node is `event2`, and the number in it is the id every group in
+     Telltale is keyed by. A path that is not `eventN` — a symlink under
+     `/dev/input/by-path`, say — still gets an id, taken in the order it was
+     seen, so it is a group like any other. */
+  let spare = 900;
+  const idOf = (path) => {
+    const m = path.match(/event(\d+)$/);
+    return m ? +m[1] : spare++;
+  };
+
+  for (const dev of devs.values()) {
+    const { strokes, keys, protocol } = gevTracks(dev.events);
+    events += dev.events.length;
+    if (!strokes.length && !keys.length) continue;
+
+    for (const s of strokes) s.geo = gevGeometry(s.samples);
+    const space = gevSpace(dev, strokes);
+    const slop = Math.max(8, Math.max(space.w, space.h) * 0.012);
+    for (const s of strokes) Object.assign(s, gevClassify(s, slop));
+
+    const id = idOf(dev.path);
+    const groups = gevGroup(strokes);
+    const mine = [];
+
+    groups.forEach((g, gi) => {
+      const multi = g.members.length > 1;
+      const parentHash = multi ? `gev:${id}:g${gi}` : null;
+
+      if (multi) {
+        const box = g.members.reduce((acc, s) => ({
+          l:Math.min(acc.l, s.geo.box.l), t:Math.min(acc.t, s.geo.box.t),
+          r:Math.max(acc.r, s.geo.box.r), b:Math.max(acc.b, s.geo.box.b),
+        }), { l:Infinity, t:Infinity, r:-Infinity, b:-Infinity });
+        mine.push({
+          hash: parentHash,
+          title: g.kind,
+          typeLabel: g.pinch ? 'pinch' : 'multi-touch',
+          family: 'gev-multi',
+          displayId: id,
+          gesture: true,
+          fingers: g.members.length,
+          start: g.start, end: g.end,
+          frame: box,
+          z: -gi * 1000,
+          visible: true,
+          badges: [[`${g.members.length} fingers`, 'badge-focus'],
+                   [gevMs(g.end - g.start), 'badge-comp']],
+          search: `${g.kind} ${g.members.length} fingers`.toLowerCase(),
+          samples: [],
+          raw: '',
+        });
+      }
+
+      g.members.forEach((s, si) => {
+        const dur = s.end - s.start;
+        const fling = gevFling(s.samples);
+        mine.push({
+          hash: `gev:${id}:s${s.seq}`,
+          parentHash,
+          ancestors: parentHash ? [{ hash: parentHash }] : [],
+          title: `${s.kind} at ${gevPt(s.samples[0])}`,
+          typeLabel: s.kind.split(' ')[0] === 'swipe' ? 'swipe' : s.kind,
+          family: s.family,
+          displayId: id,
+          gesture: false,
+          stroke: true,
+          slot: s.slot,
+          trackingId: s.id,
+          start: s.start, end: s.end, duration: dur,
+          samples: s.samples,
+          geo: s.geo,
+          fling,
+          direction: s.direction || null,
+          kind: s.kind,
+          frame: s.geo.box,
+          z: -gi * 1000 - si,
+          visible: true,
+          badges: [
+            [gevMs(dur), 'badge-comp'],
+            ...(s.geo.travel > slop ? [[`${Math.round(s.geo.travel)} px`, 'badge-vis']] : []),
+            ...(fling && fling.speed > Math.max(space.w, space.h) ? [['fling', 'badge-focus']] : []),
+          ],
+          search: `${s.kind} slot ${s.slot} id ${s.id} ${gevPt(s.samples[0])}`.toLowerCase(),
+          raw: '',
+        });
+      });
+    });
+
+    /* A key or a button is not a place on the panel, so it has no frame and
+       simply sits in the list where its moment puts it. */
+    keys.forEach((k, ki) => {
+      mine.push({
+        hash: `gev:${id}:k${k.seq}`,
+        title: k.code,
+        typeLabel: /^BTN_/.test(k.code) ? 'button' : 'key',
+        family: 'gev-key',
+        displayId: id,
+        key: true,
+        start: k.start, end: k.end,
+        frame: null,
+        z: -1e6 - ki,
+        visible: true,
+        badges: [[gevMs(k.end - k.start), 'badge-comp'],
+                 ...(k.held ? [] : [['no down', 'badge-exit']])],
+        search: `${k.code} key`.toLowerCase(),
+        samples: [],
+        raw: '',
+      });
+    });
+
+    for (const n of mine) {
+      if (n.start < first) first = n.start;
+      if (n.end > last) last = n.end;
+    }
+    if (dev.events.some(e => e.t !== null)) stamped = true;
+
+    nodes.push(...mine);
+    displays.push({
+      id,
+      label: dev.path.replace(/^\/dev\/input\//, ''),
+      name: dev.name,
+      path: dev.path,
+      size: { w: space.w, h: space.h },
+      origin: { x: space.x0, y: space.y0 },
+      synthesised: space.synthesised,
+      /* A device that only ever reported keys has no panel to draw on. It is
+         still a group — its keys happened — and says so rather than drawing a
+         screen that was never measured. */
+      noGeometry: !strokes.length,
+      meta: [`${strokes.length} stroke${strokes.length === 1 ? '' : 's'}`,
+             keys.length ? `${keys.length} key${keys.length === 1 ? '' : 's'}` : null,
+             strokes.length ? `${space.w} × ${space.h}${space.synthesised ? '?' : ''}` : null,
+            ].filter(Boolean).join(' \u00b7 '),
+      protocol,
+      ranges: dev.ranges,
+      strokes: strokes.length,
+      keys: keys.length,
+      events: dev.events.length,
+      start: mine.length ? Math.min(...mine.map(n => n.start)) : 0,
+      end: mine.length ? Math.max(...mine.map(n => n.end)) : 0,
+      raw: dev.head.join('\n'),
+    });
+  }
+
+  const globals = {
+    devices: displays.length,
+    events,
+    stamped,
+    start: Number.isFinite(first) ? first : 0,
+    end: Number.isFinite(last) ? last : 0,
+    span: Number.isFinite(first) && last > first ? last - first : 0,
+  };
+  return finaliseScene('getevent', displays, nodes, globals);
+}
+
 /* ================ state and shared helpers ================ */
 const VIEW0 = { yaw:34, pitch:19, sep:38 };   // the view Reset goes back to
 /* One dump loaded is one document. Everything the user does to a dump — which
@@ -5238,9 +6194,22 @@ for(const key of ['docs', 'docId']){
    line of the section is being asked about, and what is being looked for
    inside it. They sit here with the rest of what a document remembers, so two
    tabs off the same dump keep their own place in it. */
+/* `mapTo` and `mapRot` are a trace's own: which display out of the other dumps
+   on this desk its raw device units are being drawn onto, and how the panel is
+   turned against it. `playAt` is where the playhead is, in seconds from the
+   start of the capture, so scrubbing one tab does not move another.
+
+   `trace` is the other direction: a capture pasted onto a dump that draws, so
+   the gesture plays over that dump's own windows. It is a whole scene, read by
+   the same reader that would have opened it as a tab, and it hangs off this
+   document rather than being one — which is why it lives here with the rest of
+   what a document remembers and not in `found`. `traceDev` is which of its
+   devices is playing. */
 const DOC_STATE = { toolId:null, displayId:null, selected:null, region:null,
                     filter:'', regex:false, show:'all', dim:true, view:'depth',
-                    collapsed:null, attr:null, attrFilter:'', ...VIEW0 };
+                    collapsed:null, attr:null, attrFilter:'',
+                    mapTo:null, mapRot:0, playAt:0,
+                    trace:null, traceDev:null, ...VIEW0 };
 for(const key of Object.keys(DOC_STATE)){
   Object.defineProperty(S, key, {
     enumerable:true,
@@ -5311,6 +6280,11 @@ const FAMILY_COLORS = {
   'input-touch':'#2e7d5b', 'input-key':'#2f6f8f', 'input-pointer':'#b4622a',
   'input-stick':'#6b5b95', 'input-sensor':'#8a8f6f', 'input-device':'#55636f',
   'input-mapper':'#55636f',
+  /* A stroke is coloured by what the finger did: the four gestures a touch
+     dump is read for, the group a multi-finger one hangs under, and a key,
+     which is the one thing in this dump that is not a place on the panel. */
+  'gev-tap':'#2e7d5b', 'gev-press':'#b4622a', 'gev-swipe':'#2f6f8f',
+  'gev-drag':'#6b5b95', 'gev-multi':'#a3352f', 'gev-key':'#55636f',
   /* A log line is coloured by its level, which is the only thing about it that
      is worth seeing before reading it. */
   'log-verbose':'#8a8f6f', 'log-debug':'#55636f', 'log-info':'#2f6f8f',
@@ -5572,7 +6546,7 @@ async function readInto(text, prefer, label, from){
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
         + '`dumpsys SurfaceFlinger`, `dumpsys package`, `dumpsys user`, '
         + '`dumpsys input`, `dumpsys car_service` and `dumpsys binder_calls_stats` '
-        + 'output, logcat, and ART '
+        + 'output, `getevent -lt` captures, logcat, and ART '
         + 'thread dumps (`/data/anr/traces.txt`), '
         + 'or a bugreport — the zip or the text — containing any of them.');
   }
@@ -5649,7 +6623,16 @@ function initialUi(entry){
   const shut = entry.tool.startCollapsed
     ? entry.scene.nodes.filter(entry.tool.startCollapsed).map(n => n.hash) : [];
   return { ...DOC_STATE, toolId:entry.tool.id, show:entry.tool.show,
-           displayId:entry.scene.displays[0].id, collapsed:new Set(shut) };
+           /* A dump whose sheet is its own drawing has no stack to tilt, so it
+              opens on the plan and never leaves it. */
+           view: entry.tool.views === false ? 'plan' : DOC_STATE.view,
+           /* Groups are in the order the dump put them in, which for nearly
+              every reader is the order to open in. A tool that knows better —
+              a trace whose first device by number is the volume rocker and
+              whose subject is the panel — says which one. */
+           displayId: entry.tool.openOn
+             ? entry.tool.openOn(entry.scene) : entry.scene.displays[0].id,
+           collapsed:new Set(shut) };
 }
 
 function currentDoc(){ return S.docs.find(d => d.id === S.docId) || null; }
@@ -5709,6 +6692,11 @@ function placePanes(list){
 }
 
 function syncUi(){
+  /* A trace left playing in one tab must not go on running the clock of
+     whatever is opened next, and the paste panel is about the tab it was
+     opened on. */
+  gevStop();
+  $('tracePaste').dataset.open = '0';
   const tool = S.tool;
   $('filter').value = S.filter;
   $('filter').placeholder = tool.filterHint;
@@ -6373,9 +7361,14 @@ $('stackScroll').addEventListener('scroll', () => {
 function drawPlan(){
   if(S.tool.layout === 'list') return;
   if(S.tool.layout === 'doc') return renderDoc();
-  if(S.view === 'depth') renderDepth(); else renderFlat();
+  /* Two views come with the page; a tool that draws something the plan and
+     the stack cannot say brings its own sheet and its own line under it. */
+  if(S.tool.sheet) S.tool.sheet();
+  else if(S.view === 'depth') renderDepth();
+  else renderFlat();
   renderLegend();
-  renderSheetFoot();
+  if(S.tool.sheetFoot) $('sheetFoot').innerHTML = S.tool.sheetFoot();
+  else renderSheetFoot();
 }
 
 /* ---------------- render: the reading pane ---------------- */
@@ -6608,10 +7601,27 @@ function renderSheetFoot(){
   const hidden = d.nodes.length - listItems().length;
   if(hidden > 0 && !S.filter.trim()) foot.push(`<span>${hidden} not listed</span>`);
   if(derived) foot.push(`<span>${derived} frame${derived>1?'s':''} recovered</span>`);
+  /* A capture playing over this layout is part of what the sheet is showing,
+     so it is said on the sheet's own line rather than somewhere else. */
+  const trace = gevHostFoot();
+  if(trace) foot.push(trace);
   $('sheetFoot').innerHTML = foot.join('');
 }
 
 /* ---- shared by both sheet renderers ---- */
+
+/* How far a sheet may grow past the display it draws. A layer can state
+   bounds far larger than any screen — an input sink that takes touches
+   wherever they land states half a world, and a modern SurfaceFlinger dump is
+   full of them — and fitting the sheet around one would shrink the display to
+   a speck. A screen's width past the display in each direction is as far as
+   the sheet goes; what lies beyond that is still drawn, and the edge of the
+   sheet is where it stops being shown. */
+const sheetLimit = (size) => ({ l: -size.w, t: -size.h, r: size.w * 2, b: size.h * 2 });
+const clipToSheet = (lim, rc) => ({
+  l: Math.max(rc.l, lim.l), t: Math.max(rc.t, lim.t),
+  r: Math.min(rc.r, lim.r), b: Math.min(rc.b, lim.b),
+});
 
 /* The nodes to draw, bottom of the stack first — which is also the order
    SVG needs, both for the fills and for the hit targets stacked over them. */
@@ -6677,9 +7687,10 @@ function renderDepth(){
   const pts = (q) => q.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
 
   const base = quad({l:0,t:0,r:W,b:H}, 0);
+  const lim = sheetLimit(d.size);
   const faces = stack.map((w, i) => {
     const z = (i + 1) * step;
-    const q = quad(w.frame, z);
+    const q = quad(clipToSheet(lim, w.frame), z);
     return { w, q, z, a: q.reduce((m,p) => p[0] > m[0] ? p : m, q[0]) };   // right-most corner
   });
   // Rows follow where each window landed on the sheet, not its rank, so the
@@ -6749,6 +7760,12 @@ function renderDepth(){
 
   if(!faces.length) parts.push(emptyNote(shownCount, 0, 0));
 
+  /* The trace lies on the screen, so it goes through the same projection the
+     faces did at depth 0 — turn the stack and the gesture turns with it. The
+     playhead is painted through that mapping too, which is what this leaves
+     behind for it. */
+  parts.push(gevOverlay(span, (x, y) => P(x, y, 0)));
+
   // Hit targets last, bottom-up, so the window on top takes the click.
   for(const { w, q, z } of faces){
     parts.push(hitShape(w, 'polygon') + `points="${pts(q)}"><title>${esc(w.title)}</title></polygon>`);
@@ -6808,11 +7825,13 @@ function renderFlat(){
   const paint = paintOrder();
   const dispRect = { l:0, t:0, r:d.size.w, b:d.size.h };
 
-  // Expand the sheet if any window sits off the display.
+  // Expand the sheet if any window sits off the display, but only so far.
+  const lim = sheetLimit(d.size);
   const bb = { ...dispRect };
   for(const { frame } of paint){
-    bb.l = Math.min(bb.l, frame.l); bb.t = Math.min(bb.t, frame.t);
-    bb.r = Math.max(bb.r, frame.r); bb.b = Math.max(bb.b, frame.b);
+    const rc = clipToSheet(lim, frame);
+    bb.l = Math.min(bb.l, rc.l); bb.t = Math.min(bb.t, rc.t);
+    bb.r = Math.max(bb.r, rc.r); bb.b = Math.max(bb.b, rc.b);
   }
   const pad = Math.max(rectW(bb), rectH(bb)) * 0.06;
   const vb = { x: bb.l - pad, y: bb.t - pad, w: rectW(bb) + pad*2, h: rectH(bb) + pad*2 };
@@ -6889,6 +7908,11 @@ function renderFlat(){
 
   if(!paint.length) parts.push(emptyNote(shownCount, dispRect.r / 2, dispRect.b / 2));
 
+  /* A touch log pasted onto this dump plays over it, on top of every window
+     and under nothing: the whole point of putting it here is to see which
+     window the finger was on. */
+  parts.push(gevOverlay(Math.max(rectW(dispRect), rectH(dispRect))));
+
   // Hit targets last. SVG paints in document order, so these go bottom-up like
   // the fills: the topmost window ends up on top and takes the click.
   for(const w of paint){
@@ -6912,6 +7936,437 @@ function scaleLabels(){
   // preserveAspectRatio="meet" letterboxes, so the drawn scale is the smaller ratio.
   const scale = Math.min(box.width / vb.width, box.height / vb.height);
   if(scale > 0) svg.style.setProperty('--fs', (12 / scale) + 'px');
+}
+
+/* ---------------- render: a getevent trace ---------------- */
+
+/* A touch dump is the one thing Telltale reads that is not a layout. Nothing
+   in it sits anywhere for longer than a frame, so neither the plan nor the
+   stack says anything about it: what a stroke is, is a path and a clock. This
+   draws the path and runs the clock.
+
+   It reaches a display from either end, and both ends meet in `gevStage()`:
+
+     · A capture opened on its own is the `Touch trace` reader, and the display
+       under it is borrowed — any window, input or SurfaceFlinger dump open on
+       the same desk, picked under `over`.
+
+     · A window dump open on its own takes a capture pasted into it, and the
+       display under it is its own.
+
+   Which way round it was reached changes where the two halves came from and
+   nothing else, so everything below this point is written once. */
+
+const gevPlay = { raf:0, last:0, running:false };
+
+/* Where the panel, the display and the strokes meet: the capture being drawn,
+   the device inside it, the pixels it is being drawn in, and the projection
+   between them. Null when this sheet has no trace on it at all. */
+function gevStage(){
+  if(!S.data || !S.tool) return null;
+
+  /* Reached as the reader: this document is the capture, and the display is
+     whatever was borrowed off another tab. */
+  if(S.tool.id === 'getevent'){
+    const dev = currentDisplay();
+    const target = gevTarget();
+    return { scene:S.data, dev, target,
+             display: target ? target.display : null,
+             P: gevProject(dev, target, S.mapRot),
+             nodes: gevDrawn(), own:true };
+  }
+
+  /* Reached from a layout: this document is the display, and the capture is
+     one that was pasted onto it. */
+  const trace = S.trace;
+  if(!trace || S.tool.layout !== 'spatial') return null;
+  const dev = trace.displays.find(d => d.id === S.traceDev)
+           || trace.displays.find(d => !d.noGeometry) || trace.displays[0];
+  if(!dev) return null;
+  const display = currentDisplay();
+  const target = { display, tool:S.tool };
+  return { scene:trace, dev, target, display,
+           P: gevProject(dev, target, S.mapRot),
+           /* A layout's filter is about its windows, so it does not thin the
+              strokes: the whole gesture plays over whatever is being shown. */
+           nodes: dev.nodes.filter(n => n.samples && n.samples.length), own:false };
+}
+
+const gevClock = (stage) => {
+  const g = ((stage || gevStage() || {}).scene || {}).globals || {};
+  return { start: g.start || 0, span: Math.max(g.span || 0, 0), stamped: !!g.stamped };
+};
+
+/* Every display on this desk that a trace could be drawn over: one entry per
+   display of every other dump that draws. The trace's own device is not one of
+   them — that is what `its own device units` means. */
+function gevTargets(){
+  const out = [];
+  for(const doc of S.docs){
+    for(const f of doc.found){
+      if(!f.scene || !f.tool || f.tool.layout !== 'spatial' || f.tool.sheet) continue;
+      for(const d of f.scene.displays){
+        if(!d.nodes.some(n => n.frame)) continue;
+        out.push({ key:`${doc.id}:${f.tool.id}:${d.id}`, doc, tool:f.tool, display:d,
+                   label:`${elide(doc.label, 22)} · ${f.tool.name} · display ${d.id}` });
+      }
+    }
+  }
+  return out;
+}
+
+const gevTarget = () => S.mapTo ? gevTargets().find(t => t.key === S.mapTo) || null : null;
+
+/* Device units in, display pixels out. The panel is normalised to 0..1 first,
+   so a digitiser that counts to 4096 and a display that counts to 1080 meet in
+   the middle; the turn is applied there too, because a panel mounted at 90° to
+   its display is the normal case on a tablet and there is nothing in either
+   dump that states it. */
+function gevProject(dev, target, rot){
+  const dst = target ? target.display.size : dev.size;
+  const turn = ((rot % 360) + 360) % 360;
+  const ox = dev.origin ? dev.origin.x : 0, oy = dev.origin ? dev.origin.y : 0;
+  const fn = (x, y) => {
+    let u = (x - ox) / dev.size.w, v = (y - oy) / dev.size.h;
+    if(turn === 90){ const t = u; u = 1 - v; v = t; }
+    else if(turn === 180){ u = 1 - u; v = 1 - v; }
+    else if(turn === 270){ const t = u; u = v; v = 1 - t; }
+    return [u * dst.w, v * dst.h];
+  };
+  fn.size = dst;
+  return fn;
+}
+
+/* Where a stroke was at a moment. Between two samples it is interpolated,
+   because a 120Hz panel and a 60Hz screen do not agree on when a frame is and
+   a dot that steps looks like a dropped event when it is not one. */
+function gevAt(n, t){
+  const ss = n.samples;
+  if(!ss.length || t < ss[0].t || t > n.end) return null;
+  let i = 0;
+  while(i < ss.length - 1 && ss[i + 1].t <= t) i++;
+  const a = ss[i], b = ss[i + 1];
+  if(!b || !(b.t > a.t)) return { x:a.x, y:a.y, pressure:a.pressure, major:a.major };
+  const f = clamp((t - a.t) / (b.t - a.t), 0, 1);
+  return { x:a.x + (b.x - a.x) * f, y:a.y + (b.y - a.y) * f,
+           pressure:a.pressure, major:a.major };
+}
+
+const gevPath = (pts) => pts.length
+  ? 'M' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L') : '';
+
+/* The strokes the reader's own sheet draws: whatever its list is showing,
+   minus the gesture rows, which are the group and not a path of their own. */
+const gevDrawn = () => visibleNodes().filter(n => n.samples && n.samples.length);
+
+/* The drawing itself, which is the same wherever it is drawn: the whole path
+   faint, the part of it that has happened heavy, the dot the finger went down
+   on, the ring it came up at, and the finger where it is now.
+
+   `at` maps a point on the panel into whatever space the sheet is drawing in —
+   the plan passes the projection straight through, the stack puts it through
+   the same rotation the faces went through, so the trace lies on the screen. */
+function gevParts(stage, at, r, opts){
+  const parts = [];
+  const pick = (opts && opts.selected) || null;
+  for(const n of stage.nodes){
+    const pts = n.samples.map(s => at(s));
+    if(!pts.length) continue;
+    const a = pts[0], z = pts[pts.length - 1];
+    parts.push(
+      `<g style="color:${tintFor(n)}" class="gev-g${n.hash === pick ? ' is-sel' : ''}${
+        opts && opts.dim ? opts.dim(n) : ''}">` +
+      (pts.length > 1 ? `<path class="gev-path" d="${gevPath(pts)}"/>` : '') +
+      `<circle class="gev-down" cx="${a[0].toFixed(1)}" cy="${a[1].toFixed(1)}" r="${r}"><title>${
+        esc(n.title)}</title></circle>` +
+      (pts.length > 1
+        ? `<circle class="gev-up" cx="${z[0].toFixed(1)}" cy="${z[1].toFixed(1)}" r="${r * 0.8}"/>`
+        : '') +
+      `<path class="gev-live" data-live="${esc(n.hash)}" d=""/>` +
+      /* `display` rather than `hidden`: the presentation attribute is SVG's
+         own and means the same thing in every renderer. */
+      `<circle class="gev-tip" data-tip="${esc(n.hash)}" r="${r * 1.5}"
+         cx="0" cy="0" display="none"/>` +
+      `</g>`);
+  }
+  return parts;
+}
+
+/* A trace laid over somebody else's layout. It is a note on that drawing and
+   not part of it: nothing in here takes a click, so picking a window in the
+   sheet under it still picks the window.
+
+   `post` is whatever the sheet does to a point after the panel has been scaled
+   onto the display — nothing in the plan, the stack's own rotation in the
+   z-order view. The playhead is left the same mapping, so it paints onto the
+   plane the paths were drawn on rather than through the plan's. */
+function gevOverlay(span, post){
+  const stage = gevStage();
+  gevPlayAt = null;
+  if(!stage || stage.own) return '';
+  gevPlayAt = (s) => { const [x, y] = stage.P(s.x, s.y); return post ? post(x, y) : [x, y]; };
+  return `<g class="gev-over">${gevParts(stage, gevPlayAt, span * 0.011, {}).join('')}</g>`;
+}
+
+function geteventSheet(){
+  const stage = gevStage();
+  const dev = stage.dev;
+  const dst = stage.P.size;
+  const rect = { l:0, t:0, r:dst.w, b:dst.h };
+  const span = Math.max(dst.w, dst.h);
+  const pad = span * 0.05;
+  const vb = { x:-pad, y:-pad, w:dst.w + pad * 2, h:dst.h + pad * 2 };
+  const r = span * 0.011;                       // the dot a finger is drawn as
+
+  const parts = [`<rect class="pw-screen" ${rectAttrs(rect)}/>`];
+
+  /* The borrowed layout, bottom of its stack first, under everything the
+     finger did. It is not this dump's and is drawn as a note rather than as a
+     thing to pick: the list on the left is still the strokes. */
+  if(stage.display){
+    for(const w of stage.display.nodes.filter(n => n.frame).sort((a, b) => a.z - b.z)){
+      parts.push(`<rect class="gev-under${w.visible === false ? ' is-off' : ''}"
+        ${rectAttrs(w.frame)}><title>${esc(w.title)}</title></rect>`);
+    }
+  }
+
+  parts.push(...gevParts(stage, (s) => stage.P(s.x, s.y), r,
+                         { selected:S.selected, dim:dimClass }));
+
+  if(!stage.nodes.length){
+    parts.push(`<text class="pw-label" x="${dst.w / 2}" y="${dst.h / 2}"
+      text-anchor="middle" dominant-baseline="middle">${
+      esc(dev.noGeometry ? `Nothing on ${dev.label} reported a position`
+                         : `No ${S.tool.nouns} match this filter`)}</text>`);
+  }
+
+  /* Hit targets last, and fat: a path one pixel wide on a 1080-wide panel is
+     not something a pointer can land on. */
+  for(const n of stage.nodes){
+    const pts = n.samples.map(s => stage.P(s.x, s.y));
+    parts.push(pts.length > 1
+      ? `<path class="pw-hit gev-hit" data-hash="${esc(n.hash)}" stroke-width="${r * 2.4}"
+           d="${gevPath(pts)}"><title>${esc(n.title)}</title></path>`
+      : `<circle class="pw-hit" data-hash="${esc(n.hash)}" r="${r * 2}"
+           cx="${pts[0][0].toFixed(1)}" cy="${pts[0][1].toFixed(1)}"><title>${
+           esc(n.title)}</title></circle>`);
+  }
+
+  gevPlayAt = null;                 // the reader's own sheet is the plan
+  sheetSvg({ vb, parts, label: `Touch trace on ${dev.label}` });
+  gevSyncBar();
+  gevPaint();
+}
+
+/* What the playhead has to say about every stroke on screen: the part of each
+   path that has happened by now, and where the finger is at this instant. It
+   is worked out apart from the writing below, because this is the half that
+   can be wrong and the half below is four calls to setAttribute.
+
+   `at` is the sheet's own mapping again, so a playhead painted onto the stack
+   lands on the same plane the paths were drawn on. */
+function gevPlayhead(at){
+  const stage = gevStage();
+  if(!stage) return [];
+  const put = at || ((s) => stage.P(s.x, s.y));
+  const { start, span } = gevClock(stage);
+  const t = start + clamp(S.playAt, 0, span);
+  return stage.nodes.map((n) => {
+    const pts = [];
+    for(const s of n.samples){ if(s.t > t) break; pts.push(put(s)); }
+    const now = gevAt(n, t);
+    const tip = now ? put(now) : null;
+    if(tip) pts.push(tip);
+    return { hash:n.hash, d:gevPath(pts), tip };
+  });
+}
+
+/* The playhead moved, without redrawing the sheet: the paths and the dots are
+   already in the DOM and only their `d` and their centre change, so a capture
+   with two hundred samples in it plays at frame rate instead of rebuilding an
+   SVG sixty times a second. */
+function gevPaint(){
+  const svg = document.querySelector('svg.plan');
+  if(!svg || !gevStage()) return;
+  const { span } = gevClock();
+  const frames = new Map(gevPlayhead(gevPlayAt).map(f => [f.hash, f]));
+
+  for(const el of svg.querySelectorAll('[data-live]')){
+    const f = frames.get(el.dataset.live);
+    el.setAttribute('d', f ? f.d : '');
+  }
+  for(const el of svg.querySelectorAll('[data-tip]')){
+    const f = frames.get(el.dataset.tip);
+    if(!f || !f.tip){ el.setAttribute('display', 'none'); continue; }
+    el.setAttribute('display', 'inline');
+    el.setAttribute('cx', f.tip[0].toFixed(1));
+    el.setAttribute('cy', f.tip[1].toFixed(1));
+  }
+  $('traceTime').textContent = `${S.playAt.toFixed(3)} s / ${span.toFixed(3)} s`;
+  const rng = $('rngPlay');
+  if(document.activeElement !== rng) rng.value = String(span ? S.playAt / span * 1000 : 0);
+}
+
+/* The stack draws the trace on the screen plane, which is not the plan's
+   mapping. The renderer that drew it leaves its own mapping here for the
+   playhead to use, and clears it when the plan is what is showing. */
+let gevPlayAt = null;
+
+/* ---- the bar under the sheet ---- */
+
+/* The bar is the clock, and it belongs to whatever is being played: the
+   reader's own sheet, or a layout with a capture pasted onto it. A spatial
+   dump with no capture on it yet gets the one button that takes one. */
+function gevSyncBar(){
+  const spatial = S.tool && S.tool.layout === 'spatial';
+  $('traceBar').hidden = !spatial;
+  if(!spatial) return;
+  const stage = gevStage();
+  const own = S.tool.id === 'getevent';
+
+  $('btnTracePaste').hidden = own;
+  $('btnTraceDrop').hidden = own || !S.trace;
+  $('selTraceDev').hidden = own || !S.trace;
+  for(const id of ['btnPlay', 'rngPlay', 'traceTime', 'trkSpeed', 'trkLoop', 'btnMapRot']){
+    $(id).hidden = !stage;
+  }
+  $('trkOver').hidden = !own;
+  if(!stage){
+    $('btnTracePaste').textContent = 'Play a touch log';
+    $('tracePaste').hidden = $('tracePaste').dataset.open !== '1';
+    return;
+  }
+  $('btnTracePaste').textContent = 'Replace';
+
+  const { span, stamped } = gevClock(stage);
+  const playable = stamped && span > 0;
+  $('btnPlay').disabled = !playable;
+  $('rngPlay').disabled = !playable;
+  $('btnPlay').setAttribute('aria-pressed', String(gevPlay.running));
+  $('btnPlay').textContent = gevPlay.running ? '❚❚' : '▶';
+  $('btnPlay').title = playable ? 'Play the capture'
+    : 'This capture has no timestamps — take it with `getevent -lt`';
+
+  if(own){
+    const targets = gevTargets();
+    const sel = $('selMap');
+    const want = `${S.mapTo || ''}`;
+    sel.innerHTML = `<option value="">its own device units</option>` + targets.map(t =>
+      `<option value="${esc(t.key)}">${esc(t.label)}</option>`).join('');
+    sel.value = targets.some(t => t.key === want) ? want : '';
+    if(sel.value !== want) S.mapTo = sel.value || null;
+    sel.disabled = !targets.length;
+    sel.title = targets.length ? 'Which display to scale the panel onto'
+      : 'Open a window, input or SurfaceFlinger dump on this desk and it can be drawn over that';
+  } else {
+    /* A capture off a phone holds the panel and the volume rocker; which of
+       its devices is being played is the trace's half of the same question
+       `over` asks on the other side. */
+    const devs = S.trace.displays.filter(d => !d.noGeometry);
+    const sel = $('selTraceDev');
+    sel.innerHTML = devs.map(d =>
+      `<option value="${d.id}">${esc(d.label)}${d.name ? ' · ' + esc(d.name) : ''}</option>`).join('');
+    sel.value = String(stage.dev.id);
+    sel.hidden = devs.length < 2;
+  }
+  $('btnMapRot').textContent = `${((S.mapRot % 360) + 360) % 360}°`;
+  $('btnMapRot').disabled = own && !S.mapTo;
+  $('tracePaste').hidden = $('tracePaste').dataset.open !== '1';
+}
+
+const gevSpeed = () => +$('selSpeed').value || 1;
+
+function gevStop(){
+  if(gevPlay.raf) cancelAnimationFrame(gevPlay.raf);
+  gevPlay.raf = 0; gevPlay.last = 0; gevPlay.running = false;
+  if(S.tool && S.tool.layout === 'spatial') gevSyncBar();
+}
+
+function gevStart(){
+  const stage = gevStage();
+  const { span, stamped } = gevClock(stage);
+  if(!stage || !span || !stamped) return;
+  if(S.playAt >= span - 1e-6) S.playAt = 0;
+  gevPlay.running = true;
+  gevPlay.last = 0;
+  gevPlay.raf = requestAnimationFrame(gevStep);
+  gevSyncBar();
+}
+
+function gevStep(ts){
+  gevPlay.raf = 0;
+  if(!gevPlay.running) return;
+  const dt = gevPlay.last ? (ts - gevPlay.last) / 1000 : 0;
+  gevPlay.last = ts;
+  const { span } = gevClock();
+  let at = S.playAt + dt * gevSpeed();
+  if(at >= span){
+    if($('optLoop').checked) at = 0;
+    else { S.playAt = span; gevPaint(); return gevStop(); }
+  }
+  S.playAt = at;
+  gevPaint();
+  gevPlay.raf = requestAnimationFrame(gevStep);
+}
+
+/* ---- taking a capture onto a layout ---- */
+
+/* The pasted text, read by the same reader that would have opened it as a tab
+   of its own. What comes back is a scene like any other; it simply hangs off
+   this document instead of being one. */
+function gevAttach(text){
+  let scene = null;
+  try { scene = parseGeteventCapture(text); }
+  catch(e){ return `That could not be read as a capture: ${(e && e.message) || e}`; }
+  if(!scene || !scene.ok){
+    return 'No getevent lines in that. A capture looks like '
+         + '`[   56414.024232] /dev/input/event2: EV_ABS ABS_MT_POSITION_X 000001f4` '
+         + '— take it with `adb shell getevent -lt`.';
+  }
+  gevStop();
+  S.trace = scene;
+  S.traceDev = (scene.displays.find(d => !d.noGeometry) || scene.displays[0]).id;
+  S.playAt = 0;
+  return null;
+}
+
+function gevDetach(){
+  gevStop();
+  S.trace = null; S.traceDev = null; S.playAt = 0; S.mapRot = 0;
+  $('tracePaste').dataset.open = '0';
+  renderPlan(); renderDetail();
+}
+
+/* ---- the line under the drawing ---- */
+
+function geteventFoot(){
+  const stage = gevStage();
+  const d = stage.dev;
+  const { span } = gevClock(stage);
+  const out = [];
+  out.push(`<span>${esc(d.label)}${d.name ? ' · ' + esc(d.name) : ''}</span>`);
+  out.push(`<span>${d.noGeometry ? 'no touch geometry'
+    : `${d.size.w} × ${d.size.h} device units${d.synthesised ? ' (inferred)' : ''}`}</span>`);
+  out.push(`<span>${d.strokes} stroke${d.strokes === 1 ? '' : 's'} · ${
+    span ? gevMs(span) : 'no clock'}</span>`);
+  out.push(stage.target
+    ? `<span>drawn over ${esc(stage.target.tool.name.toLowerCase())} display ${
+        stage.display.id} · ${stage.display.size.w} × ${stage.display.size.h} px</span>`
+    : `<span>drawn in device units</span>`);
+  if(!gevClock(stage).stamped) out.push(`<span>no timestamps — take it with <code>-lt</code></span>`);
+  return out.join('');
+}
+
+/* The line a layout gains when a capture is playing over it, appended to the
+   one that dump already had. */
+function gevHostFoot(){
+  const stage = gevStage();
+  if(!stage || stage.own) return '';
+  const { span, stamped } = gevClock(stage);
+  const strokes = stage.nodes.length;
+  return `<span>${strokes} stroke${strokes === 1 ? '' : 's'} off ${esc(stage.dev.label)}${
+    stage.dev.synthesised ? ' <span style="color:var(--dim)">(units inferred)</span>' : ''} · ${
+    stamped && span ? gevMs(span) : 'no clock'}</span>`;
 }
 
 /* ---------------- render: the details pane ---------------- */
@@ -7137,7 +8592,10 @@ function sfDetail(n){
     n.cls && ['class', esc(n.cls)],
     n.handle && ['handle', esc(n.handle)],
     n.uid !== null && ['uid', n.uid],
-    ['layer stack', n.displayId],
+    n.pid !== null && ['pid', n.pid],
+    ['layer stack', n.offscreen ? dim('none — offscreen') : n.displayId],
+    n.mirrorOf && ['mirror of', `layer ${n.mirrorOf.map(esc).join(', ')}`],
+    n.handleAlive === false && ['client handle', dim('gone — the layer is on its way out')],
     n.childCount && ['children', `${n.childCount} ${n.childCount === 1 ? 'layer' : 'layers'} parented to this one`],
   ])}</section>`);
 
@@ -7169,6 +8627,11 @@ function sfDetail(n){
       .filter(([k]) => k !== n.frameSource)
       .map(([k, rc]) => [esc(k), r(rc)]),
     n.transform && ['transform', `[${n.transform.map(v => v.toFixed(2)).join(', ')}] ${dim('(dsdx dtdx dtdy dsdy)')}`],
+    n.toDisplay && ['to display', [
+      n.toDisplay.rotate,
+      n.toDisplay.sx !== null ? `scale ${n.toDisplay.sx}×${n.toDisplay.sy}` : null,
+      n.toDisplay.tx !== null ? `move ${n.toDisplay.tx}, ${n.toDisplay.ty}` : null,
+    ].filter(Boolean).map(esc).join(' · ')],
     n.cornerRadius && ['corner radius', n.cornerRadius],
   ])}</section>`);
 
@@ -7176,6 +8639,7 @@ function sfDetail(n){
     ['z order', `${n.zRank+1} of ${n.zCount} ${dim('(1 = topmost, from the order the dump prints)')}`],
     ['z', n.layerZ === null ? '—' : `${n.layerZ} ${dim('(relative to the parent)')}`],
     n.relativeOf && n.relativeOf !== 'none' && ['relative to', esc(n.relativeOf)],
+    n.relativeParent && ['z relative to', `layer ${esc(n.relativeParent)}`],
     n.winTypeNum !== null && ['window type', n.winType
       ? `${esc(n.winType)} ${dim(n.winTypeNum)}` : String(n.winTypeNum)],
   ])}</section>`);
@@ -7186,7 +8650,10 @@ function sfDetail(n){
     ['active buffer', n.buffer
       ? `${n.buffer.w} × ${n.buffer.h} ${dim(`stride ${n.buffer.stride} · ${esc(n.buffer.format)}`)}`
       : none],
+    n.frameNumber !== null && ['frame', `${n.frameNumber}${n.contentDirty ? ' ' + dim('(content dirty)') : ''}`],
+    n.bufferId && ['buffer id', esc(n.bufferId)],
     n.queued !== null && ['queued frames', n.queued],
+    n.frameRate && ['requested frame rate', esc(n.frameRate)],
     n.dataspace && ['dataspace', esc(n.dataspace)],
     n.pixelFormat && ['pixel format', esc(n.pixelFormat)],
     n.blurRadius && ['background blur', n.blurRadius + ' px'],
@@ -7197,14 +8664,30 @@ function sfDetail(n){
     ['type', `<span style="color:${tintFor(n)}">■</span> ${esc(n.typeLabel)}`],
     n.typeLabel !== n.kind && ['made of', esc(n.kind)],
     ['visible', yn(n.visible)],
+    /* The new frontend states why, and on a layer that is drawn it says what
+       of — a buffer, a colour, a blur — which is the same question. */
+    n.reason && [n.visible ? 'drawn from' : 'not drawn because', esc(n.reason)],
     ['focused', yn(n.focused)],
     n.alpha !== null && ['alpha', (n.alpha * 100).toFixed(0) + '%'],
     n.color && ['colour', `<span style="color:rgb(${n.color.map(v => Math.round(v * 255)).join(',')})">■</span> ${n.color.map(v => v.toFixed(3)).join(', ')}`],
     n.opaque !== null && ['opaque', yn(n.opaque === '1')],
     n.isProtected === '1' && ['protected', yn(true)],
     n.trustedOverlay === '1' && ['trusted overlay', yn(true)],
+    n.secure && ['secure', yn(true)],
     [`flags ${n.flagsHex ? dim(esc(n.flagsHex)) : ''}`, chips(n.flags, 'sf')],
   ])}</section>`);
+
+  /* A modern dump prints a layer's input config where it used to print its
+     flags, and it is the same set of names `dumpsys input` uses. */
+  if(n.inputFlags){
+    out.push(`<section class="dgroup"><h3>Input</h3>${dl([
+      ['config', chips(n.inputFlags, 'input')],
+      n.touchable && ['touchable region', r(n.touchable)],
+      n.touchCrop && ['touchable region', 'replaced with the layer crop'],
+      n.touchCropId && ['crop taken from', `layer ${esc(n.touchCropId)}`],
+      n.dropInput && ['drop input mode', n.dropInput],
+    ])}</section>`);
+  }
 
   return out;
 }
@@ -7246,11 +8729,13 @@ function sfDisplayDetail(d){
     ['visible', d.nodes.filter(n => n.visible).length],
   ])}</section>`);
 
-  if(g.hwcVersion || g.visibleLayers || g.totalLayers || g.build){
+  if(g.hwcVersion || g.visibleLayers || g.totalLayers || g.activeLayers || g.build){
     out.push(`<section class="dgroup"><h3>SurfaceFlinger</h3>${dl([
       g.hwcVersion && ['composer', 'HWC ' + esc(g.hwcVersion)],
       g.visibleLayers && ['visible layers', esc(g.visibleLayers)],
       g.totalLayers && ['total layers', esc(g.totalLayers)],
+      g.activeLayers && ['active layers', `${esc(g.activeLayers)} ${dim('(with a client handle)')}`],
+      g.frontend === 'new' && ['frontend', `new ${dim('(Android 15 and up)')}`],
       g.build && ['build configuration', `<span style="font-family:var(--mono);font-size:11.5px">${esc(g.build)}</span>`],
     ])}</section>`);
   }
@@ -7683,6 +9168,10 @@ function drawDetail(){
   $('detailTitle').textContent = picked ? picked.title : n.title;
 
   const out = picked ? picked.out : S.tool.detail(n);
+  /* A capture playing over this dump is part of what is on screen, so what it
+     did to the thing being read goes with everything else about it. */
+  const onIt = picked ? '' : gevOnNode(n);
+  if(onIt) out.push(onIt);
   const raw = picked ? picked.raw : n.raw;
   if(raw) out.push(`<section class="dgroup"><h3>Raw block</h3>
     <button class="btn btn-quiet" id="btnCopy" type="button" style="margin-bottom:7px">Copy raw block</button>
@@ -8344,6 +9833,213 @@ function inputDevGroupDetail(d){
   return out;
 }
 
+/* ---------------- render: the details pane, a touch trace -------------- */
+/* Where a point on the panel landed, once the panel has been put over a
+   display: the topmost thing whose frame contains it, and — where the dump
+   knows the difference, which `dumpsys input` does — the topmost thing that
+   would actually have taken the touch. That second one is the answer to the
+   only question a touch dump gets opened with. */
+function gevUnder(target, pt){
+  if(!target) return null;
+  const hits = target.display.nodes
+    .filter(n => n.frame && pt.x >= n.frame.l && pt.x < n.frame.r
+                         && pt.y >= n.frame.t && pt.y < n.frame.b)
+    .sort((a, b) => b.z - a.z);
+  if(!hits.length) return null;
+  const takes = hits.find(n => n.touchable);
+  return { top: hits[0], takes: takes || null, count: hits.length };
+}
+
+function gevLanding(n){
+  const target = gevTarget();
+  if(!target) return null;
+  const dev = currentDisplay();
+  const P = gevProject(dev, target, S.mapRot);
+  const a = n.samples[0], z = n.samples[n.samples.length - 1];
+  const px = (s) => { const [x, y] = P(s.x, s.y); return { x, y }; };
+  return { target, down: gevUnder(target, px(a)), up: gevUnder(target, px(z)),
+           downAt: px(a), upAt: px(z) };
+}
+
+const gevWin = (hit) => hit
+  ? `${esc(trim(hit.title, 54))} <span style="color:var(--dim)">· z ${hit.zRank + 1}/${hit.zCount}</span>`
+  : none;
+
+/* A stroke's samples, as the device stated them. This is the raw block for a
+   dump that has no raw block: every other reader can print the lines it read a
+   node out of, and a stroke was never lines — it was a hundred of them, spread
+   across the file, most of which said nothing about this finger. */
+const GEV_SAMPLE_CAP = 400;
+
+function gevSampleTable(n){
+  const ss = n.samples;
+  const shown = ss.slice(0, GEV_SAMPLE_CAP);
+  const t0 = ss[0].t;
+  const rows = shown.map((s, i) => {
+    const prev = i ? shown[i - 1] : null;
+    const step = prev ? Math.hypot(s.x - prev.x, s.y - prev.y) : 0;
+    return `<tr><td>${((s.t - t0) * 1000).toFixed(1)}</td>
+      <td>${Math.round(s.x)}</td><td>${Math.round(s.y)}</td>
+      <td>${s.pressure === null || s.pressure === undefined ? '—' : s.pressure}</td>
+      <td>${i ? Math.round(step) : '—'}</td>
+      <td>${s.held ? `×${s.held}` : ''}</td></tr>`;
+  }).join('');
+  return `<div class="doc-scroll gev-samples"><table class="doc-table"><thead><tr>
+      <th>ms</th><th>x</th><th>y</th><th>pressure</th><th>step</th><th>held</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>${
+    ss.length > shown.length
+      ? `<p style="margin:6px 0 0;color:var(--dim)">${ss.length - shown.length} more samples not listed</p>`
+      : ''}`;
+}
+
+function geteventDetail(n){
+  const out = [];
+  const { start } = gevClock();
+  const at = (t) => `${(t - start).toFixed(3)} s <span style="color:var(--dim)">(${
+    t.toFixed(6)})</span>`;
+
+  if(n.key){
+    out.push(`<section class="dgroup"><h3>${esc(n.title)}</h3>${dl([
+      ['what', /^BTN_/.test(n.title) ? 'a button on the device' : 'a key on the device'],
+      ['down', at(n.start)],
+      ['up', at(n.end)],
+      ['held', gevMs(n.end - n.start)],
+      ['device', esc(currentDisplay().label)],
+    ])}</section>`);
+    return out;
+  }
+
+  if(n.gesture){
+    const kids = currentDisplay().nodes.filter(k => k.parentHash === n.hash);
+    out.push(`<section class="dgroup"><h3>${esc(cap(n.title))}</h3>${dl([
+      ['fingers', String(n.fingers)],
+      ['from', at(n.start)],
+      ['lasted', gevMs(n.end - n.start)],
+      ['across', r(n.frame)],
+    ])}</section>`);
+    out.push(`<section class="dgroup"><h3>The strokes in it</h3><div class="anc">${
+      kids.map(k => `<button class="anc-row" type="button" data-hash="${esc(k.hash)}"
+        title="${esc(k.title)}">${esc(k.kind)} · ${gevMs(k.duration)} · ${
+        Math.round(k.geo.travel)} units</button>`).join('')
+    }</div></section>`);
+    return out;
+  }
+
+  const fl = n.fling;
+  out.push(`<section class="dgroup"><h3>${esc(cap(n.kind))}</h3>${dl([
+    ['down at', `${gevPt(n.samples[0])} <span style="color:var(--dim)">device units</span>`],
+    ['up at', gevPt(n.samples[n.samples.length - 1])],
+    ['lasted', gevMs(n.duration)],
+    ['travelled', `${Math.round(n.geo.travel)} units${
+      n.geo.travel ? ` <span style="color:var(--dim)">· ${Math.round(n.geo.net)} of it net</span>` : ''}`],
+    n.direction && ['direction', esc(n.direction)],
+    fl && ['leaving at', `${Math.round(fl.speed)} units/s <span style="color:var(--dim)">· ${
+      Math.round(fl.x)}, ${Math.round(fl.y)}</span>`],
+    ['samples', `${n.samples.length}`],
+    ['box', r(n.frame)],
+  ])}</section>`);
+
+  /* What the finger was on. Only a mapped trace can say, and saying which
+     display it was mapped onto matters as much as the answer: the mapping is
+     an assumption the reader made, not something either dump stated. */
+  const land = gevLanding(n);
+  out.push(`<section class="dgroup"><h3>What it landed on</h3>${land ? dl([
+    ['display', `${esc(land.target.tool.name)} · display ${land.target.display.id}`],
+    ['down at', `${Math.round(land.downAt.x)}, ${Math.round(land.downAt.y)} px`],
+    ['topmost there', gevWin(land.down && land.down.top)],
+    ...(land.down && land.down.takes && land.down.takes !== land.down.top
+      ? [['takes the touch', gevWin(land.down.takes)]] : []),
+    ['up at', `${Math.round(land.upAt.x)}, ${Math.round(land.upAt.y)} px`],
+    ['topmost there', gevWin(land.up && land.up.top)],
+  ]) : `<p style="margin:0;color:var(--dim)">This trace is drawn in the panel's own
+      units. Open a <b>dumpsys window windows</b> or <b>dumpsys input</b> dump on
+      this desk and pick it under <b>over</b> below the drawing, and every stroke
+      is scaled onto that display and named by what it crossed.</p>`}</section>`);
+
+  out.push(`<section class="dgroup"><h3>Samples</h3>${gevSampleTable(n)}</section>`);
+  return out;
+}
+
+/* What a pasted capture did to the window that is selected: the strokes whose
+   finger came down inside its frame, and — where they came down over it but
+   something above it was in the way — which window took the touch instead.
+   That last line is the reason for putting the log on the layout rather than
+   beside it. */
+function gevOnNode(n){
+  const stage = gevStage();
+  if(!stage || stage.own || !n || !n.frame) return '';
+  const inside = (pt, f) => pt.x >= f.l && pt.x < f.r && pt.y >= f.t && pt.y < f.b;
+
+  const rows = [];
+  for(const st of stage.nodes){
+    const [x, y] = stage.P(st.samples[0].x, st.samples[0].y);
+    if(!inside({ x, y }, n.frame)) continue;
+    const under = gevUnder(stage.target, { x, y });
+    const gets = under && (under.takes || under.top);
+    rows.push([`${esc(st.kind)} at ${Math.round(x)}, ${Math.round(y)}`,
+      !gets || gets.hash === n.hash
+        ? '<span class="yes">this one</span>'
+        : `<span style="color:var(--dim)">taken by</span> ${esc(trim(gets.title, 44))}`]);
+  }
+
+  return `<section class="dgroup"><h3>Touches on this ${esc(S.tool.noun)}</h3>${
+    rows.length ? dl(rows)
+      : `<p style="margin:0;color:var(--dim)">No finger in the capture came down
+         inside this frame.</p>`}</section>`;
+}
+
+/* The same question asked of the display rather than of one window: every
+   stroke in the capture, and what it landed on. */
+function gevOnDisplay(){
+  const stage = gevStage();
+  if(!stage || stage.own) return '';
+  const rows = stage.nodes.map((st) => {
+    const [x, y] = stage.P(st.samples[0].x, st.samples[0].y);
+    const under = gevUnder(stage.target, { x, y });
+    const gets = under && (under.takes || under.top);
+    return [`${esc(st.kind)} at ${Math.round(x)}, ${Math.round(y)}`,
+            gets ? esc(trim(gets.title, 44)) : none];
+  });
+  return `<section class="dgroup"><h3>What the touch log landed on</h3>${
+    rows.length ? dl(rows)
+      : `<p style="margin:0;color:var(--dim)">Nothing in the capture reported a
+         position on this device.</p>`}
+    <p style="margin:7px 0 0;color:var(--dim)">The panel is scaled onto this
+      display, which is this reader's assumption and not something either dump
+      stated \u2014 turn it with the button beside the clock if the strokes land
+      at 90\u00b0 to where they should.</p></section>`;
+}
+
+function geteventDeviceDetail(d){
+  const out = [];
+  const ranges = [...d.ranges.entries()];
+  out.push(`<section class="dgroup"><h3>Device</h3>${dl([
+    ['node', esc(d.path)],
+    ['name', d.name ? esc(d.name) : none],
+    ['protocol', d.protocol === 'A' || d.protocol === 'B'
+      ? `multitouch ${esc(d.protocol)}` : d.protocol ? esc(d.protocol) : none],
+    ['coordinate space', d.noGeometry ? none
+      : `${d.size.w} × ${d.size.h}${d.synthesised
+          ? ' <span style="color:var(--dim)">(inferred from how far the fingers went —'
+            + ' paste <code>getevent -lp</code> above the capture for the real one)</span>'
+          : ''}`],
+    ['events', String(d.events)],
+    ['strokes', String(d.strokes)],
+    ['keys', String(d.keys)],
+    d.end > d.start && ['span', gevMs(d.end - d.start)],
+  ])}</section>`);
+
+  if(ranges.length){
+    out.push(`<section class="dgroup"><h3>Reported ranges</h3>
+      <div class="doc-scroll"><table class="doc-table">
+      <thead><tr><th>axis</th><th>min</th><th>max</th></tr></thead>
+      <tbody>${ranges.map(([k, v]) =>
+        `<tr><td>${esc(k)}</td><td>${v.min}</td><td>${v.max}</td></tr>`).join('')}
+      </tbody></table></div></section>`);
+  }
+  return out;
+}
+
 /* ---------------- render: the details pane, logcat ---------------- */
 
 /* The levels in the order logcat prints them, so a row of counts reads the
@@ -8455,6 +10151,8 @@ function renderDisplayDetail(){
   $('detailTitle').textContent =
     `${head[0].toUpperCase()}${head.slice(1)}${d.name ? ' · ' + d.name : ''}`;
   const out = S.tool.displayDetail(d);
+  const onIt = gevOnDisplay();
+  if(onIt) out.push(onIt);
   if(d.raw) out.push(`<section class="dgroup"><h3>Raw block</h3><pre class="raw">${esc(d.raw)}</pre></section>`);
   out.push(`<p style="color:var(--dim);font-family:var(--sans);margin:0">Pick a ${S.tool.noun} from the ${
     S.tool.layout === 'list' ? 'list' : 'stack or click one in the layout'}.</p>`);
@@ -8489,8 +10187,11 @@ const TOOLS = [
     noun: 'layer', nouns: 'layers', groupNoun: 'display',
     show: 'framed',         // the rest is scaffolding; one click brings it back
     filterHint: 'Filter by layer name, class or composition',
-    detect: (t) => (/\bHWC layers:/.test(t) ? 3 : 0)
+    detect: (t) => (/\bHWC layers\b/.test(t) ? 3 : 0)
                  + (/^\s*[+*]\s+\w*Layer\b.*\(.*#\d+\)/m.test(t) ? 3 : 0)
+                 /* what the new frontend prints in place of that layer list */
+                 + (/^\s*Layer \[\d+\].*#\d+\s*$/m.test(t) ? 3 : 0)
+                 + (/^(?:Composition list|Input list|Layer Hierarchy)\b/m.test(t) ? 2 : 0)
                  + (/\blayerStack=/.test(t) ? 1 : 0)
                  + (/\bSurfaceFlinger\b/.test(t) ? 1 : 0),
     parse: parseSurfaceFlingerDump,
@@ -8768,6 +10469,48 @@ const TOOLS = [
     displayDetail: inputDevGroupDetail,
   },
   {
+    id: 'getevent',
+    name: 'Touch trace',
+    /* Spatial, because a stroke is somewhere — but the plan and the z-order
+       stack say nothing about a thing that only exists over time, so this one
+       brings its own sheet and its own line under it, and has no pose. */
+    layout: 'spatial',
+    views: false,
+    sheet: geteventSheet,
+    sheetFoot: geteventFoot,
+    noun: 'stroke', nouns: 'strokes', groupNoun: 'device',
+    /* `event0` is the volume rocker on half the phones ever made and sorts
+       first. The panel is what a touch trace is about, so that is what it
+       opens on. */
+    openOn: (scene) => (scene.displays.find(d => !d.noGeometry) || scene.displays[0]).id,
+    show: 'all',
+    visBadge: false,
+    filterHint: 'Filter by gesture, key, slot or position',
+    /* Everything, what the finger did, and what it did that was not standing
+       still — which is the difference between a list of taps and the gesture
+       that is actually being looked for. */
+    shows: {
+      all:   { label:'all',   test:() => true },
+      touch: { label:'touch', test:(n) => !n.key },
+      moved: { label:'moved', test:(n) => n.gesture || (n.geo && n.geo.travel > 0) },
+    },
+    rowMeta: (n) => n.key
+      ? `held ${gevMs(n.end - n.start)}`
+      : n.gesture
+        ? `${n.fingers} fingers · ${gevMs(n.end - n.start)}`
+        : [`slot ${n.slot}`, n.trackingId >= 0 ? `id ${n.trackingId}` : null,
+           `${n.samples.length} samples`].filter(Boolean).join(' · '),
+    /* A capture is its event lines and nothing else, so the shape of a line is
+       the whole of the test. `ABS_MT_POSITION_X` on its own is not: a bugreport
+       prints that name too, in the input reader's motion ranges. */
+    detect: (t) => (/^\s*\[\s*\d+(?:\.\d+)?\s*\]\s*\/dev\/input\/[\w.-]+:\s/m.test(t) ? 3 : 0)
+                 + (/^\s*\/dev\/input\/[\w.-]+:\s+(?:EV_[A-Z]+|[0-9a-f]{4})\s+\w+\s+[0-9a-f]{1,8}\s*$/m.test(t) ? 3 : 0)
+                 + (/^add device\s+\d+:\s*\/dev\/input\//m.test(t) ? 1 : 0),
+    parse: parseGeteventCapture,
+    detail: geteventDetail,
+    displayDetail: geteventDeviceDetail,
+  },
+  {
     id: 'logcat',
     name: 'Logcat',
     layout: 'list',        // a log line happened, it does not sit anywhere
@@ -8842,11 +10585,15 @@ function setView(view){
   /* Plan, Z-order and the pose they are about belong to a dump that draws.
      Nothing else has a view to set. */
   const drawn = S.tool && S.tool.layout === 'spatial';
-  $('viewTabs').hidden = !drawn;
+  /* A drawn dump that brings its own sheet has neither of the two views nor a
+     pose between them: the drawing is the drawing. */
+  const posable = drawn && S.tool.views !== false;
+  $('viewTabs').hidden = !posable;
   $('viewPlan').setAttribute('aria-pressed', String(view === 'plan'));
   $('viewDepth').setAttribute('aria-pressed', String(view === 'depth'));
-  $('depthCtl').hidden = !drawn || view !== 'depth';
-  $('sheet').classList.toggle('is-orbit', drawn && view === 'depth');
+  $('depthCtl').hidden = !posable || view !== 'depth';
+  $('sheet').classList.toggle('is-orbit', posable && view === 'depth');
+  gevSyncBar();
   syncDepthCtl();
   renderPlan();
 }
@@ -9290,6 +11037,67 @@ $('viewTabs').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if(!b) return;
   setView(b.id === 'viewDepth' ? 'depth' : 'plan');
 });
+/* ---- the trace bar ---- */
+/* Playback is the one control on this page that changes the drawing without
+   changing what the drawing is of, so it moves the playhead and repaints, and
+   never rebuilds the sheet. */
+$('btnPlay').addEventListener('click', () => gevPlay.running ? gevStop() : gevStart());
+$('rngPlay').addEventListener('input', (e) => {
+  const { span } = gevClock();
+  S.playAt = clamp(+e.target.value / 1000, 0, 1) * span;
+  gevPaint();
+});
+/* Scrubbing stops the playback the way dragging a video's scrubber does. */
+$('rngPlay').addEventListener('pointerdown', () => gevStop());
+/* The speed and the loop are read at the moment the clock ticks, so neither
+   needs a handler; the speed only drops the frame it changed on, which would
+   otherwise be played at the old rate across the new one's gap. */
+$('selSpeed').addEventListener('change', () => { gevPlay.last = 0; });
+/* Taking a capture onto a layout. The panel opens under the bar, the text is
+   read by the same reader that would have opened it as a tab of its own, and
+   what comes back hangs off this document. */
+$('btnTracePaste').addEventListener('click', () => {
+  const panel = $('tracePaste');
+  panel.dataset.open = panel.dataset.open === '1' ? '0' : '1';
+  $('traceErr').textContent = '';
+  gevSyncBar();
+  if(panel.dataset.open === '1') $('traceText').focus();
+});
+$('btnTraceCancel').addEventListener('click', () => {
+  $('tracePaste').dataset.open = '0';
+  $('traceErr').textContent = '';
+  gevSyncBar();
+});
+$('btnTraceAttach').addEventListener('click', () => {
+  const bad = gevAttach($('traceText').value);
+  $('traceErr').textContent = bad || '';
+  if(bad) return;
+  $('tracePaste').dataset.open = '0';
+  $('traceText').value = '';
+  renderPlan(); renderDetail();
+});
+/* Pasting into the box is the whole gesture, so it is also the button: a
+   capture dropped in plays without a second click. */
+$('traceText').addEventListener('paste', () => {
+  setTimeout(() => $('btnTraceAttach').click(), 0);
+});
+$('btnTraceDrop').addEventListener('click', () => gevDetach());
+$('selTraceDev').addEventListener('change', (e) => {
+  gevStop();
+  S.traceDev = +e.target.value;
+  S.playAt = 0;
+  renderPlan(); renderDetail();
+});
+$('selMap').addEventListener('change', (e) => {
+  S.mapTo = e.target.value || null;
+  if(!S.mapTo) S.mapRot = 0;
+  renderPlan(); renderDetail();
+});
+$('btnMapRot').addEventListener('click', () => {
+  S.mapRot = (((S.mapRot + 90) % 360) + 360) % 360;
+  renderPlan(); renderDetail();
+});
+
 $('rngYaw').addEventListener('input', (e) => { S.yaw = +e.target.value; renderPlan(); });
 $('rngPitch').addEventListener('input', (e) => { S.pitch = +e.target.value; renderPlan(); });
 $('rngSep').addEventListener('input', (e) => { S.sep = +e.target.value; renderPlan(); });
@@ -9591,6 +11399,12 @@ document.addEventListener('keydown', (e) => {
   }
   if(e.key === '/' && !$('app').hidden && !typingInField()){
     e.preventDefault(); $('filter').focus();
+  }
+  /* Space plays a trace, as it does in every other thing that plays. Only
+     where there is one: everywhere else it is the key that scrolls. */
+  if(e.key === ' ' && !$('app').hidden && !typingInField() && gevStage()){
+    e.preventDefault();
+    if(gevPlay.running) gevStop(); else gevStart();
   }
   /* Alt+shift+arrow moves between workspaces. Arrows rather than digits
      because alt with a digit does not survive every keyboard layout, and the

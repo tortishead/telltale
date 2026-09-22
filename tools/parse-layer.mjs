@@ -48,6 +48,7 @@ const EXPORTS = [
   'parseInputDump',
   'parseInputDevicesDump',
   'parseLogcatDump',
+  'parseGeteventCapture',
   // the pieces the parsers are built from, worth testing on their own
   'indentOf',
   'takeBlock',
@@ -55,6 +56,8 @@ const EXPORTS = [
   'deriveFrame',
   'shortType',
   'sfFlagNames',
+  'gevSigned',
+  'gevTracks',
   'anrLock',
   'anrWaitGraph',
   'anrCycles',
@@ -98,8 +101,9 @@ export const parsers = build();
 export const {
   parseWindowDump, parseSurfaceFlingerDump, parsePackageDump, parseAnrDump,
   parseCarServiceDump, parseUserDump, parseBinderCallsStatsDump,
-  parseInputDump, parseInputDevicesDump, parseLogcatDump,
+  parseInputDump, parseInputDevicesDump, parseLogcatDump, parseGeteventCapture,
   indentOf, takeBlock, harvest, deriveFrame, shortType, sfFlagNames,
+  gevSigned, gevTracks,
   anrLock, anrWaitGraph, anrCycles,
   carHeadName, carPairs, lineFields, blockRuns, blockEntries, carPropNames,
   userFlagNames, userListUnder,
