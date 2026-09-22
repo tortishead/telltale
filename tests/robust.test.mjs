@@ -96,6 +96,29 @@ test('an Android 16 SurfaceFlinger section opens alongside the window one', asyn
     'with no layer read as a window');
 });
 
+/* The same build's display dump, whose own headings are underlined with a rule
+   of the shape that separates two services. The reader has to read past its
+   own rules and stop at the one that is not its own. */
+test('an Android 16 display section stops at the next service, not at its own rules', async () => {
+  const page = openPage();
+  const text = [
+    '------ DISPLAY MANAGER (dumpsys display) ------',
+    fixture('display-a16-sample.txt'),
+    '--------- 0.5s was the duration of display manager',
+    '------ WINDOW MANAGER WINDOWS (dumpsys window windows) ------',
+    fixture('window-sample.txt'),
+  ].join('\n');
+
+  await page.load(text, null, 'bugreport.txt');
+  const found = new Map(page.docs().map(d => [d.found[0].tool.id, d.found[0].scene]));
+  const display = found.get('display');
+  assert.ok(display, 'the display reader opened a tab');
+  assert.deepEqual(display.displays.map(d => d.id), [0, 2], 'both of its displays');
+  assert.ok(found.get('window').nodes.length, 'and the window dump after it');
+  assert.ok(!display.nodes.some(n => /Window\{/.test(n.raw || '')),
+    'with nothing of the next service read as a rect');
+});
+
 /* ---- one reader failing is not the load failing ------------------------- */
 
 test('a reader that throws costs its own tab and nothing else', async () => {

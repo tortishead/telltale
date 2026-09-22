@@ -515,6 +515,51 @@ test('a dump that printed its panels and no logical displays is still read', () 
   assert.deepEqual(s.displays[0].real, { w: 1080, h: 2400 });
 });
 
+/* Android 16 rewrote the shape of this dump rather than what it says: every
+   heading inside it is underlined with a rule, the modes carry two fields
+   between their id and their size, and a logical display names its device
+   with the unique id hung on the end of the name. Each of those cost the
+   reader something, and the first cost it everything. */
+test('an Android 16 dump is read past the rules it underlines its headings with', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-a16-sample.txt'));
+
+  assert.equal(s.ok, true);
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 2],
+    'the rule under `Display States:` is not the end of the section');
+  assert.equal(s.globals.devices, 2);
+
+  const [panel, overlay] = s.displays;
+  assert.deepEqual(panel.real, { w: 1080, h: 2400 });
+  assert.equal(panel.density, 420);
+  assert.equal(panel.installRotation, 0);
+  assert.deepEqual(panel.nodes.map((n) => n.title), ['panel', 'input viewport', 'cutout 1']);
+  assert.deepEqual(panel.nodes[2].frame, { l: 492, t: 0, r: 610, b: 128 },
+    'the cutout, and not a rect out of the path parser printed beside it');
+
+  assert.equal(overlay.name, 'Overlay #1');
+  assert.deepEqual(overlay.real, { w: 1280, h: 720 });
+});
+
+test('a mode is read through the fields Android 16 puts before its size', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-a16-sample.txt'));
+  const m = s.displays[0].mode;
+
+  assert.deepEqual({ id: m.id, w: m.w, h: m.h }, { id: 1, w: 1080, h: 2400 },
+    '`{id=1, parentModeId=-1, flags=, width=...}`');
+  assert.equal(Math.round(m.fps), 60);
+  assert.equal(s.displays[0].modes.length, 1);
+  /* 60.000004 Hz is the panel being honest and nothing anyone wants on a row. */
+  assert.match(s.displays[0].meta, /60 Hz$/);
+});
+
+test('a logical display finds its panel through the name the unique id is hung on', () => {
+  const s = parseDisplayManagerDump(read('fixtures/display-a16-sample.txt'));
+  assert.equal(s.displays[0].device.name, 'Built-in Screen',
+    '`mPrimaryDisplayDevice=Built-in Screen(local:4619827259835644672)`');
+  assert.equal(s.displays[1].device.name, 'Overlay #1');
+  assert.ok(s.displays[0].cutoutInsets, 'and with it what only the device states');
+});
+
 test('a text with none of this service in it is not this dump', () => {
   assert.equal(parseDisplayManagerDump('').ok, false);
   assert.equal(parseDisplayManagerDump('WINDOW MANAGER WINDOWS (dumpsys window windows)').ok, false);

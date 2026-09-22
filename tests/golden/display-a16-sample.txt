@@ -1,0 +1,22 @@
+tool: display
+displays: 2
+nodes: 5
+
+display 0  label=display 0 · Built-in Screen  name=Built-in Screen  size=1080x2400  rot=0
+    meta: 1080 × 2400 · 420 dpi · 60 Hz
+    1  disp-panel      [0,0][1080,2400]          real        vis=y                                             -                           panel
+    2  disp-viewport   [0,0][1080,2400]          logicalFrame  vis=y                                             -                           input viewport
+    3  disp-cutout     [492,0][610,128]          DisplayCutout  vis=y                                             -                           cutout 1
+
+display 2  label=display 2 · Overlay #1  name=Overlay #1  size=1280x720  rot=0
+    meta: 1280 × 720 · 213 dpi · 60 Hz
+    1  disp-panel      [0,0][1280,720]           real        vis=y                                             -                           panel
+    2  disp-viewport   [0,0][1280,720]           logicalFrame  vis=y                                             -                           input viewport
+
+globals:
+  displays: 2
+  devices: 2
+  viewports: 2
+  stableSize: 2 entries
+  safeMode: false
+  lines: 245

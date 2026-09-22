@@ -2816,10 +2816,18 @@ const dmFlags = (body) => {
    degrees. The dumps print the quarter turn. */
 const dmDegrees = (v) => (v === null || v === undefined ? null : ((v % 4) + 4) % 4 * 90);
 
-/* Every mode the panel printed. */
+/* A refresh rate as a number to read. The service prints one panel's 60 Hz as
+   `60.000` and another's as `60.000004`, and neither is a number anyone wants
+   on a row, so the trailing zeroes and the rounding noise come off. */
+const dmHz = (v) => (v === null || v === undefined ? null : String(Math.round(v * 100) / 100));
+
+/* Every mode the panel printed. Android 16 puts `parentModeId` and `flags`
+   between the id and the size, so what is between them is skipped rather than
+   spelled — as far as the end of that one mode, which is what `[^{}]` is
+   holding it to. */
 function dmModes(body) {
   const out = [];
-  const re = /\{id=(\d+),\s*width=(\d+),\s*height=(\d+),\s*fps=([\d.]+)/g;
+  const re = /\{id=(\d+),[^{}]*?\bwidth=(\d+),\s*height=(\d+),\s*fps=([\d.]+)/g;
   let m;
   while ((m = re.exec(body)) !== null) {
     out.push({ id: +m[1], w: +m[2], h: +m[3], fps: +m[4] });
@@ -2846,7 +2854,24 @@ function dmCutoutBounds(cutout) {
    is the line only this service prints; the rule above it is what dumpstate
    writes and is not there in a pasted dump. */
 const DM_SECTION_START = /^-{4,}\s*DISPLAY MANAGER\b|^\s*DISPLAY MANAGER\b|^\s*DisplayManagerService state:/;
-const dmSection = (lines) => sectionSpan(lines, DM_SECTION_START, null, 'all');
+/* Android 16 underlines every heading inside the dump:
+
+       Display States: size=1
+       ---------------------
+
+   which is a rule of the same shape as the one dumpstate writes between two
+   services, and the shared boundary would end the section on the first of
+   them — fourteen lines in, before a single device. So this reader ends on a
+   rule that names what comes after it, and lets a bare one through.
+
+   The same build also opens its dump with `DISPLAY MANAGER (dumpsys display)`,
+   which is the shape of the trailer that names the next service — and in a
+   bugreport it sits one line under dumpstate's own rule, so ending on it
+   would end the section before it started. A trailer ends this one only when
+   it names something else. */
+const DM_SECTION_END =
+  /^[-=]{3,}\s*[^-=\s]|^DUMP OF SERVICE\b|^(?!DISPLAY MANAGER\b)\S.*\(dumpsys \S+\)\s*$/;
+const dmSection = (lines) => sectionSpan(lines, DM_SECTION_START, DM_SECTION_END, 'all');
 
 function dmNode(opts) {
   return {
@@ -3030,7 +3055,7 @@ function parseDisplayManagerDump(input) {
       cutoutInsets: ofDevice('cutoutInsets'),
       meta: [real ? `${real.w} × ${real.h}` : null,
              density ? `${density} dpi` : null,
-             mode ? `${mode.fps} Hz` : null,
+             mode ? `${dmHz(mode.fps)} Hz` : null,
              rotation ? `${dmDegrees(rotation)}°` : null].filter(Boolean).join(' · '),
     });
   };
@@ -3038,9 +3063,17 @@ function parseDisplayManagerDump(input) {
   if (logicals.length) {
     for (const lg of logicals) {
       const info = dmBlock(lg.block, 'DisplayInfo');
-      const devName = (lg.block.match(/mPrimaryDisplayDevice=(.+)/) || [])[1];
+      /* `mPrimaryDisplayDevice=Built-in Screen` up to Android 15 and
+         `mPrimaryDisplayDevice=Built-in Screen(local:4619827259835644672)`
+         from 16, which names the device twice — so the trailing bracket is
+         taken off for the name and tried as the unique id. */
+      const said = ((lg.block.match(/mPrimaryDisplayDevice=(.+)/) || [])[1] || '').trim();
+      const brk = said.match(/^(.*?)\s*\(([^()]*)\)$/);
+      const devName = brk ? brk[1] : said;
+      const devUnique = brk ? brk[2] : null;
       const name = info ? (info.match(/^\s*"([^"]*)"/) || [])[1] || null : null;
-      const device = (devName && deviceByName.get(devName.trim()))
+      const device = (devName && deviceByName.get(devName))
+                  || (devUnique && deviceByUnique.get(devUnique))
                   || (info && deviceByUnique.get(dmField(info, 'uniqueId')))
                   || (logicals.length === 1 ? devices[0] : null)
                   || null;
@@ -10990,9 +11023,9 @@ function displayManagerDetail(d){
     d.real && ['size', `${d.real.w} × ${d.real.h}`],
     d.density && ['density', `${d.density} dpi${d.dpi
       ? ` ${dim(`· ${d.dpi.x} × ${d.dpi.y} actual`)}` : ''}`],
-    d.mode && ['mode', `${d.mode.w} × ${d.mode.h} at ${d.mode.fps} Hz ${
+    d.mode && ['mode', `${d.mode.w} × ${d.mode.h} at ${dmHz(d.mode.fps)} Hz ${
       dim('· id ' + d.mode.id)}`],
-    d.renderFrameRate && ['rendering at', `${d.renderFrameRate} Hz`],
+    d.renderFrameRate && ['rendering at', `${dmHz(d.renderFrameRate)} Hz`],
     d.state && ['state', esc(d.state)],
     d.type && ['type', esc(d.type)],
     d.rotation !== null && ['rotation', `${esc(d.rotation)}°`],
@@ -11060,7 +11093,7 @@ function displayManagerDetail(d){
       <tbody>${d.modes.map(m =>
         `<tr><td>${m.id}${d.mode && m.id === d.mode.id
           ? ' <span style="color:var(--mark)">◂</span>' : ''}</td><td>${m.w} × ${m.h}</td><td>${
-          m.fps} Hz</td></tr>`).join('')}</tbody></table></div></section>`);
+          dmHz(m.fps)} Hz</td></tr>`).join('')}</tbody></table></div></section>`);
   }
 
   out.push(`<section class="dgroup"><h3>The service</h3>${dl([

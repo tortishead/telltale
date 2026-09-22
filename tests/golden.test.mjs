@@ -28,6 +28,9 @@ const CASES = [
      one above is made of. */
   { name: 'sf-a16-sample',  parse: 'parseSurfaceFlingerDump' },
   { name: 'display-sample', parse: 'parseDisplayManagerDump' },
+  /* The same reader on an Android 16 dump, which underlines every heading
+     inside itself with a rule of the shape that ends a bugreport section. */
+  { name: 'display-a16-sample', parse: 'parseDisplayManagerDump' },
   { name: 'package-sample', parse: 'parsePackageDump' },
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
@@ -81,7 +84,7 @@ const OWN = {
   parseWindowDump: ['window-sample'],
   parseSurfaceFlingerDump: ['sf-sample', 'sf-a16-sample'],
   parsePackageDump: ['package-sample'],
-  parseDisplayManagerDump: ['display-sample'],
+  parseDisplayManagerDump: ['display-sample', 'display-a16-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
   parseOverlayDump: ['overlay-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],
