@@ -235,6 +235,16 @@ test('a getevent capture opens one tab, and no other reader claims it', async ()
   assert.deepEqual(page.docs().map((d) => d.found[0].tool.id), ['getevent']);
 });
 
+/* The same, for the capture with no node in front of its events: that form is
+   what `getevent -lt /dev/input/event2` prints, and it has to reach the trace
+   reader on the strength of the event lines alone. */
+test('a capture taken with a device argument opens the trace reader too', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/getevent-bare-sample.txt'), 'utf8'),
+                  null, 'touch.txt');
+  assert.deepEqual(page.docs().map((d) => d.found[0].tool.id), ['getevent']);
+});
+
 /* `dumpsys input` prints `ABS_MT_POSITION_X` in the reader's motion ranges. A
    detect built on the axis names rather than on the shape of an event line
    would open a trace tab on every bugreport. */

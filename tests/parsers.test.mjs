@@ -1728,6 +1728,53 @@ test('a single-touch device is read off BTN_TOUCH and ABS_X/ABS_Y', () => {
   assert.ok(!s.nodes.some((n) => n.key));
 });
 
+/* `getevent -lt /dev/input/event2` watches one device and so prints no node in
+   front of its events. That is the form anyone reaches for once they know
+   which node the panel is, and it is the form a reader keyed on `/dev/input/`
+   silently reads as nothing at all. */
+
+const gevBare = read('fixtures/getevent-bare-sample.txt');
+
+test('a capture taken with a device argument reads, node or no node', () => {
+  const s = parseGeteventCapture(gevBare);
+  assert.equal(s.displays.length, 1);
+  const panel = s.displays[0];
+  /* Nothing in the capture says which device it was, so nothing claims one. */
+  assert.equal(panel.path, '');
+  assert.equal(panel.label, 'unnamed device');
+  assert.deepEqual(s.nodes.filter((n) => n.stroke).map((n) => n.kind),
+    ['tap', 'swipe up']);
+});
+
+test('the command that took a node-less capture names the device it came off', () => {
+  const s = parseGeteventCapture(
+    `generic:/ # getevent -lt /dev/input/event2\n${gevBare}`);
+  assert.equal(s.displays.length, 1);
+  assert.equal(s.displays[0].label, 'event2');
+  assert.equal(s.displays[0].nodes.filter((n) => n.stroke).length, 2);
+});
+
+/* `getevent -lp` above the capture describes the whole input stack, of which
+   exactly one device reports positions. A node-less capture is that device's:
+   there is nowhere else for it to have come from. */
+test('ranges pasted above a node-less capture are the capture\'s own', () => {
+  const head = read('fixtures/getevent-sample.txt').split('\n')
+    .slice(0, 14).join('\n');
+  const s = parseGeteventCapture(`${head}\n${gevBare}`);
+  const panel = s.displays.find((d) => d.strokes);
+  assert.equal(panel.label, 'event2');
+  assert.equal(panel.name, 'fts_ts');
+  assert.deepEqual(panel.size, { w: 1080, h: 2340 });
+  assert.equal(panel.synthesised, false);
+});
+
+/* Three hex words are not an event. Without a stamp, a node or an `EV_` label
+   there is nothing in a line to tell a capture from any other text. */
+test('a line with nothing but three hex words is not read as an event', () => {
+  const s = parseGeteventCapture('0003 0035 0000001a\n0000 0000 00000000\n');
+  assert.equal(s.ok, false);
+});
+
 /* Without `getevent -p` above it there is no stated coordinate space, and the
    only honest one is how far the fingers actually went — said to be inferred
    wherever it is shown. */

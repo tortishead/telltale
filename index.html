@@ -5945,8 +5945,14 @@ function parseLogcatDump(input) {
    panel's own coordinate space rather than one inferred from how far the
    finger happened to travel. */
 
+/* The node is what getevent prints when it is watching every device at once.
+   Given one to watch — `getevent -lt /dev/input/event2` — it prints the events
+   and nothing in front of them, so the path is optional here and worked out
+   afterwards. */
 const GEV_EVENT_RE =
-  /^(?:\[\s*(\d+(?:\.\d+)?)\s*\]\s*)?(\/dev\/input\/[\w.-]+)\s*:\s*(EV_[A-Z]+|[0-9a-fA-F]{4})\s+(\w+)\s+([0-9a-fA-F]{1,8})\s*$/;
+  /^(?:\[\s*(\d+(?:\.\d+)?)\s*\]\s*)?(?:(\/dev\/input\/[\w.-]+)\s*:\s*)?(EV_[A-Z]+|[0-9a-fA-F]{4})\s+(\w+)\s+([0-9a-fA-F]{1,8})\s*$/;
+/* The device a node-less capture came off, until the paste says otherwise. */
+const GEV_BARE = '';
 const GEV_ADD_RE  = /^add device\s+\d+\s*:\s*(\/dev\/input\/[\w.-]+)\s*$/;
 const GEV_NAME_RE = /^\s+name:\s*"(.*)"\s*$/;
 /* A range line out of `getevent -p`, with or without the `ABS (0003):` that
@@ -6012,9 +6018,11 @@ function gevRead(input) {
     if (add) { head = dev(add[1]); head.head.push(line.trim()); continue; }
 
     const m = line.match(GEV_EVENT_RE);
-    if (m) {
+    /* A line with no node, no stamp and no `EV_` label is three hex words,
+       which is too little to claim as an event. */
+    if (m && (m[2] || m[1] !== undefined || /^EV_/.test(m[3]))) {
       head = null;
-      const d = dev(m[2]);
+      const d = dev(m[2] || GEV_BARE);
       const type = gevLabel(GEV_TYPES, m[3]);
       d.events.push({
         t: m[1] === undefined ? null : +m[1],
@@ -6033,7 +6041,33 @@ function gevRead(input) {
     if (rg) head.ranges.set(gevLabel(GEV_CODES.EV_ABS, rg[1]),
                             { value:+rg[2], min:+rg[3], max:+rg[4] });
   }
+  gevName(devs, lines);
   return devs;
+}
+
+/* Events that arrived with no node in front of them. The paste often still
+   says which device they came off — the command that took them is in the
+   scrollback, or a `-lp` block above them describes exactly one touch device
+   — and either is better than a group with no name. Failing both they stay
+   their own device, which is honest: the capture never said. */
+function gevName(devs, lines) {
+  const bare = devs.get(GEV_BARE);
+  if (!bare) return;
+  if (!bare.events.length) { devs.delete(GEV_BARE); return; }
+
+  let said = null;
+  for (const line of lines) {
+    const m = line.match(/getevent\b[^\n]*?(\/dev\/input\/[\w.-]+)/);
+    if (m) { said = m[1]; break; }
+  }
+
+  const idle = [...devs.values()].filter(d => d !== bare && !d.events.length);
+  const touch = idle.filter(d => d.ranges.has('ABS_MT_POSITION_X') || d.ranges.has('ABS_X'));
+  const host = (said && idle.find(d => d.path === said))
+            || (touch.length === 1 ? touch[0] : null);
+
+  if (host) { host.events = bare.events; devs.delete(GEV_BARE); return; }
+  if (said) { bare.path = said; devs.delete(GEV_BARE); devs.set(said, bare); }
 }
 
 /* ---- from events to strokes ---- */
@@ -6451,7 +6485,7 @@ function parseGeteventCapture(input) {
     nodes.push(...mine);
     displays.push({
       id,
-      label: dev.path.replace(/^\/dev\/input\//, ''),
+      label: dev.path ? dev.path.replace(/^\/dev\/input\//, '') : 'unnamed device',
       name: dev.name,
       path: dev.path,
       size: { w: space.w, h: space.h },
@@ -10516,7 +10550,9 @@ function geteventDeviceDetail(d){
   const out = [];
   const ranges = [...d.ranges.entries()];
   out.push(`<section class="dgroup"><h3>Device</h3>${dl([
-    ['node', esc(d.path)],
+    ['node', d.path ? esc(d.path)
+      : `${none} <span style="color:var(--dim)">(the capture was taken with a device`
+        + ` argument, which prints no node in front of the events)</span>`],
     ['name', d.name ? esc(d.name) : none],
     ['protocol', d.protocol === 'A' || d.protocol === 'B'
       ? `multitouch ${esc(d.protocol)}` : d.protocol ? esc(d.protocol) : none],
@@ -11047,6 +11083,10 @@ const TOOLS = [
        prints that name too, in the input reader's motion ranges. */
     detect: (t) => (/^\s*\[\s*\d+(?:\.\d+)?\s*\]\s*\/dev\/input\/[\w.-]+:\s/m.test(t) ? 3 : 0)
                  + (/^\s*\/dev\/input\/[\w.-]+:\s+(?:EV_[A-Z]+|[0-9a-f]{4})\s+\w+\s+[0-9a-f]{1,8}\s*$/m.test(t) ? 3 : 0)
+                 /* Taken with a device argument, which prints no node: the
+                    stamp and the labels are then the whole of the shape. */
+                 + (/^\s*\[\s*\d+(?:\.\d+)?\s*\]\s*(?:EV_[A-Z]+|[0-9a-f]{4})\s+\w+\s+[0-9a-f]{1,8}\s*$/m.test(t) ? 3 : 0)
+                 + (/^\s*EV_[A-Z]+\s+\w+\s+[0-9a-f]{1,8}\s*$/m.test(t) ? 2 : 0)
                  + (/^add device\s+\d+:\s*\/dev\/input\//m.test(t) ? 1 : 0),
     parse: parseGeteventCapture,
     detail: geteventDetail,

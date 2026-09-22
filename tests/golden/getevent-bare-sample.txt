@@ -1,0 +1,16 @@
+tool: getevent
+displays: 1
+nodes: 2
+
+display 900  label=unnamed device  size=544x1808
+    meta: 2 strokes · 544 × 1808?
+    1  gev-tap         [26,925][29,925]          —           vis=y                                             42 ms                       tap at 26, 925
+    2  gev-swipe       [540,600][540,1800]       —           vis=y                                             0.15 s,1200 px,fling        swipe up at 540, 1800
+
+globals:
+  devices: 1
+  events: 48
+  stamped: true
+  start: 649.668888
+  end: 651.254
+  span: 1.585111999999981

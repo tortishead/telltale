@@ -41,6 +41,9 @@ const CASES = [
   { name: 'input-devices', file: 'input-sample', parse: 'parseInputDevicesDump' },
   { name: 'logcat-sample', parse: 'parseLogcatDump' },
   { name: 'getevent-sample', parse: 'parseGeteventCapture' },
+  /* The same reader on a capture taken with a device argument, which prints
+     no node in front of its events. */
+  { name: 'getevent-bare-sample', parse: 'parseGeteventCapture' },
 ];
 
 /* Every golden is `tests/golden/<name>.txt` and every fixture is
