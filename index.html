@@ -54,6 +54,10 @@
      the region is what it does with it, and the two are read against each
      other. Light green, so it lifts off the dark paper on its own. */
   --touch:#7fe6a8;
+  /* The finger, while the clock is running. Not a family colour and not the
+     touchable region's green: the head of a playing stroke has to be found on
+     a full layout at a glance, so it is the one neon on the page. */
+  --trace:#39ff14;
   --placeholder:#5a6874;
   --amber:#b08a3e;
   --ok:#5fa87a;
@@ -86,6 +90,7 @@
   --redline:#c2124f;
   --mark:#0f9d58;       /* taken down to hold on the light bar */
   --touch:#3aa86a;      /* the same green, dark enough to read on paper */
+  --trace:#00c21a;      /* still the brightest thing on the sheet, on paper */
   --placeholder:#8b968c;
   --amber:#8a6420;
   --ok:#3d7a53;          /* darker than the dark theme's, to hold on paper */
@@ -688,6 +693,9 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 }
 .trace-paste-foot{display:flex; align-items:center; gap:8px; justify-content:flex-end}
 .trace-err{flex:1; color:var(--redline); font-size:11.5px; overflow-wrap:anywhere}
+/* The same line says what went in when it went in: a capture that read is
+   worth a word, because the drawer stays open over the text it read. */
+.trace-err.is-ok{color:var(--ok)}
 /* The trace over somebody else's drawing. It is a note on that drawing: it
    takes no clicks, so the window under it is still the thing being picked. */
 .gev-over{pointer-events:none}
@@ -706,16 +714,19 @@ svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
 }
 /* The part of it that has happened by the moment the playhead is at. */
 .gev-live{
-  fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round;
+  fill:none; stroke:var(--trace); stroke-width:3; stroke-linecap:round;
   stroke-linejoin:round; vector-effect:non-scaling-stroke;
 }
 .gev-down{fill:currentColor; fill-opacity:.9; stroke:none}
 .gev-up{fill:none; stroke:currentColor; stroke-width:1.5; vector-effect:non-scaling-stroke}
 /* The finger itself, at this instant. */
 .gev-tip{
-  fill:currentColor; fill-opacity:.32; stroke:currentColor; stroke-width:2;
+  fill:var(--trace); fill-opacity:.5; stroke:var(--trace); stroke-width:2.5;
   vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 0 5px var(--trace));
 }
+/* The stroke the list is on keeps the redline; the neon says `now`, not
+   `this one`, so it is the same neon on every stroke. */
 .gev-g.is-sel .gev-path{stroke-opacity:.75}
 .gev-g.is-sel .gev-live{stroke-width:4}
 .gev-g.is-sel .gev-down{stroke:var(--redline); stroke-width:2; vector-effect:non-scaling-stroke}
@@ -1231,7 +1242,7 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
         placeholder="Paste `adb shell getevent -lt` here — and the `getevent -lp` ranges above it, if you took them, so the strokes land in the panel's real coordinates."></textarea>
       <div class="trace-paste-foot">
         <span class="trace-err" id="traceErr"></span>
-        <button class="tab" id="btnTraceCancel" type="button">Cancel</button>
+        <button class="tab" id="btnTraceCancel" type="button">Close</button>
         <button class="tab" id="btnTraceAttach" type="button">Play it</button>
       </div>
     </div>
@@ -8515,7 +8526,7 @@ function gevParts(stage, at, r, opts){
       `<path class="gev-live" data-live="${esc(n.hash)}" d=""/>` +
       /* `display` rather than `hidden`: the presentation attribute is SVG's
          own and means the same thing in every renderer. */
-      `<circle class="gev-tip" data-tip="${esc(n.hash)}" r="${r * 1.5}"
+      `<circle class="gev-tip" data-tip="${esc(n.hash)}" r="${r * 1.9}"
          cx="0" cy="0" display="none"/>` +
       `</g>`);
   }
@@ -8764,6 +8775,8 @@ function gevDetach(){
   gevStop();
   S.trace = null; S.traceDev = null; S.playAt = 0; S.mapRot = 0;
   $('tracePaste').dataset.open = '0';
+  $('traceText').value = '';
+  gevSaid('');
   renderPlan(); renderDetail();
 }
 
@@ -11708,30 +11721,59 @@ $('selSpeed').addEventListener('change', () => { gevPlay.last = 0; });
 /* Taking a capture onto a layout. The panel opens under the bar, the text is
    read by the same reader that would have opened it as a tab of its own, and
    what comes back hangs off this document. */
+function gevClosePaste(){
+  $('tracePaste').dataset.open = '0';
+  gevSaid('');
+  gevSyncBar();
+}
+/* The one line under the box, which says either why the text did not read or
+   what it turned out to be. */
+function gevSaid(text, ok){
+  const el = $('traceErr');
+  el.textContent = text;
+  el.classList.toggle('is-ok', !!ok && !!text);
+}
+/* What a capture that read says back: the drawer stays open over the text a
+   paste dropped in, so the log that is playing can be read against the
+   drawing it is playing on. */
+function gevPasteNote(){
+  const stage = gevStage();
+  if(!stage) return 'Playing.';
+  const { span } = gevClock(stage);
+  const n = stage.nodes.length;
+  return `Playing ${n} stroke${n === 1 ? '' : 's'}${
+    span ? ' · ' + gevMs(span) : ' · no timestamps'}.`;
+}
+/* Reading what is in the box. The text is kept either way — the drawer is how
+   a capture is looked at again, and a box emptied behind the reader's back
+   left `Play it` with nothing to read. */
+function gevTake(close){
+  const text = $('traceText').value;
+  /* Nothing in the box and something already playing: the hand that emptied it
+     meant to close the drawer, not to be told there is no capture in it. */
+  if(!text.trim() && S.trace){ if(close) gevClosePaste(); return; }
+  const bad = gevAttach(text);
+  if(bad) return gevSaid(bad);
+  renderPlan(); renderDetail();
+  if(close) return gevClosePaste();
+  gevSaid(gevPasteNote(), true);
+  gevSyncBar();
+}
 $('btnTracePaste').addEventListener('click', () => {
   const panel = $('tracePaste');
   panel.dataset.open = panel.dataset.open === '1' ? '0' : '1';
-  $('traceErr').textContent = '';
+  gevSaid('');
   gevSyncBar();
   if(panel.dataset.open === '1') $('traceText').focus();
 });
-$('btnTraceCancel').addEventListener('click', () => {
-  $('tracePaste').dataset.open = '0';
-  $('traceErr').textContent = '';
-  gevSyncBar();
-});
-$('btnTraceAttach').addEventListener('click', () => {
-  const bad = gevAttach($('traceText').value);
-  $('traceErr').textContent = bad || '';
-  if(bad) return;
-  $('tracePaste').dataset.open = '0';
-  $('traceText').value = '';
-  renderPlan(); renderDetail();
-});
+$('btnTraceCancel').addEventListener('click', () => gevClosePaste());
+$('btnTraceAttach').addEventListener('click', () => gevTake(true));
 /* Pasting into the box is the whole gesture, so it is also the button: a
-   capture dropped in plays without a second click. */
+   capture dropped in plays without a second click. The drawer is left open on
+   the text it read, because a drawer that shut itself on a log nobody had seen
+   yet read as the paste having gone nowhere. */
 $('traceText').addEventListener('paste', () => {
-  setTimeout(() => $('btnTraceAttach').click(), 0);
+  setTimeout(() => gevTake(false), 0);
 });
 $('btnTraceDrop').addEventListener('click', () => gevDetach());
 $('selTraceDev').addEventListener('change', (e) => {
