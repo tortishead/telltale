@@ -31,6 +31,12 @@ const CASES = [
   /* The same reader on an Android 16 dump, which underlines every heading
      inside itself with a rule of the shape that ends a bugreport section. */
   { name: 'display-a16-sample', parse: 'parseDisplayManagerDump' },
+  { name: 'activity-sample', parse: 'parseActivityDump' },
+  /* The same reader on an Android 16 dump: tasks inside tasks for split
+     screen, a TaskFragment under one of them for activity embedding, a task
+     in desktop windowing, and every rect printed as `Rect(l, t - r, b)`
+     rather than `[l,t][r,b]`. */
+  { name: 'activity-a16-sample', parse: 'parseActivityDump' },
   { name: 'package-sample', parse: 'parsePackageDump' },
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
@@ -85,6 +91,7 @@ const OWN = {
   parseSurfaceFlingerDump: ['sf-sample', 'sf-a16-sample'],
   parsePackageDump: ['package-sample'],
   parseDisplayManagerDump: ['display-sample', 'display-a16-sample'],
+  parseActivityDump: ['activity-sample', 'activity-a16-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
   parseOverlayDump: ['overlay-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],

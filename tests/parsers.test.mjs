@@ -25,6 +25,7 @@ import {
   parseSystemPropertiesDump, propNamespace, propSectionOf, propReadOnly, propFlag,
   parseEventLogDump, eventSplit, eventFields, configChanges, shortComponent,
   parseDisplayManagerDump, dmRect, dmField, dmSize, dmBlocks, dmCutoutBounds, dmDegrees,
+  parseActivityDump, actField, actBounds, actTaskHead,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -563,6 +564,150 @@ test('a logical display finds its panel through the name the unique id is hung o
 test('a text with none of this service in it is not this dump', () => {
   assert.equal(parseDisplayManagerDump('').ok, false);
   assert.equal(parseDisplayManagerDump('WINDOW MANAGER WINDOWS (dumpsys window windows)').ok, false);
+});
+
+/* ---------------- activities ---------------- */
+
+test('actField reads a value off a line the dump crowded four onto', () => {
+  const line = 'state=RESUMED stopped=false delayedResume=false finishing=false';
+  assert.equal(actField(line, 'state'), 'RESUMED');
+  assert.equal(actField(line, 'finishing'), 'false');
+  assert.equal(actField('resultTo=null resultWho=null', 'resultTo'), null,
+    'the dump saying there is none is not a value');
+  assert.equal(actField(line, 'mode'), null);
+});
+
+/* The spelling of a task's rect changed between releases, and a task that
+   fills its parent prints an empty one rather than the parent's. */
+test('actBounds takes either spelling of a rect and no empty one', () => {
+  assert.deepEqual(actBounds('bounds=[0,0][1080,2400]'), { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.deepEqual(actBounds('mBounds=Rect(612, 1644 - 1044, 1887)'),
+    { l: 612, t: 1644, r: 1044, b: 1887 });
+  assert.equal(actBounds('mBounds=Rect(0, 0 - 0, 0)'), null);
+  assert.equal(actBounds('userId=0 effectiveUid=u0a143'), null);
+});
+
+test('a task head states what the manager thinks of the task', () => {
+  const h = actTaskHead('#6 type=standard A=10143:com.android.settings U=0 visible=true '
+    + 'visibleRequested=true mode=fullscreen translucent=false sz=1');
+  assert.equal(h.taskId, 6);
+  assert.equal(h.type, 'standard');
+  assert.equal(h.affinity, '10143:com.android.settings');
+  assert.equal(h.visible, true);
+  assert.equal(h.mode, 'fullscreen');
+  assert.equal(h.childCount, 1);
+});
+
+test('the activity sample is read as a tree per display', () => {
+  const s = parseActivityDump(read('fixtures/activity-sample.txt'));
+  assert.ok(s.ok);
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 2]);
+  assert.equal(s.globals.tasks, 5);
+  assert.equal(s.globals.activities, 3);
+
+  const settings = s.nodes.find((n) => n.kind === 'activity'
+    && n.props.component.startsWith('com.android.settings/'));
+  assert.equal(settings.kind, 'activity');
+  assert.equal(settings.props.state, 'RESUMED');
+  assert.equal(settings.props.process, 'com.android.settings');
+  assert.equal(settings.visible, true);
+  assert.equal(settings.focused, true, 'mFocusedApp names it');
+});
+
+/* A task inside a task is read off the indentation, not assumed: the home
+   task on a modern build is a root task holding the one the launcher is in. */
+test('a task inside a task hangs under it, and its activity under that', () => {
+  const s = parseActivityDump(read('fixtures/activity-sample.txt'));
+  const byHash = new Map(s.nodes.map((n) => [n.hash, n]));
+  const launcher = s.nodes.find((n) => n.title.endsWith('/NexusLauncherActivity')
+    && n.kind === 'activity');
+
+  const task = byHash.get(launcher.parentHash);
+  assert.equal(task.props.taskId, 2);
+  assert.equal(byHash.get(task.parentHash).props.taskId, 1);
+  assert.deepEqual(launcher.ancestors.map((a) => byHash.get(a.hash).props.taskId), [1, 2]);
+  assert.equal(launcher.depth, 2);
+});
+
+/* An activity prints no rect of its own. What it occupies is what holds it,
+   which is the whole point of drawing the tree. */
+test('an activity is drawn at the bounds of whatever contains it', () => {
+  const s = parseActivityDump(read('fixtures/activity-sample.txt'));
+  const cluster = s.displays[1].nodes.find((n) => n.kind === 'activity');
+
+  assert.deepEqual(cluster.frame, { l: 0, t: 0, r: 1920, b: 720 });
+  assert.equal(cluster.frameSource, 'parent bounds');
+  assert.deepEqual(s.displays[1].size, { w: 1920, h: 720 },
+    'and the display is as big as the task printed on it');
+});
+
+test('each display says which activity the manager resumed on it', () => {
+  const s = parseActivityDump(read('fixtures/activity-sample.txt'));
+  assert.equal(s.displays[0].resumed.props.component,
+    'com.android.settings/.homepage.SettingsHomepageActivity');
+  assert.equal(s.displays[1].resumed.props.component, 'com.example.cluster/.ClusterActivity');
+  assert.equal(s.globals.currentUser, '0');
+  assert.equal(s.globals.topDisplay, '0');
+});
+
+/* Android 16 is where the tree stopped being tasks and activities: split
+   screen puts tasks inside a task, activity embedding puts a TaskFragment
+   between a task and its activities, desktop windowing gives a task bounds
+   anywhere on the display, and every rect is printed as `Rect(l, t - r, b)`. */
+test('an Android 16 tree reads its fragments, its modes and its Rect spelling', () => {
+  const s = parseActivityDump(read('fixtures/activity-a16-sample.txt'));
+  assert.ok(s.ok);
+  assert.equal(s.globals.fragments, 2);
+
+  const frags = s.nodes.filter((n) => n.kind === 'fragment');
+  assert.deepEqual(frags.map((f) => f.frame), [
+    { l: 0, t: 1212, r: 540, b: 2400 },
+    { l: 540, t: 1212, r: 1080, b: 2400 },
+  ], 'the two halves of an embedded split, in Rect( ) spelling');
+  assert.deepEqual(frags.map((f) => f.props.embedded), [true, true]);
+
+  const modes = s.nodes.filter((n) => n.kind === 'task').map((n) => n.props.mode);
+  assert.ok(modes.includes('pinned'), 'picture in picture');
+  assert.ok(modes.includes('multi-window'), 'split screen');
+  assert.ok(modes.includes('freeform'), 'a desktop window');
+
+  const editor = s.nodes.find((n) => n.props.mode === 'freeform');
+  assert.deepEqual(editor.frame, { l: 120, t: 96, r: 1720, b: 1096 });
+  assert.equal(editor.displayId, 4);
+});
+
+test('an activity embedded in a fragment is drawn in the fragment, not the task', () => {
+  const s = parseActivityDump(read('fixtures/activity-a16-sample.txt'));
+  const detail = s.nodes.find((n) => n.title.endsWith('/MailDetailActivity'));
+
+  assert.deepEqual(detail.frame, { l: 540, t: 1212, r: 1080, b: 2400 });
+  assert.equal(detail.frameSource, 'parent bounds');
+  assert.equal(s.nodes.find((n) => n.hash === detail.parentHash).kind, 'fragment');
+});
+
+/* The task tree is one of half a dozen `ACTIVITY MANAGER ...` sections a
+   bugreport prints, and the next one starts with a heading of the same shape.
+   A reader that ran on past it would hang phantom tasks off the last
+   display. */
+test('the reader stops where the next activity manager section starts', () => {
+  const own = read('fixtures/activity-sample.txt');
+  const after = [
+    'ACTIVITY MANAGER SERVICES (dumpsys activity services)',
+    'User 0 active services:',
+    '  * ServiceRecord{2f0b9ae u0 com.example.mail/.SyncService}',
+    '    app=ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}',
+  ].join('\n');
+
+  const s = parseActivityDump(`${own}\n${after}`);
+  const alone = parseActivityDump(own);
+  assert.deepEqual(s.nodes.map((n) => n.title), alone.nodes.map((n) => n.title));
+  assert.equal(s.globals.lines, alone.globals.lines);
+});
+
+test('a text with no task tree in it is not this dump', () => {
+  assert.equal(parseActivityDump('').ok, false);
+  assert.equal(parseActivityDump(read('fixtures/window-sample.txt')).ok, false);
+  assert.equal(parseActivityDump('ACTIVITY MANAGER SERVICES (dumpsys activity services)').ok, false);
 });
 
 /* ---------------- packages ---------------- */

@@ -1,0 +1,153 @@
+ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+Display #0 (activities from top to bottom):
+  * Task{4c81b09 #74 type=standard A=10222:com.example.notes U=0 visible=true visibleRequested=true mode=pinned translucent=false sz=1}
+    mCreatedByOrganizer=true mRemoveWithTaskOrganizer=false
+    userId=0 effectiveUid=u0a222 mUserSetupComplete=true
+    mActivityComponent=com.example.notes/.NoteActivity
+    activityType=standard
+    mHasBeenVisible=true mResizeMode=RESIZE_MODE_RESIZEABLE mSupportsPictureInPicture=true isResizeable=true
+    mBounds=Rect(612, 1644 - 1044, 1887)
+    topResumedActivity=null
+    * ActivityRecord{1a7ce30 u0 com.example.notes/.NoteActivity t74}
+      packageName=com.example.notes processName=com.example.notes
+      launchedFromUid=10222 launchedFromPackage=com.example.notes userId=0
+      app=ProcessRecord{55c31de 9932:com.example.notes/u0a222}
+      Intent { act=android.intent.action.MAIN cmp=com.example.notes/.NoteActivity }
+      rootOfTask=true task=Task{4c81b09 #74 type=standard A=10222:com.example.notes U=0 visible=true visibleRequested=true mode=pinned translucent=false sz=1}
+      mActivityComponent=com.example.notes/.NoteActivity
+      stateNotNeeded=false componentSpecified=true mActivityType=standard
+      state=PAUSED stopped=false delayedResume=false finishing=false
+      mActivityType=standard
+      resizeMode=RESIZE_MODE_RESIZEABLE
+      mLastReportedMultiWindowMode=true mLastReportedPictureInPictureMode=true
+      waitingVisible=false nowVisible=true lastVisibleTime=-8s221ms
+      mVisibleRequested=true mVisible=true mClientVisible=true
+      occludesParent=false
+  * Task{8d2a5c7 #71 type=standard mode=multi-window translucent=false sz=2}
+    mCreatedByOrganizer=true mRemoveWithTaskOrganizer=true
+    activityType=standard
+    mHasBeenVisible=true
+    mBounds=Rect(0, 0 - 1080, 2400)
+    * Task{9f0b3e1 #72 type=standard A=10143:com.android.settings U=0 visible=true visibleRequested=true mode=multi-window translucent=false sz=1}
+      userId=0 effectiveUid=u0a143
+      intent={act=android.settings.SETTINGS flg=0x10200000 cmp=com.android.settings/.homepage.SettingsHomepageActivity}
+      mActivityComponent=com.android.settings/.homepage.SettingsHomepageActivity
+      activityType=standard
+      mHasBeenVisible=true isResizeable=true
+      mBounds=Rect(0, 0 - 1080, 1188)
+      topResumedActivity=ActivityRecord{2f61bd4 u0 com.android.settings/.homepage.SettingsHomepageActivity t72}
+      * ActivityRecord{2f61bd4 u0 com.android.settings/.homepage.SettingsHomepageActivity t72}
+        packageName=com.android.settings processName=com.android.settings
+        launchedFromUid=10213 launchedFromPackage=com.google.android.apps.nexuslauncher userId=0
+        app=ProcessRecord{6a2c1b0 4821:com.android.settings/u0a143}
+        Intent { act=android.settings.SETTINGS flg=0x10200000 cmp=com.android.settings/.homepage.SettingsHomepageActivity }
+        rootOfTask=true task=Task{9f0b3e1 #72 type=standard A=10143:com.android.settings U=0 visible=true visibleRequested=true mode=multi-window translucent=false sz=1}
+        mActivityComponent=com.android.settings/.homepage.SettingsHomepageActivity
+        stateNotNeeded=false componentSpecified=true mActivityType=standard
+        state=RESUMED stopped=false delayedResume=false finishing=false
+        mActivityType=standard
+        resizeMode=RESIZE_MODE_RESIZEABLE
+        mLastReportedMultiWindowMode=true mLastReportedPictureInPictureMode=false
+        waitingVisible=false nowVisible=true lastVisibleTime=-11s043ms
+        mVisibleRequested=true mVisible=true mClientVisible=true
+        occludesParent=true
+    * Task{ab44f2c #73 type=standard A=10222:com.example.mail U=0 visible=true visibleRequested=true mode=multi-window translucent=false sz=1}
+      userId=0 effectiveUid=u0a231
+      intent={act=android.intent.action.MAIN cmp=com.example.mail/.MailActivity}
+      mActivityComponent=com.example.mail/.MailActivity
+      activityType=standard
+      mHasBeenVisible=true isResizeable=true
+      mBounds=Rect(0, 1212 - 1080, 2400)
+      topResumedActivity=null
+      * TaskFragment{77e1c05 mode=multi-window}
+        mBounds=Rect(0, 1212 - 540, 2400)
+        isEmbedded=true
+        * ActivityRecord{5c0e9a2 u0 com.example.mail/.MailListActivity t73}
+          packageName=com.example.mail processName=com.example.mail
+          launchedFromUid=10231 launchedFromPackage=com.example.mail userId=0
+          app=ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}
+          Intent { act=android.intent.action.MAIN cmp=com.example.mail/.MailListActivity }
+          rootOfTask=true task=Task{ab44f2c #73 type=standard A=10222:com.example.mail U=0 visible=true visibleRequested=true mode=multi-window translucent=false sz=1}
+          mActivityComponent=com.example.mail/.MailListActivity
+          stateNotNeeded=false componentSpecified=true mActivityType=standard
+          state=STARTED stopped=false delayedResume=false finishing=false
+          mActivityType=standard
+          resizeMode=RESIZE_MODE_RESIZEABLE
+          waitingVisible=false nowVisible=true lastVisibleTime=-11s112ms
+          mVisibleRequested=true mVisible=true mClientVisible=true
+          occludesParent=true
+      * TaskFragment{6b90d33 mode=multi-window}
+        mBounds=Rect(540, 1212 - 1080, 2400)
+        isEmbedded=true
+        * ActivityRecord{d18b6f7 u0 com.example.mail/.MailDetailActivity t73}
+          packageName=com.example.mail processName=com.example.mail
+          launchedFromUid=10231 launchedFromPackage=com.example.mail userId=0
+          app=ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}
+          Intent { act=android.intent.action.VIEW cmp=com.example.mail/.MailDetailActivity }
+          rootOfTask=false task=Task{ab44f2c #73 type=standard A=10222:com.example.mail U=0 visible=true visibleRequested=true mode=multi-window translucent=false sz=1}
+          mActivityComponent=com.example.mail/.MailDetailActivity
+          stateNotNeeded=false componentSpecified=true mActivityType=standard
+          state=STARTED stopped=false delayedResume=false finishing=false
+          mActivityType=standard
+          resizeMode=RESIZE_MODE_RESIZEABLE
+          waitingVisible=false nowVisible=true lastVisibleTime=-11s118ms
+          mVisibleRequested=true mVisible=true mClientVisible=true
+          occludesParent=true
+  * Task{b70d514 #1 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+    mCreatedByOrganizer=true mRemoveWithTaskOrganizer=false
+    activityType=home
+    mHasBeenVisible=true
+    mBounds=Rect(0, 0 - 1080, 2400)
+    * ActivityRecord{9ee0a4d u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t1}
+      packageName=com.google.android.apps.nexuslauncher processName=com.google.android.apps.nexuslauncher
+      launchedFromUid=0 launchedFromPackage=android userId=0
+      app=ProcessRecord{8f0eb8c 3021:com.google.android.apps.nexuslauncher/u0a213}
+      Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity }
+      rootOfTask=true task=Task{b70d514 #1 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+      mActivityComponent=com.google.android.apps.nexuslauncher/.NexusLauncherActivity
+      stateNotNeeded=true componentSpecified=false mActivityType=home
+      state=STOPPED stopped=true delayedResume=false finishing=false
+      mActivityType=home
+      resizeMode=RESIZE_MODE_RESIZEABLE
+      waitingVisible=false nowVisible=false lastVisibleTime=-11s980ms
+      mVisibleRequested=false mVisible=false mClientVisible=false
+      occludesParent=true
+
+  ResumedActivity: ActivityRecord{2f61bd4 u0 com.android.settings/.homepage.SettingsHomepageActivity t72}
+
+Display #4 (activities from top to bottom):
+  * Task{f0a91b2 #66 type=standard A=10251:com.example.editor U=0 visible=true visibleRequested=true mode=freeform translucent=false sz=1}
+    mCreatedByOrganizer=true mRemoveWithTaskOrganizer=true
+    userId=0 effectiveUid=u0a251
+    intent={act=android.intent.action.MAIN cmp=com.example.editor/.EditorActivity}
+    mActivityComponent=com.example.editor/.EditorActivity
+    activityType=standard
+    mHasBeenVisible=true isResizeable=true
+    mBounds=Rect(120, 96 - 1720, 1096)
+    topResumedActivity=ActivityRecord{0c4e7a9 u0 com.example.editor/.EditorActivity t66}
+    * ActivityRecord{0c4e7a9 u0 com.example.editor/.EditorActivity t66}
+      packageName=com.example.editor processName=com.example.editor
+      launchedFromUid=10251 launchedFromPackage=com.example.editor userId=0
+      app=ProcessRecord{9b20ee4 6610:com.example.editor/u0a251}
+      Intent { act=android.intent.action.MAIN cmp=com.example.editor/.EditorActivity }
+      rootOfTask=true task=Task{f0a91b2 #66 type=standard A=10251:com.example.editor U=0 visible=true visibleRequested=true mode=freeform translucent=false sz=1}
+      mActivityComponent=com.example.editor/.EditorActivity
+      stateNotNeeded=false componentSpecified=true mActivityType=standard
+      state=RESUMED stopped=false delayedResume=false finishing=false
+      mActivityType=standard
+      resizeMode=RESIZE_MODE_RESIZEABLE
+      mLastReportedMultiWindowMode=true mLastReportedPictureInPictureMode=false
+      waitingVisible=false nowVisible=true lastVisibleTime=-1m2s004ms
+      mVisibleRequested=true mVisible=true mClientVisible=true
+      occludesParent=true
+
+  ResumedActivity: ActivityRecord{0c4e7a9 u0 com.example.editor/.EditorActivity t66}
+
+  mCurrentUser=0
+  mTopFocusedDisplayId=0
+  mFocusedApp=ActivityRecord{2f61bd4 u0 com.android.settings/.homepage.SettingsHomepageActivity t72}
+  mLastPausedActivity: ActivityRecord{1a7ce30 u0 com.example.notes/.NoteActivity t74}
+  mHomeProcess=ProcessRecord{8f0eb8c 3021:com.google.android.apps.nexuslauncher/u0a213}
+  mSleeping=false
+  mShuttingDown=false
+  mGlobalConfiguration={1.0 ?mcc0mnc [en_US] ldltr sw411dp w411dp h869dp 420dpi nrml long port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 136 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mWindowingMode=fullscreen mActivityType=undefined} s.61 fontWeightAdjustment=0}

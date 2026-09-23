@@ -1,0 +1,115 @@
+ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+Display #0 (activities from top to bottom):
+  * Task{a1f0c2d #6 type=standard A=10143:com.android.settings U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+    mCreatedByOrganizer=false mRemoveWithTaskOrganizer=false
+    userId=0 effectiveUid=u0a143 mCallingUid=u0a143 mUserSetupComplete=true mCallingPackage=com.google.android.apps.nexuslauncher mCallingFeatureId=null
+    affinity=10143:com.android.settings
+    intent={act=android.settings.SETTINGS flg=0x10200000 cmp=com.android.settings/.homepage.SettingsHomepageActivity}
+    mActivityComponent=com.android.settings/.homepage.SettingsHomepageActivity
+    autoRemoveRecents=false isPersistable=true activityType=standard
+    rootWasReset=false mNeverRelinquishIdentity=true mReuseTask=false mLockTaskAuth=LOCK_TASK_AUTH_PINNABLE
+    Activities=[ActivityRecord{3c9be41 u0 com.android.settings/.homepage.SettingsHomepageActivity t6}]
+    askedCompatMode=false inRecents=true isAvailable=true
+    mHasBeenVisible=true mResizeMode=RESIZE_MODE_RESIZEABLE mSupportsPictureInPicture=false isResizeable=true
+    lastActiveTime=118425316 (inactive for 3s)
+    bounds=[0,0][1080,2400]
+    mResumedActivity: ActivityRecord{3c9be41 u0 com.android.settings/.homepage.SettingsHomepageActivity t6}
+    * ActivityRecord{3c9be41 u0 com.android.settings/.homepage.SettingsHomepageActivity t6}
+      packageName=com.android.settings processName=com.android.settings
+      launchedFromUid=10213 launchedFromPackage=com.google.android.apps.nexuslauncher launchedFromFeature=null userId=0
+      app=ProcessRecord{6a2c1b0 4821:com.android.settings/u0a143}
+      Intent { act=android.settings.SETTINGS flg=0x10200000 cmp=com.android.settings/.homepage.SettingsHomepageActivity }
+      rootOfTask=true task=Task{a1f0c2d #6 type=standard A=10143:com.android.settings U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+      taskAffinity=10143:com.android.settings
+      mActivityComponent=com.android.settings/.homepage.SettingsHomepageActivity
+      baseDir=/product/priv-app/Settings/Settings.apk
+      dataDir=/data/user/0/com.android.settings
+      stateNotNeeded=false componentSpecified=true mActivityType=standard
+      compat={480dpi} labelRes=0x7f130a7d icon=0x7f0801ea theme=0x7f140290
+      CurrentConfiguration={1.0 ?mcc0mnc [en_US] ldltr sw411dp w411dp h869dp 420dpi nrml long port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 136 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mWindowingMode=fullscreen mActivityType=standard} s.42}
+      taskDescription: iconRes=0x7f0801ea label="Settings" color=ff1b1b1b
+      resultTo=null resultWho=null resultCode=0
+      taskFragment=Task{a1f0c2d #6 type=standard A=10143:com.android.settings U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+      mHaveState=false mLoadingState=LOADED
+      state=RESUMED stopped=false delayedResume=false finishing=false
+      keysPaused=false inHistory=true launchMode=0
+      fullscreen=true noDisplay=false immersive=false launchMode=0
+      frozenBeforeDestroy=false forceNewConfig=false
+      mActivityType=standard
+      resizeMode=RESIZE_MODE_RESIZEABLE
+      waitingVisible=false nowVisible=true lastVisibleTime=-3s112ms
+      mVisibleRequested=true mVisible=true mClientVisible=true
+      occludesParent=true
+  * Task{b70d514 #1 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+    mCreatedByOrganizer=true mRemoveWithTaskOrganizer=false
+    userId=0 effectiveUid=u0a213 mUserSetupComplete=true
+    activityType=home
+    mHasBeenVisible=true mResizeMode=RESIZE_MODE_RESIZEABLE isResizeable=true
+    bounds=[0,0][1080,2400]
+    * Task{c8e0a19 #2 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+      userId=0 effectiveUid=u0a213
+      intent={act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity}
+      mActivityComponent=com.google.android.apps.nexuslauncher/.NexusLauncherActivity
+      activityType=home
+      bounds=[0,0][1080,2400]
+      * ActivityRecord{9ee0a4d u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t2}
+        packageName=com.google.android.apps.nexuslauncher processName=com.google.android.apps.nexuslauncher
+        launchedFromUid=0 launchedFromPackage=android userId=0
+        app=ProcessRecord{8f0eb8c 3021:com.google.android.apps.nexuslauncher/u0a213}
+        Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity }
+        rootOfTask=true task=Task{c8e0a19 #2 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+        taskAffinity=com.google.android.apps.nexuslauncher
+        mActivityComponent=com.google.android.apps.nexuslauncher/.NexusLauncherActivity
+        stateNotNeeded=true componentSpecified=false mActivityType=home
+        state=STOPPED stopped=true delayedResume=false finishing=false
+        keysPaused=false inHistory=true launchMode=2
+        fullscreen=true noDisplay=false immersive=false launchMode=2
+        mActivityType=home
+        resizeMode=RESIZE_MODE_RESIZEABLE
+        waitingVisible=false nowVisible=false lastVisibleTime=-3s980ms
+        mVisibleRequested=false mVisible=false mClientVisible=false
+        occludesParent=true
+  * Task{d31b7a6 #4 type=undefined mode=fullscreen translucent=true sz=0}
+    mCreatedByOrganizer=true mRemoveWithTaskOrganizer=false
+    activityType=undefined
+    mHasBeenVisible=false
+    bounds=[0,0][1080,2400]
+
+  ResumedActivity: ActivityRecord{3c9be41 u0 com.android.settings/.homepage.SettingsHomepageActivity t6}
+
+Display #2 (activities from top to bottom):
+  * Task{e44c2f8 #11 type=standard A=10175:com.example.cluster U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+    userId=0 effectiveUid=u0a175
+    intent={act=android.intent.action.MAIN cmp=com.example.cluster/.ClusterActivity}
+    mActivityComponent=com.example.cluster/.ClusterActivity
+    activityType=standard
+    mHasBeenVisible=true isResizeable=false
+    bounds=[0,0][1920,720]
+    mResumedActivity: ActivityRecord{7b2fd03 u0 com.example.cluster/.ClusterActivity t11}
+    * ActivityRecord{7b2fd03 u0 com.example.cluster/.ClusterActivity t11}
+      packageName=com.example.cluster processName=com.example.cluster
+      launchedFromUid=1000 launchedFromPackage=android userId=0
+      app=ProcessRecord{2d99ac1 2277:com.example.cluster/u0a175}
+      Intent { act=android.intent.action.MAIN cmp=com.example.cluster/.ClusterActivity }
+      rootOfTask=true task=Task{e44c2f8 #11 type=standard A=10175:com.example.cluster U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+      mActivityComponent=com.example.cluster/.ClusterActivity
+      stateNotNeeded=false componentSpecified=true mActivityType=standard
+      state=RESUMED stopped=false delayedResume=false finishing=false
+      fullscreen=true noDisplay=false immersive=false launchMode=0
+      mActivityType=standard
+      resizeMode=RESIZE_MODE_UNRESIZEABLE
+      waitingVisible=false nowVisible=true lastVisibleTime=-2m5s340ms
+      mVisibleRequested=true mVisible=true mClientVisible=true
+      occludesParent=true
+
+  ResumedActivity: ActivityRecord{7b2fd03 u0 com.example.cluster/.ClusterActivity t11}
+
+  mCurrentUser=0
+  mTopFocusedDisplayId=0
+  mFocusedApp=ActivityRecord{3c9be41 u0 com.android.settings/.homepage.SettingsHomepageActivity t6}
+  mLastPausedActivity: ActivityRecord{9ee0a4d u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t2}
+  mHomeProcess=ProcessRecord{8f0eb8c 3021:com.google.android.apps.nexuslauncher/u0a213}
+  mPreviousProcess=ProcessRecord{8f0eb8c 3021:com.google.android.apps.nexuslauncher/u0a213}
+  mSleeping=false
+  mShuttingDown=false
+  mGlobalConfiguration={1.0 ?mcc0mnc [en_US] ldltr sw411dp w411dp h869dp 420dpi nrml long port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 136 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mWindowingMode=fullscreen mActivityType=undefined} s.42 fontWeightAdjustment=0}

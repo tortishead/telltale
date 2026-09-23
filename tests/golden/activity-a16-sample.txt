@@ -1,0 +1,40 @@
+tool: activity
+displays: 2
+nodes: 14
+
+display 0  size=1080x2400
+    tasks: 5
+    activities: 5
+    resumed: com.android.settings/SettingsHomepageActivity
+    1  act-activity    [612,1644][1044,1887]     parent bounds  vis=y         ^act:2                              paused,see-through          com.example.notes/NoteActivity
+    2  act-task        [612,1644][1044,1887]     bounds      vis=y                                             pinned                      task #74 · com.example.notes
+    3  act-activity    [0,1212][540,2400]        parent bounds  vis=y         ^act:61                             started                     com.example.mail/MailListActivity
+    4  act-activity    [540,1212][1080,2400]     parent bounds  vis=y         ^act:78                             started                     com.example.mail/MailDetailActivity
+    5  act-activity    [0,0][1080,1188]          parent bounds  vis=y  focus  ^act:30                             resumed                     com.android.settings/SettingsHomepageActivity
+    6  act-fragment    [0,1212][540,2400]        bounds      vis=?         ^act:53                             embedded                    fragment 77e1c05
+    7  act-fragment    [540,1212][1080,2400]     bounds      vis=?         ^act:53                             embedded                    fragment 6b90d33
+    8  act-task        [0,0][1080,1188]          bounds      vis=y         ^act:25                             multi-window                task #72 · com.android.settings
+    9  act-task        [0,1212][1080,2400]       bounds      vis=y         ^act:25                             multi-window                task #73 · com.example.mail
+   10  act-task        [0,0][1080,2400]          bounds      vis=?                                             multi-window                task #71
+   11  act-activity    [0,0][1080,2400]          parent bounds  vis=n         ^act:95                             stopped                     com.google.android.apps.nexuslauncher/NexusLauncherActivity
+   12  act-home        [0,0][1080,2400]          bounds      vis=n                                             -                           task #1 · com.google.android.apps.nexuslauncher/NexusLauncherActivity
+
+display 4  size=1720x1096
+    tasks: 1
+    activities: 1
+    resumed: com.example.editor/EditorActivity
+    1  act-activity    [120,96][1720,1096]       parent bounds  vis=y         ^act:118                            resumed                     com.example.editor/EditorActivity
+    2  act-task        [120,96][1720,1096]       bounds      vis=y                                             freeform                    task #66 · com.example.editor
+
+globals:
+  currentUser: 0
+  topDisplay: 0
+  focusedApp: ActivityRecord{2f61bd4 u0 com.android.settings/.homepage.SettingsHomepageActivity t72}
+  lastPaused: ActivityRecord{1a7ce30 u0 com.example.notes/.NoteActivity t74}
+  homeProcess: ProcessRecord{8f0eb8c 3021:com.google.android.apps.nexuslauncher/u0a213}
+  sleeping: false
+  tasks: 6
+  fragments: 2
+  activities: 6
+  config: {1.0 ?mcc0mnc [en_US] ldltr sw411dp w411dp h869dp 420dpi nrml long port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 136 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mWindowingMode=fullscreen mActivityType=undefined} s.61 fontWeightAdjustment=0}
+  lines: 154
