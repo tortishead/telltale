@@ -6,8 +6,8 @@ Telltale is a browser toolkit for reading what an Android device reports about
 itself. Drop something in and it works out what it is holding, then draws it,
 lists it, or lays it out to be read.
 
-One static HTML file. No dependencies, no build step, no server. What you load
-never leaves your browser.
+Static HTML, CSS and plain scripts. No dependencies, no build step, no
+server. What you load never leaves your browser.
 
 ## Use it
 
@@ -99,10 +99,10 @@ is case-insensitive whether or not you write `i`.
 
 ## Host it
 
-Copy `index.html` into a repository and turn on GitHub Pages. It opens from
-`file://` just as well. The header carries the day the copy was stamped and
-which stamp of that day it is — `build 2026.09.23.2` — which is what to quote
-in a bug report about Telltale itself. Every run is a new revision:
+Copy `index.html`, `css/` and `js/` into a repository and turn on GitHub Pages.
+It opens from `file://` just as well. The header carries the day the copy was
+stamped and which stamp of that day it is — `build 2026.09.23.2` — which is
+what to quote in a bug report about Telltale itself. Every run is a new revision:
 
 ```
 python3 tools/stamp-build.py     # once per copy you publish

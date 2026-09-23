@@ -1,7 +1,7 @@
 /* Runs the whole page under a stub DOM, so the loading layer can be asserted
  * on the way the parse layer already is.
  *
- * tools/parse-layer.mjs slices out the part of index.html that touches no DOM.
+ * tools/parse-layer.mjs takes the files of index.html that touch no DOM.
  * The rest of the page does, and some of what it decides is worth a test all
  * the same: which readers recognise a dump, therefore how many tabs a
  * bugreport opens with, and whether a zip is opened to the right file inside
@@ -10,13 +10,12 @@
  * So this gives the page the smallest DOM that lets it start: every element it
  * asks for answers to everything, and nothing is laid out or drawn. What comes
  * back is the page's own functions. It is a test-time tool, like the other two
- * in here, and index.html still ships as one file with no build step.
+ * in here, and the page still has no build step: the files are plain scripts
+ * sharing one global scope, so the page is them concatenated in the order
+ * index.html lists them, which is what tools/page-files.mjs hands back.
  */
 
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
-const PAGE = fileURLToPath(new URL('../index.html', import.meta.url));
+import { pageSource } from './page-files.mjs';
 
 /* One element that answers to everything the page asks of an element. */
 function stubEl(id){
@@ -59,14 +58,6 @@ function stubDom(){
     devicePixelRatio: 2,
   };
   return { doc, win, els };
-}
-
-/* The page's second script — the first is the theme guard in the head. */
-function pageSource(){
-  const html = readFileSync(PAGE, 'utf8');
-  const scripts = [...html.matchAll(/<script>\n([\s\S]*?)\n<\/script>/g)];
-  if(scripts.length < 2) throw new Error(`index.html: expected two <script> blocks, found ${scripts.length}`);
-  return scripts[scripts.length - 1][1];
 }
 
 /* What the page hands back. Everything here is the page's own function, called

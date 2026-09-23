@@ -1,0 +1,1058 @@
+/* Two themes, one palette. Every colour in the page is a token below, and the
+   light theme is nothing but a second set of values for the same names.
+   The drawing itself does not change: paper stays paper and the type colours
+   stay put, because a plan reads the same on any desk. Which theme is live is
+   decided in JS and stamped on <html> as data-theme, so there is exactly one
+   light block here rather than one for the media query and one for the toggle. */
+:root{
+  color-scheme:dark;
+  --ink:#131a24;
+  --ink-2:#1b2531;
+  --ink-3:#222e3c;
+  --rule:#2b3948;
+  --rule-soft:#232f3d;
+  --paper:#eef1ec;
+  --paper-2:#e2e6df;
+  --graphite:#6d7d8b;
+  --dim:#7d8b98;
+  --label:#e6edf4;       /* names drawn on the sheet, not chrome text */
+  --label-soft:#9aa8b5;
+  --fg:#ccd6e0;
+  --fg-strong:#f0f4f8;
+  --redline:#d81e5b;
+  /* The mark only. Android's green, kept out of --redline so the rest of
+     the page — the selected row, the focus badge, workspace one — stays the
+     colour it was. */
+  --mark:#3ddc84;
+  /* Where a window actually takes touch, on both sheets. Its own colour, not
+     the window's tint and not the redline: the frame is what the node is and
+     the region is what it does with it, and the two are read against each
+     other. Light green, so it lifts off the dark paper on its own. */
+  --touch:#7fe6a8;
+  /* The finger, while the clock is running. Not a family colour and not the
+     touchable region's green: the head of a playing stroke has to be found on
+     a full layout at a glance, so it is the one neon on the page. */
+  --trace:#39ff14;
+  --placeholder:#5a6874;
+  --amber:#b08a3e;
+  --ok:#5fa87a;
+  --shadow:0 6px 22px rgba(0,0,0,.45);
+  /* One colour per workspace, so which desk you are on is legible without
+     reading the name. Muted and in the same key as the rest of the page — the
+     first is the mark's own green, so a single workspace matches the badge
+     in the top bar. They are chrome, not data: the hues the drawing uses to mean
+     something are in FAMILY_COLORS and none of these is one of them. */
+  --acc-1:var(--mark); --acc-2:#2ea88a; --acc-3:#c78b32;
+  --acc-4:#8b7ad0; --acc-5:#3f92c8; --acc-6:#9aa63f;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --ink:#e5e8e0;         /* the desk, kept a shade under the paper on it */
+  --ink-2:#f4f6f1;       /* raised: top bar, hover, tooltip */
+  --ink-3:#d9dfd2;       /* pressed: buttons, the selected row */
+  --rule:#bcc4b5;
+  --rule-soft:#d2d9c9;
+  --paper:#ffffff;       /* the sheet, brighter than the desk it sits on */
+  --paper-2:#f2f4ef;
+  --graphite:#5c675e;
+  --dim:#5f6b62;
+  --label:#1d2822;
+  --label-soft:#4d5a52;
+  --fg:#2c3a30;
+  --fg-strong:#16211a;
+  --redline:#c2124f;
+  --mark:#0f9d58;       /* taken down to hold on the light bar */
+  --touch:#3aa86a;      /* the same green, dark enough to read on paper */
+  --trace:#00c21a;      /* still the brightest thing on the sheet, on paper */
+  --placeholder:#8b968c;
+  --amber:#8a6420;
+  --ok:#3d7a53;          /* darker than the dark theme's, to hold on paper */
+  --shadow:0 6px 18px rgba(31,41,34,.16);
+  /* The same six, taken down far enough to hold on a light strip. */
+  --acc-1:var(--mark); --acc-2:#1f7a63; --acc-3:#8a6420;
+  --acc-4:#5f4fa8; --acc-5:#1f6b9c; --acc-6:#5f6b1f;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%}
+body{
+  margin:0; background:var(--ink); color:var(--fg);
+  font-family:var(--mono); font-size:13px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--redline); outline-offset:1px}
+
+/* ---------- top bar ---------- */
+.bar{
+  display:flex; align-items:baseline; gap:18px;
+  padding:10px 16px; border-bottom:1px solid var(--rule);
+  background:var(--ink-2); flex:none; flex-wrap:wrap;
+}
+.mark{
+  font-family:var(--sans); font-weight:600; font-size:19px; letter-spacing:-0.02em;
+  color:var(--fg-strong); position:relative; padding-left:27px;
+}
+.mark::before{
+  /* The same glyph the tab shows, painted through a mask so it takes the
+     mark token and follows the theme rather than baking a colour in. */
+  content:""; position:absolute; left:0; top:0; width:20px; height:20px;
+  background:var(--mark);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%23000'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Cg%20stroke='%23000'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E") 50%/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20x='3.5'%20y='4.5'%20width='14'%20height='23'%20rx='3'%20fill='none'%20stroke='%23000'%20stroke-width='2.4'/%3E%3Crect%20x='6.8'%20y='10'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Crect%20x='6.8'%20y='15.6'%20width='7.4'%20height='2.8'%20rx='1.4'%20fill='%23000'/%3E%3Cg%20stroke='%23000'%20stroke-width='3'%20stroke-linecap='round'%3E%3Cpath%20d='M21.5%2011.5l7-2.6'/%3E%3Cpath%20d='M21.5%2020.5l7%202.6'/%3E%3C/g%3E%3C/svg%3E") 50%/contain no-repeat;
+}
+.tagline{color:var(--dim); font-family:var(--sans); font-size:13px}
+/* Which copy of the file this is. Telltale ships as one static page that gets
+   copied into repositories and served from anywhere, so the one thing a bug
+   report about it has to carry is which build was open. Quiet, and selectable,
+   because the point is to be read back. */
+.build{
+  font-family:var(--mono); font-size:11px; color:var(--graphite);
+  letter-spacing:0.01em; cursor:default;
+}
+.bar-actions{margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.btn{
+  background:var(--ink-3); border:1px solid var(--rule); color:var(--fg);
+  padding:5px 11px; cursor:pointer; border-radius:2px;
+}
+.btn:hover{border-color:var(--dim); color:var(--fg-strong)}
+.btn-quiet{background:none}
+
+/* ---------- layout ---------- */
+main{
+  flex:1; min-height:0; display:grid;
+  --w-stack:380px; --w-detail:420px;
+  grid-template-columns:var(--w-stack) 7px minmax(0,1fr) 7px var(--w-detail);
+}
+.gutter{
+  cursor:col-resize; touch-action:none; background:transparent;
+  position:relative; z-index:5;
+}
+.gutter::before{
+  content:""; position:absolute; top:0; bottom:0; left:50%; width:1px;
+  transform:translateX(-50%); background:transparent;
+}
+.gutter:hover::before,.gutter.is-drag::before,.gutter:focus-visible::before{
+  background:var(--redline); width:2px;
+}
+.gutter:focus-visible{outline:none}
+.pane{min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+.pane-stack{border-right:1px solid var(--rule)}
+.pane-detail{border-left:1px solid var(--rule)}
+.pane-head{
+  flex:none; padding:9px 12px; border-bottom:1px solid var(--rule-soft);
+  display:flex; align-items:center; gap:8px; color:var(--dim); font-size:12px;
+}
+.pane-head b{color:var(--fg-strong); font-weight:500}
+.scroll{overflow:auto; flex:1; min-height:0}
+
+/* ---------- controls ---------- */
+.controls{flex:none; padding:9px 12px; border-bottom:1px solid var(--rule-soft); display:grid; gap:7px}
+.filter{
+  width:100%; background:var(--ink); border:1px solid var(--rule); color:var(--fg);
+  padding:5px 8px; border-radius:2px;
+}
+.filter::placeholder{color:var(--placeholder)}
+/* The box and the switch that says how to read it. `.*` is what the switch is
+   called everywhere else a log is searched, so it is what it is called here. */
+.filter-row{display:flex; gap:6px; align-items:stretch}
+.filter-row > input{flex:1; min-width:0}
+.re-btn{font-family:var(--mono); padding:0 8px; flex:none}
+.re-btn[aria-pressed="true"]{border-color:var(--mark); color:var(--fg-strong)}
+.checks{display:flex; gap:14px; flex-wrap:wrap; align-items:center; color:var(--dim); font-size:12px}
+.show{display:flex; gap:4px; align-items:center}
+.checks label{display:flex; gap:5px; align-items:center; cursor:pointer}
+.checks label[hidden]{display:none}
+.checks input{accent-color:var(--mark); margin:0}
+.tabs{display:flex; gap:4px; flex-wrap:wrap}
+.tab{
+  background:none; border:1px solid var(--rule); color:var(--dim);
+  padding:3px 9px; cursor:pointer; border-radius:2px; font-size:12px;
+}
+.tab[aria-pressed="true"]{border-color:var(--mark); color:var(--fg-strong)}
+
+/* ---------- the open dumps ---------- */
+/* A tab strip, not a row of buttons: the open one is cut out of the rule under
+   it and carries the page's colour, so it reads as the front of the stack. */
+/* The strip is the trough the tabs sit in: a shade off the bar above it, so
+   the open tab, which carries the page's own colour, reads as the one lifted
+   out of it in either theme. */
+.docbar{
+  flex:none; display:flex; align-items:stretch; gap:4px;
+  padding:0 10px; background:var(--ink-3);
+  border-bottom:1px solid var(--rule);
+}
+/* overflow-y:hidden is not decoration: leaving it visible makes the browser
+   compute it to auto because the other axis scrolls, and a stray vertical
+   scrollbar lands on the end of the strip. */
+.doc-tabs{
+  flex:1; min-width:0; display:flex; align-items:stretch;
+  overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+}
+.doc-tabs::-webkit-scrollbar{height:0; width:0}
+.doc-tab{
+  position:relative; flex:none; display:inline-flex; align-items:center; gap:2px;
+  padding:0 5px 0 12px; min-height:31px; max-width:260px;
+  border:0; border-right:1px solid var(--rule-soft); border-radius:0;
+  background:none; color:var(--dim); white-space:nowrap;
+}
+.doc-tab:first-child{border-left:1px solid var(--rule-soft)}
+.doc-tab:hover{background:var(--ink-2); color:var(--fg)}
+/* The open tab, at either level, is marked the same three ways: it is painted
+   the colour of the surface it opens onto, its name goes to full strength, and
+   a line caps it — the open workspace's own colour, on both strips, so the
+   dump you are reading is visibly on the desk you are standing at even when
+   the two open tabs are nowhere near each other in their strips. Only the
+   weight changes with the level; see the workspace strip below. */
+.doc-tab[aria-current="true"]{
+  background:var(--ink); color:var(--fg-strong);
+  box-shadow:inset 0 2px 0 var(--wsp-accent, var(--redline));
+}
+/* sit the open tab over the rule so it joins the pane below */
+.doc-tab[aria-current="true"]::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px;
+  height:1px; background:var(--ink);
+}
+.doc-open{
+  min-width:0; display:flex; align-items:baseline; gap:7px;
+  background:none; border:0; margin:0; padding:8px 0; font:inherit;
+  color:inherit; cursor:pointer;
+}
+.doc-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.doc-kind{flex:none; color:var(--graphite); font-size:10.5px}
+.doc-tab[aria-current="true"] .doc-kind{color:var(--dim)}
+/* The close only shows on the tab under the pointer and on the open one, so a
+   row of tabs is names rather than a row of crosses. It keeps its width either
+   way — a tab must not resize under the pointer on its way to the cross. */
+.doc-close{
+  flex:none; width:19px; height:19px; display:grid; place-items:center;
+  background:none; border:0; padding:0; border-radius:2px;
+  font-size:14px; line-height:1; color:transparent; cursor:pointer;
+}
+.doc-tab:hover .doc-close,
+.doc-tab[aria-current="true"] .doc-close{color:var(--graphite)}
+.doc-close:hover{background:var(--rule); color:var(--fg-strong)}
+.doc-close:focus-visible{color:var(--fg-strong)}
+@media (hover:none){ .doc-close{color:var(--graphite)} }
+.doc-add{
+  flex:none; align-self:center; width:24px; height:24px; padding:0;
+  display:grid; place-items:center; font-size:15px; line-height:1;
+  color:var(--dim); border-color:transparent;
+}
+.doc-add:hover{color:var(--fg-strong); border-color:var(--rule)}
+
+/* ---------- workspaces ---------- */
+/* Two strips, one inside the other. A workspace holds dumps, so the dump strip
+   has to read as something the open workspace contains rather than as a second
+   row of the same thing. Each level is cut out of the one above it and painted
+   a shade nearer the page — bar, then the open workspace, then the dump strip,
+   then the open dump, then the sheet — so the eye can follow one out of the
+   other without a label saying which is which. */
+/* The trough each strip's tabs sit in is a shade off both the bar above it and
+   the tab lifted out of it, so the open tab, the ones beside it and the one
+   under the pointer are three tones apart at either level. */
+.wspbar{
+  flex:none; display:flex; align-items:stretch;
+  padding:0 10px; background:var(--ink);
+  border-bottom:1px solid var(--rule);
+}
+.wsp-tabs{
+  flex:1; min-width:0; display:flex; align-items:stretch; gap:4px;
+  overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+}
+.wsp-tabs::-webkit-scrollbar{height:0; width:0}
+.wsp-tab{
+  position:relative; flex:none; display:inline-flex; align-items:center; gap:2px;
+  padding:0 4px 0 11px; min-height:34px; max-width:260px;
+  border:0; border-radius:0;
+  background:none; color:var(--dim); white-space:nowrap;
+}
+.wsp-tab:hover{background:var(--ink-2); color:var(--fg)}
+/* The open workspace is marked exactly as the open dump is, because they are
+   the same kind of thing: it is painted the dump strip's own colour and the
+   rule between them is painted over, so that strip reads as the inside of this
+   tab. Weight is what separates the levels — three pixels of redline over a
+   name set in medium, against two over a name set regular — so a glance down
+   the two strips reads as one nested inside the other rather than as two rows
+   of equals. Weight rather than height: the outer strip would have to be a
+   good deal taller to say the same thing, and both strips are chrome sitting
+   on top of the drawing. */
+.wsp-tab[aria-current="true"]{
+  background:var(--ink-3); color:var(--fg-strong);
+  box-shadow:inset 0 3px 0 var(--wsp-accent, var(--redline));
+}
+.wsp-tab[aria-current="true"]::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px;
+  height:1px; background:var(--ink-3);
+}
+.wsp-open{
+  min-width:0; display:flex; align-items:baseline; gap:7px;
+  background:none; border:0; margin:0; padding:7px 0; font:inherit;
+  color:inherit; cursor:pointer;
+}
+.wsp-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600}
+/* The workspace's colour, on every tab rather than only the open one, so the
+   strip can be aimed at as well as read. It is the same small square the
+   window list marks its rows with, which is where the eye already knows to
+   look for a colour standing for a thing. */
+.wsp-swatch{
+  flex:none; width:7px; height:7px; margin-right:5px; border-radius:1px;
+  background:var(--wsp-accent, var(--redline));
+}
+.wsp-tab:not([aria-current="true"]) .wsp-swatch{opacity:.75}
+.wsp-count{flex:none; color:var(--graphite); font-size:10.5px}
+.wsp-tab[aria-current="true"] .wsp-count{color:var(--dim)}
+/* Closing a workspace throws away every dump in it and there is nothing to put
+   them back with, so the cross asks first and says how many are at stake. It
+   is the widest thing on the strip while it is asking, on purpose. */
+.wsp-close{
+  flex:none; width:19px; height:19px; display:grid; place-items:center;
+  background:none; border:0; padding:0; border-radius:2px;
+  font-size:14px; line-height:1; color:transparent; cursor:pointer;
+}
+.wsp-tab:hover .wsp-close,
+.wsp-tab[aria-current="true"] .wsp-close{color:var(--graphite)}
+.wsp-close:hover{background:var(--rule); color:var(--fg-strong)}
+.wsp-close:focus-visible{color:var(--fg-strong)}
+@media (hover:none){ .wsp-close{color:var(--graphite)} }
+.wsp-close.is-armed{
+  width:auto; padding:0 7px; font-size:11px; letter-spacing:.01em;
+  color:var(--redline); border:1px solid var(--redline);
+}
+.wsp-close.is-armed:hover{background:var(--redline); color:var(--paper)}
+/* Renaming happens in the tab, at the width the name had, so naming a
+   workspace does not shove the strip sideways and back. */
+.wsp-rename{
+  min-width:0; width:150px; margin:0 2px; padding:2px 5px;
+  background:var(--ink); border:1px solid var(--wsp-accent, var(--redline));
+  border-radius:2px; color:var(--fg-strong);
+}
+.wsp-add{
+  flex:none; align-self:center; width:24px; height:24px; padding:0;
+  display:grid; place-items:center; font-size:15px; line-height:1;
+  color:var(--dim); border-color:transparent;
+}
+.wsp-add:hover{color:var(--fg-strong); border-color:var(--rule)}
+/* ---------- the reading pane ---------- */
+/* A dump with nothing to draw but a great deal to read gets the same three
+   panes as a drawn one, with the middle holding the section that is selected
+   instead of a sheet: the list on the left picks, the middle reads, the right
+   says what it is. The alternative — the list in the middle — leaves a dump
+   whose groups are one group with an empty pane on the left. */
+body.layout-doc .pane-plan > .legend,
+body.layout-doc .pane-plan > .sheet-foot{display:none}
+body.layout-doc .sheet{
+  display:block; padding:0; overflow:auto; background:var(--ink);
+}
+body.layout-doc main{--w-stack:340px; --w-detail:380px}
+.doc{padding:14px 16px 28px; font-size:12.5px}
+.doc-sec{margin:0 0 20px}
+.doc-sec h3{
+  margin:0 0 8px; padding-bottom:5px; border-bottom:1px solid var(--rule-soft);
+  font:600 11.5px/1.3 var(--sans); letter-spacing:.05em; text-transform:uppercase;
+  color:var(--dim);
+}
+.doc-sec h3 button{
+  background:none; border:0; padding:0; font:inherit; color:inherit; cursor:pointer;
+}
+.doc-sec h3 button:hover{color:var(--fg-strong)}
+.doc-path{margin:0 0 14px; color:var(--graphite); font-size:11.5px}
+.doc-path button{
+  background:none; border:0; padding:0; font:inherit; color:var(--dim); cursor:pointer;
+}
+.doc-path button:hover{color:var(--fg-strong)}
+.doc-empty{margin:0; color:var(--dim); font-family:var(--sans)}
+/* A run of lines printed to one shape, in columns. The head stays put while
+   the six hundred properties under it go past. */
+.doc-scroll{overflow-x:auto}
+.doc-table{border-collapse:collapse; font-size:11.5px}
+.doc-table th{
+  position:sticky; top:0; z-index:1; text-align:left; white-space:nowrap;
+  padding:5px 14px 5px 0; background:var(--ink); color:var(--dim);
+  font-weight:600; border-bottom:1px solid var(--rule);
+}
+.doc-table td{
+  padding:3px 14px 3px 0; border-bottom:1px solid var(--rule-soft);
+  color:var(--fg); vertical-align:top; overflow-wrap:anywhere;
+}
+.doc-table tr:hover td{background:var(--ink-2)}
+/* What a row printed under itself, kept with the row it belongs to. */
+.doc-under td{padding-left:16px; color:var(--dim)}
+/* The name a property id resolves to, taken from elsewhere in the same dump. */
+.doc-name{color:var(--label-soft)}
+/* What a section printed, one line to a row: the name it printed, the value
+   it printed after it, and the rows it printed under that one, indented. The
+   value is one line and clipped — the row is for finding it, and the details
+   pane is for reading it. */
+.doc-search{
+  flex:none; padding:8px 14px; border-bottom:1px solid var(--rule-soft);
+  background:var(--ink);
+}
+.doc-search .filter{width:100%}
+.doc-row{
+  width:100%; display:grid; grid-template-columns:minmax(140px,34%) minmax(0,1fr);
+  gap:14px; align-items:baseline; text-align:left; cursor:pointer;
+  padding:4px 8px; border:0; border-bottom:1px solid var(--rule-soft);
+  border-left:2px solid transparent; background:none; color:inherit; font:inherit;
+}
+.doc-row:hover{background:var(--ink-2)}
+.doc-row[aria-selected="true"]{
+  background:var(--ink-3); border-left-color:var(--wsp-accent, var(--redline));
+}
+.doc-key{color:var(--dim); overflow-wrap:anywhere}
+.doc-row[aria-selected="true"] .doc-key{color:var(--fg-strong)}
+/* A line that printed no name at all — a log line, a policy with its own
+   brackets — is all key and gets the width of the row for it. */
+.doc-row.is-bare{grid-template-columns:minmax(0,1fr)}
+.doc-row.is-bare .doc-key{
+  color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.doc-val{
+  min-width:0; color:var(--fg);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.doc-under-n{color:var(--graphite)}
+/* A row kept only because something under it matched the search. */
+.doc-row.is-context .doc-key,
+.doc-row.is-context .doc-val{color:var(--graphite)}
+
+/* ---------- window list ---------- */
+.wlist{list-style:none; margin:0; padding:0}
+.wrow{
+  display:grid; grid-template-columns:12px minmax(0,1fr); gap:9px; align-items:start;
+  padding:7px 12px 7px 9px; border-bottom:1px solid var(--rule-soft);
+  cursor:pointer; border-left:2px solid transparent;
+  /* Depth is a variable rather than an inline pixel padding so the rails below
+     can be drawn from the same number. `--step` is one level of nesting. */
+  --step:11px;
+  padding-left:calc(9px + var(--depth,0) * var(--step));
+  /* One rail per ancestor, each under the twisty of the row it belongs to, so
+     a child a long way down a scrolled list still reads as owned by something.
+     The tile is a repeating gradient bounded by background-size, which paints
+     exactly `--depth` of them and no more. */
+  background-image:repeating-linear-gradient(
+    to right, var(--rule) 0 1px, transparent 1px var(--step));
+  background-size:calc(var(--depth,0) * var(--step)) 100%;
+  background-position:16px 0;
+  background-repeat:no-repeat;
+}
+.wlist.is-tree .wrow{grid-template-columns:15px 12px minmax(0,1fr); gap:5px 7px}
+/* ---------- the log, which is a log reader ---------- */
+/* Columns, monospace, one line per line: when it happened, which process and
+   thread printed it, the level letter, the tag, and the message. The first
+   four are fixed so the eye runs down them; the message takes what is left and
+   is clipped, because a log read at a glance is read down the left and the
+   long line is the one you open. */
+.wlist.is-log .wrow{
+  grid-template-columns:max-content max-content 1ch minmax(8ch, 22ch) minmax(0,1fr);
+  gap:0 10px; align-items:baseline;
+  padding:2px 12px 2px 9px; border-bottom:none;
+  font-family:var(--mono); font-size:12px; line-height:1.5;
+  background-image:none;
+}
+.wlist.is-log .wrow > span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* Every other row is a shade off the paper. Rows this tight run together, and
+   a band under alternate ones is what keeps a stamp on the left tied to its
+   message on the right across a wide pane. It is the faintest thing on the
+   row: the level's colour, the crash band and the selection all sit on top of
+   it, which is why it is declared before them. The stripe follows the line's
+   own number, not its place in the DOM, so it does not flip as the window
+   scrolls over it. */
+.wlist.is-log .wrow.is-alt{background-color:var(--ink-2)}
+/* The two spacers a windowed list is drawn between. They are rows to the
+   browser and nothing to the reader. */
+.row-gap{padding:0; margin:0; border:none; background:none; pointer-events:none}
+.lg-when{color:var(--dim)}
+.lg-who{color:var(--dim)}
+.lg-lv{font-weight:700; text-align:center}
+.lg-tag{color:var(--label)}
+.lg-msg{color:var(--fg)}
+/* The level colours the letter and the message, and nothing else: a whole row
+   in the level's colour is a row you cannot read the tag off. */
+.wlist.is-log .log-verbose .lg-lv{color:var(--dim)}
+.wlist.is-log .log-debug   .lg-lv{color:#6fa8c8}
+.wlist.is-log .log-info    .lg-lv{color:var(--mark)}
+.wlist.is-log .log-warn    .lg-lv{color:var(--amber)}
+.wlist.is-log .log-error   .lg-lv,
+.wlist.is-log .log-fatal   .lg-lv{color:var(--redline)}
+.wlist.is-log .log-verbose .lg-msg,
+.wlist.is-log .log-debug   .lg-msg{color:var(--dim)}
+.wlist.is-log .log-warn    .lg-msg{color:var(--amber)}
+.wlist.is-log .log-error   .lg-msg,
+.wlist.is-log .log-fatal   .lg-msg{color:var(--redline)}
+/* The line a crash starts at is the one line in a log worth finding from
+   across the room. */
+.wlist.is-log .is-crash,
+.wlist.is-log .is-crash.is-alt{background:color-mix(in srgb, var(--redline) 16%, transparent)}
+.wlist.is-log .is-crash .lg-msg{color:var(--redline); font-weight:700}
+.wlist.is-log .wrow[aria-selected="true"],
+.wlist.is-log .wrow.is-alt[aria-selected="true"]{background-color:var(--ink-3)}
+/* ---------- the event log, which is the same columns read differently ----- */
+/* The event reader borrows the log's grid: when it happened, who it was about,
+   one character saying what kind of thing it was, the tag the framework wrote,
+   and the sentence it comes to. The mark is a letter rather than a word for
+   the same reason the level is. */
+.ev-when{color:var(--dim)}
+.ev-who{color:var(--dim)}
+.ev-mark{font-weight:700; text-align:center; color:var(--dim)}
+.ev-tag{color:var(--label)}
+.ev-what{color:var(--fg)}
+.wlist.is-log .ev-process  .ev-mark{color:var(--mark)}
+.wlist.is-log .ev-activity .ev-mark{color:#6fa8c8}
+.wlist.is-log .ev-system   .ev-mark{color:var(--amber)}
+.wlist.is-log .ev-trouble  .ev-mark,
+.wlist.is-log .ev-trouble  .ev-what{color:var(--redline); font-weight:700}
+.wlist.is-log .ev-other    .ev-what{color:var(--dim)}
+.wlist.is-log .ev-trouble,
+.wlist.is-log .ev-trouble.is-alt{background:color-mix(in srgb, var(--redline) 16%, transparent)}
+/* A filter box holding a pattern that will not compile. */
+.filter.is-bad{border-color:var(--redline); color:var(--redline)}
+/* Hover and selection are colour only: the shorthand would take the rails with
+   it. */
+.wrow:hover{background-color:var(--ink-2)}
+/* The twisty is the row's own control, so it does not take the row's hover or
+   its selection colour with it. It carries one arrow, turned rather than
+   swapped, so open and shut are the same shape at the same weight — and the
+   turn happens on the glyph, not the button, so the hit area stays square. */
+.twisty{
+  width:15px; height:19px; padding:0; line-height:19px; text-align:center;
+  background:none; border:none; border-radius:2px;
+  color:var(--fg); font-size:11px; cursor:pointer;
+}
+.twisty-arrow{display:inline-block; transition:transform .12s ease}
+.twisty.is-open .twisty-arrow{transform:rotate(90deg)}
+.twisty:hover{color:var(--fg-strong); background:var(--ink-3)}
+.twisty-none{display:block}
+.wrow[aria-selected="true"]{background-color:var(--ink-3); border-left-color:var(--redline)}
+/* Aligned to the title line rather than centred over the whole two-line row,
+   which left it floating in the gap between title and meta. */
+.swatch{width:9px; height:9px; border-radius:1px; margin-top:5px}
+.wtitle{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--fg-strong)}
+.wmeta{display:block; color:var(--dim); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wrow > span{min-width:0}
+.wrow.is-hidden .wtitle{color:var(--graphite)}
+.wrow.is-hidden .swatch{opacity:.35}
+/* Rows shown only because something below them was asked for: one line each,
+   so a long chain of them stays compact and the results keep their weight. */
+.wrow.is-context{padding-top:3px; padding-bottom:3px}
+.wrow.is-context .wtitle{color:var(--dim); font-style:italic; font-size:11.5px}
+.wrow.is-context .swatch{opacity:.45; border-radius:50%}
+.badge{
+  display:inline-block; margin-left:6px; padding:0 4px; font-size:10.5px;
+  border:1px solid currentColor; border-radius:2px; vertical-align:1px;
+}
+.badge-lead{margin-left:0; margin-right:6px}
+.badge-focus{color:var(--redline)}
+.badge-vis{color:var(--ok)}
+.badge-exit{color:var(--amber)}
+.badge-comp{color:var(--dim)}
+
+/* The parent chain of a layer, root first. A modern SurfaceFlinger dump
+   parents everything to something, and the chain is usually the answer to
+   where a layer got its position from. */
+.anc{display:flex; flex-direction:column; gap:1px; font-size:11.5px}
+.anc-row{
+  display:block; width:100%; text-align:left; background:none; border:none;
+  color:var(--dim); font-family:var(--mono); font-size:11.5px; cursor:pointer;
+  padding:2px 4px; border-radius:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+button.anc-row:hover{background:var(--ink-3); color:var(--fg-strong)}
+.anc-self{color:var(--fg-strong); cursor:default}
+
+/* ---------- ANR: findings, the call stack, the monitor badges ---------- */
+.finding{margin:0 0 10px; padding-bottom:9px; border-bottom:1px solid var(--rule-soft)}
+.finding:last-child{margin-bottom:0; padding-bottom:0; border-bottom:none}
+.finding b{color:var(--fg-strong); font-size:12px}
+.finding .badge{margin-left:0; margin-right:6px}
+.finding p{margin:4px 0 5px; font-family:var(--sans); font-size:11.5px; color:var(--fg)}
+.anr-ref{display:block; width:100%; text-align:left}
+.anr-ref-gone{color:var(--dim); font-family:var(--mono); font-size:11.5px; padding:2px 4px}
+.anr-step{color:var(--dim); font-size:11px; padding:1px 4px 1px 14px}
+
+/* One row per frame, leaf first. The kind sets the colour: the app's own code
+   is what a stack is read for, so it is the only thing at full strength. */
+.stk{display:flex; flex-direction:column; gap:1px; font-size:11.5px}
+.stk-row{padding:2px 6px; border-left:2px solid transparent; overflow-wrap:anywhere}
+.stk-m{color:var(--fg)}
+.stk-loc{color:var(--dim); margin-left:8px; font-size:11px}
+.stk-app{border-left-color:#2f6f8f}
+.stk-app .stk-m{color:var(--fg-strong)}
+.stk-framework .stk-m{color:var(--dim)}
+.stk-native{border-left-color:#2e7d5b}
+.stk-native .stk-m{color:#7fb79c}
+.stk-leaf{background:var(--ink-3)}
+.stk-leaf .stk-m{text-decoration:underline; text-decoration-color:var(--amber); text-underline-offset:3px}
+.fold{margin:0}
+.fold summary{
+  padding:2px 6px; color:var(--dim); font-style:italic; cursor:pointer;
+  border-left:2px solid transparent; list-style-position:inside;
+}
+.fold summary:hover{color:var(--fg)}
+.fold[open] summary{border-left-color:var(--rule)}
+.lock{display:block; margin:2px 0 1px 12px; font-size:11px}
+.lock-wait{color:var(--redline)}
+.lock-held{color:var(--amber)}
+.lock-park{color:var(--dim)}
+.lock-link{
+  background:none; border:none; padding:0; font:inherit; color:inherit;
+  text-decoration:underline; text-underline-offset:2px; cursor:pointer;
+}
+.lock-link:hover{color:var(--fg-strong)}
+
+/* ---------- sheet ---------- */
+.sheet{
+  flex:1; min-height:0; display:flex; align-items:center; justify-content:center;
+  padding:26px; background:
+    repeating-linear-gradient(0deg,transparent 0 39px,var(--rule-soft) 39px 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,var(--rule-soft) 39px 40px),
+    var(--ink);
+}
+svg.plan{max-width:100%; max-height:100%; display:block; --fs:12px}
+.sheet-head{
+  flex:none; padding:10px 14px; border-bottom:1px solid var(--rule-soft);
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.tab-display{
+  display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  padding:7px 14px; border-radius:3px; text-align:left; line-height:1.25;
+}
+.tab-display b{font-size:14px; font-weight:600; color:var(--dim)}
+.tab-display[aria-pressed="true"] b{color:var(--fg-strong)}
+.tab-display .tab-meta{margin:0; font-size:11.5px; color:var(--graphite)}
+.tab-display[aria-pressed="true"] .tab-meta{color:var(--dim)}
+.tab-static{cursor:default}
+
+/* A dump with nothing to draw keeps its picker at the top of the stack pane,
+   and there a row of chips falls apart as soon as a bugreport brings twenty
+   processes: stack them instead, one row each, and give the strip its own
+   scroll so a long list never pushes the rows it picks off the screen. */
+#listHead{display:block; padding:0; flex:1; min-height:0; overflow:auto}
+#listTabs{flex-direction:column; flex-wrap:nowrap; gap:0}
+#listTabs .tab-display{
+  width:100%; padding:7px 12px; border:none; border-radius:0;
+  border-bottom:1px solid var(--rule-soft); border-left:2px solid transparent;
+}
+#listTabs .tab-display:last-child{border-bottom:none}
+#listTabs .tab-display b{font-size:13px}
+.tab-badges{display:flex; flex-wrap:wrap; gap:4px 0; margin:1px 0}
+#listTabs button.tab-display:hover{background:var(--ink-2)}
+#listTabs .tab-display[aria-pressed="true"]{background:var(--ink-3); border-left-color:var(--mark)}
+.sheet-foot{
+  flex:none; padding:7px 14px; border-top:1px solid var(--rule-soft);
+  color:var(--dim); font-size:12px; display:flex; gap:20px; flex-wrap:wrap;
+}
+/* ---------- a touch trace ---------- */
+/* The clock under the drawing. One row, and it wraps onto a second before it
+   squeezes the scrubber, which is the control the whole bar is for. */
+.tracebar{
+  flex:none; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:6px 14px; border-top:1px solid var(--rule-soft); background:var(--ink);
+  font-size:12px; color:var(--dim);
+}
+.tracebar[hidden]{display:none}
+.tracebar input[type=range]{
+  flex:1 1 180px; min-width:120px; accent-color:var(--redline); margin:0;
+}
+.trace-play{min-width:34px; text-align:center; font-size:11px}
+.trace-time{font-family:var(--mono); font-size:11.5px; white-space:nowrap}
+.trace-opt{display:inline-flex; align-items:center; gap:5px; white-space:nowrap}
+.trace-opt select{
+  font:inherit; font-size:11.5px; color:var(--fg); background:var(--ink-2);
+  border:1px solid var(--rule); border-radius:3px; padding:2px 4px; max-width:210px;
+}
+.trace-over{min-width:0}
+.trace-over select{text-overflow:ellipsis}
+.trace-dev{
+  font:inherit; font-size:11.5px; color:var(--fg); background:var(--ink-2);
+  border:1px solid var(--rule); border-radius:3px; padding:2px 4px; max-width:190px;
+}
+.tracebar [hidden]{display:none}
+/* Where a capture is pasted onto a layout. It is a drawer under the bar, not a
+   dialog over the sheet: what the log is about stays on screen while it goes
+   in. */
+.trace-paste{
+  flex:none; display:grid; gap:6px; padding:8px 14px 10px;
+  border-top:1px solid var(--rule-soft); background:var(--ink);
+}
+.trace-paste[hidden]{display:none}
+.trace-paste textarea{
+  width:100%; resize:vertical; min-height:72px; box-sizing:border-box;
+  font-family:var(--mono); font-size:11.5px; line-height:1.45;
+  color:var(--fg); background:var(--paper); border:1px solid var(--rule);
+  border-radius:3px; padding:7px 8px;
+}
+.trace-paste-foot{display:flex; align-items:center; gap:8px; justify-content:flex-end}
+.trace-err{flex:1; color:var(--redline); font-size:11.5px; overflow-wrap:anywhere}
+/* The same line says what went in when it went in: a capture that read is
+   worth a word, because the drawer stays open over the text it read. */
+.trace-err.is-ok{color:var(--ok)}
+/* The trace over somebody else's drawing. It is a note on that drawing: it
+   takes no clicks, so the window under it is still the thing being picked. */
+.gev-over{pointer-events:none}
+/* The borrowed layout: another dump's windows, under this dump's strokes. Grey
+   and thin, because it is the paper and not the drawing. */
+.gev-under{
+  fill:var(--graphite); fill-opacity:.05; stroke:var(--graphite); stroke-width:1;
+  stroke-opacity:.45; vector-effect:non-scaling-stroke;
+}
+.gev-under.is-off{stroke-dasharray:5 4; fill-opacity:0}
+/* Where the finger went, in full, at rest: the whole stroke is always there so
+   the shape of the gesture reads without waiting for the playback. */
+.gev-path{
+  fill:none; stroke:currentColor; stroke-width:1.5; stroke-opacity:.34;
+  stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+/* The part of it that has happened by the moment the playhead is at. */
+.gev-live{
+  fill:none; stroke:var(--trace); stroke-width:3; stroke-linecap:round;
+  stroke-linejoin:round; vector-effect:non-scaling-stroke;
+}
+.gev-down{fill:currentColor; fill-opacity:.9; stroke:none}
+.gev-up{fill:none; stroke:currentColor; stroke-width:1.5; vector-effect:non-scaling-stroke}
+/* The finger itself, at this instant. */
+.gev-tip{
+  fill:var(--trace); fill-opacity:.5; stroke:var(--trace); stroke-width:2.5;
+  vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 0 5px var(--trace));
+}
+/* The stroke the list is on keeps the redline; the neon says `now`, not
+   `this one`, so it is the same neon on every stroke. */
+.gev-g.is-sel .gev-path{stroke-opacity:.75}
+.gev-g.is-sel .gev-live{stroke-width:4}
+.gev-g.is-sel .gev-down{stroke:var(--redline); stroke-width:2; vector-effect:non-scaling-stroke}
+.gev-hit{stroke:transparent; fill:none; stroke-linecap:round; stroke-linejoin:round}
+/* Four hundred samples is a scroll, not a page. */
+.gev-samples{max-height:320px; overflow:auto}
+
+.legend{
+  flex:none; padding:7px 14px; border-top:1px solid var(--rule-soft);
+  display:flex; gap:8px 16px; flex-wrap:wrap; font-size:11.5px; color:var(--dim);
+  max-height:26%; overflow:auto;
+}
+.legend[hidden]{display:none}
+.lg{display:inline-flex; align-items:center; gap:6px}
+.lg-sw{display:inline-flex; gap:2px}
+.lg-sw button{
+  width:10px; height:10px; border:none; border-radius:1px; padding:0;
+  display:block; cursor:pointer;
+}
+.lg-sw button[aria-pressed="true"]{outline:2px solid var(--redline); outline-offset:1px}
+.lg-n{color:var(--graphite)}
+/* Strokes are kept at constant screen width so a 4K display dump stays legible. */
+.pw-stroke,.pw-sel,.pw-lead,.pw-crop,.pw-screen,.pw-region,
+.pw-sel-region{vector-effect:non-scaling-stroke}
+.pw-fill{fill:currentColor; fill-opacity:.13; stroke:none}
+.pw-stroke{fill:none; stroke:currentColor; stroke-width:1.25}
+/* A second rect inside the frame: filled, so a region smaller than the window
+   it belongs to reads as the part of it that is live. */
+.pw-region{fill:var(--touch); fill-opacity:.22; stroke:var(--touch); stroke-width:1;
+  stroke-dasharray:4 3}
+.pw-dim{opacity:.34}
+.pw-hit{fill:transparent; stroke:none; cursor:pointer}
+.pw-sel{fill:none; stroke:var(--redline); stroke-width:2}
+/* The live part of the selected node: the same green, drawn heavier than the
+   one an unselected window gets, so it reads as a note on the redline frame
+   rather than a second frame. */
+.pw-sel-region{fill:var(--touch); fill-opacity:.28; stroke:var(--touch);
+  stroke-width:1.5; stroke-dasharray:6 4}
+/* One rect out of the several a region is made of, picked from the drawing or
+   from its row. Solid and heavier than its neighbours: the dashes say `this is
+   the live part`, and no dashes say `this is the one you asked about`. */
+.pw-sel-region.is-pick{fill-opacity:.5; stroke-width:2.5; stroke-dasharray:none}
+.pw-lead{fill:none; stroke:var(--redline); stroke-width:1}
+.pw-label{fill:var(--redline); stroke:none; font-family:var(--mono); font-size:var(--fs)}
+.pw-note{fill:var(--graphite); font-size:calc(var(--fs) * 0.85)}
+.pw-crop{fill:none; stroke:var(--graphite); stroke-width:1}
+.pw-screen{fill:var(--paper); stroke:#c3c9bd; stroke-width:1}
+
+/* ---------- z-order view ---------- */
+.depthctl{display:grid; gap:4px; color:var(--dim); font-size:12px}
+.depthctl label{display:grid; grid-template-columns:46px 1fr; gap:8px; align-items:center}
+.depthctl input[type=range]{width:100%; accent-color:var(--redline); margin:0}
+.depthfoot{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:1px}
+.depthhint{color:var(--graphite); font-size:11px}
+.sheet.is-orbit{cursor:grab; touch-action:none}
+.sheet.is-orbit.is-turning{cursor:grabbing}
+.dp-face{fill:currentColor; fill-opacity:.3; stroke:currentColor; stroke-width:1.25;
+  stroke-linejoin:round; vector-effect:non-scaling-stroke}
+.dp-face.is-hidden{fill-opacity:.05; stroke-dasharray:6 5}
+/* The live part of a face, on the face: a window whose touchable region is not
+   its frame is drawn as the rects it actually takes touch in, so the two are
+   told apart in the stack the same way they are in the plan. */
+.dp-region{fill:var(--touch); fill-opacity:.3; stroke:var(--touch); stroke-width:1;
+  stroke-dasharray:4 3; stroke-linejoin:round; vector-effect:non-scaling-stroke}
+.dp-sel-region{fill:var(--touch); fill-opacity:.38; stroke:var(--touch);
+  stroke-width:1.5; stroke-dasharray:6 4; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke}
+.dp-sel-region.is-pick{fill-opacity:.62; stroke-width:2.5; stroke-dasharray:none}
+.dp-base{fill:var(--paper); fill-opacity:.5; stroke:var(--graphite); stroke-width:1;
+  stroke-linejoin:round; vector-effect:non-scaling-stroke}
+.dp-lead{fill:none; stroke:var(--graphite); stroke-width:1; vector-effect:non-scaling-stroke}
+/* Names lie on top of the drawing, so each one is stroked with the colour of
+   the surface under it before it is filled: the leader that points at a label
+   stops striking through its rank, and a name that crosses a window rect stays
+   readable. The stroke is non-scaling, or the halo would grow with the plan. */
+.dp-text,.dp-rank{
+  paint-order:stroke fill; stroke:var(--ink); stroke-width:3px; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.dp-text{fill:var(--label); font-family:var(--mono); font-size:var(--fs); dominant-baseline:middle}
+/* The rank sits where a near-horizontal leader runs, and a halo only wraps the
+   letterform, so the thin one the names get would leave the line showing
+   through the counters of the digits. Theirs is wide enough to blank it. */
+.dp-rank{fill:var(--label-soft); font-family:var(--mono); font-size:calc(var(--fs) * .85);
+  dominant-baseline:middle; text-anchor:end; stroke-width:5px}
+.dp-text.is-hidden,.dp-rank.is-hidden{fill:var(--label-soft)}
+/* Selected last: these carry the same specificity as the .is-hidden rules
+   above, so an invisible window would otherwise stay grey when picked. */
+.dp-lead.is-sel{stroke:var(--redline)}
+.dp-text.is-sel,.dp-rank.is-sel{fill:var(--redline)}
+.dp-sel{fill:none; stroke:var(--redline); stroke-width:2; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke}
+
+/* ---------- detail ---------- */
+.detail-body{padding:12px 14px 30px}
+.dgroup{margin:0 0 18px}
+.dgroup h3{
+  margin:0 0 7px; font-family:var(--sans); font-size:12px; font-weight:600;
+  color:var(--dim); border-bottom:1px solid var(--rule-soft); padding-bottom:4px;
+}
+/* The key column sizes to its keys, but never past 45% of the pane: one long
+   key — a car_service section prints whole sentences for some of them — would
+   otherwise take the width the values needed and push them out of sight. */
+.dl{display:grid; grid-template-columns:minmax(88px,45%) 1fr; gap:3px 12px; margin:0}
+.dl dt{color:var(--dim); font-size:12px; overflow-wrap:anywhere}
+.dl dd{margin:0; color:var(--fg-strong); font-size:12px; overflow-wrap:anywhere}
+/* A row that picks a rect on the sheet. It is a control, so it says so on
+   hover and takes focus; picked, it carries the same green the rect does. */
+.dl .pick-region{cursor:pointer; border-radius:2px; padding:1px 3px; margin:-1px -3px}
+.dl .pick-region:hover{background:color-mix(in srgb, var(--touch) 18%, transparent)}
+.dl .pick-region.is-pick{background:color-mix(in srgb, var(--touch) 28%, transparent);
+  color:var(--fg-strong)}
+.dl .pick-region:focus-visible{outline:2px solid var(--touch); outline-offset:0}
+.chips{display:flex; flex-wrap:wrap; gap:4px}
+.ins{padding:3px 0; border-bottom:1px solid var(--rule-soft); overflow-wrap:anywhere}
+.ins:last-child{border-bottom:none}
+.ins-id{color:var(--dim); font-size:11px}
+.ins-rect{display:block; color:var(--dim); font-size:11.5px; overflow-wrap:anywhere}
+.chip{border:1px solid var(--rule); color:var(--fg); padding:1px 5px; border-radius:2px; font-size:11px}
+.chip-doc{cursor:help; border-bottom-style:dotted; border-bottom-color:var(--dim)}
+.chip-doc:hover{border-color:var(--dim); color:var(--fg-strong)}
+
+/* ---------- flag tooltip ---------- */
+.tip{
+  position:fixed; z-index:60; max-width:340px; padding:8px 10px;
+  background:var(--ink-2); border:1px solid var(--rule);
+  box-shadow:var(--shadow);
+  font-size:11.5px; line-height:1.42; color:var(--fg);
+  pointer-events:none;
+}
+.tip-head{display:flex; gap:8px; align-items:baseline; justify-content:space-between; margin-bottom:5px}
+.tip-name{color:var(--fg-strong); font-size:12px}
+.tip-val{color:var(--dim); font-size:11px; white-space:nowrap}
+.tip-const{color:var(--dim); font-size:11px; overflow-wrap:anywhere}
+.tip-doc{margin:5px 0 0; font-family:var(--sans); font-size:11.5px}
+.tip-dep{margin:5px 0 0; font-family:var(--sans); color:#c79a6a}
+.tip-tag{
+  display:inline-block; margin-left:6px; padding:0 4px; border:1px solid var(--rule);
+  color:var(--dim); font-size:10px; vertical-align:1px;
+}
+.tip-src{margin-top:6px; color:var(--graphite); font-size:10.5px}
+.raw{
+  margin:0; padding:9px; background:var(--ink); border:1px solid var(--rule);
+  font-size:11.5px; white-space:pre; overflow:auto; max-height:290px; color:var(--dim);
+}
+.yes{color:var(--ok)} .no{color:#a8615f}
+
+/* ---------- empty state: a blank drafting sheet ---------- */
+.empty{flex:1; display:flex; align-items:center; justify-content:center; padding:34px 24px; overflow:auto}
+.empty-card{position:relative; width:min(600px,100%)}
+.sheet-blank{
+  background:var(--paper); color:#2c3a30;
+  border:1px solid #c3c9bd; padding:40px 38px 34px;
+  font-family:var(--sans);
+}
+/* corner crop marks, drawn outside the sheet edge */
+.empty-card::before,.empty-card::after{
+  content:""; position:absolute; left:-11px; right:-11px; height:24px; pointer-events:none;
+  background-image:
+    linear-gradient(var(--graphite),var(--graphite)),linear-gradient(var(--graphite),var(--graphite)),
+    linear-gradient(var(--graphite),var(--graphite)),linear-gradient(var(--graphite),var(--graphite));
+  background-repeat:no-repeat;
+}
+.empty-card::before{
+  top:-11px;
+  background-size:24px 1px,1px 24px,24px 1px,1px 24px;
+  background-position:left 11px,11px top,right 11px,calc(100% - 11px) top;
+}
+.empty-card::after{
+  bottom:-11px;
+  background-size:24px 1px,1px 24px,24px 1px,1px 24px;
+  background-position:left 12px,11px bottom,right 12px,calc(100% - 11px) bottom;
+}
+.sheet-blank h1{
+  margin:0 0 10px; font-size:26px; font-weight:600; letter-spacing:-0.02em; color:#16211a;
+}
+.sheet-blank p{margin:0 0 18px; font-size:14.5px; line-height:1.5; color:#4a5a4e; max-width:52ch}
+.sheet-blank code{font-family:var(--mono); font-size:13px}
+/* A bugreport is twenty-five megabytes of zip and ten readers over half a
+   million lines, which is half a minute of a page that would otherwise look
+   like it had done nothing. The bar says how far through the unpacking is and
+   the line above it says which reader is running. Where there is nothing to
+   count — reading a file off the disk — the bar sweeps instead. */
+.loading{margin:0 0 14px; width:100%; max-width:52ch}
+.loading-what{margin:0 0 6px; font-size:13px; color:#4a5a4e}
+.loading-track{height:4px; border-radius:2px; background:#d9dfd2; overflow:hidden}
+.loading-fill{height:100%; width:0; background:var(--mark); border-radius:2px;
+  transition:width .18s linear}
+.loading-fill.is-sweep{width:38%; animation:loading-sweep 1.1s ease-in-out infinite}
+@keyframes loading-sweep{
+  0%{transform:translateX(-100%)} 100%{transform:translateX(300%)}
+}
+.cmd{
+  display:block; background:#e3e7de; border-left:2px solid var(--redline);
+  padding:9px 11px; margin:0 0 20px; font-family:var(--mono); font-size:13px;
+  color:#243028; overflow:auto; white-space:pre;
+}
+.btn-link{
+  background:none; border:none; padding:0; cursor:pointer;
+  font-family:var(--mono); font-size:12.5px; color:#8d1440;
+  border-bottom:1px solid currentColor;
+}
+.empty-actions{display:flex; gap:9px; flex-wrap:wrap; align-items:center}
+.btn-paper{
+  background:none; border:1px solid #9aa79d; color:#243028;
+  padding:6px 13px; cursor:pointer; border-radius:2px; font-family:var(--mono); font-size:13px;
+}
+.btn-paper:hover{border-color:#2c3a30; background:#e6eae1}
+.btn-paper-key{border-color:var(--redline); color:#8d1440}
+.hint{margin:18px 0 0; font-size:12.5px; color:#6b7a6f; font-family:var(--mono)}
+/* The samples line is a second thought after the buttons, not a caption on
+   them: give it room to read as its own offer. */
+.empty-actions + .hint{margin-top:30px}
+/* The adb recipe and the bugreport note are for a first visit, not every
+   one: folded away so the card is a heading, a line and three buttons. */
+.fold-cmd{margin:20px 0 0; border-top:1px solid #d5dbcf; padding-top:13px}
+.fold-cmd summary{
+  padding:0; font-style:normal; font-family:var(--mono); font-size:12.5px;
+  color:#6b7a6f; border-left:none;
+}
+.fold-cmd summary:hover{color:#2c3a30}
+.fold-cmd[open] summary{border-left-color:transparent; margin-bottom:13px}
+.fold-cmd .cmd{margin-bottom:12px}
+.fold-cmd .hint{margin-top:0}
+.pastebox{
+  width:100%; height:180px; margin-top:18px; background:#f6f8f4; border:1px solid #9aa79d;
+  color:#243028; padding:10px; border-radius:2px; resize:vertical;
+  font-family:var(--mono); font-size:12px;
+}
+.urlbox{
+  width:100%; background:#f6f8f4; border:1px solid #9aa79d; color:#243028;
+  padding:8px 10px; border-radius:2px; font-family:var(--mono); font-size:13px;
+}
+.err{margin:14px 0 0; font-family:var(--sans); font-size:13.5px; color:#8d1440}
+body.dragging .sheet-blank{border-color:var(--redline); box-shadow:0 0 0 3px rgba(216,30,91,.18)}
+
+.mobile-tabs{display:none}
+/* The wide defaults are worth having but not worth starving the sheet for:
+   between the detail pane leaving the grid at 1080 and about 1200, the two of
+   them together would leave the plan under its own minimum. */
+@media (max-width:1200px){
+  main{--w-stack:308px; --w-detail:340px}
+}
+@media (max-width:1080px){
+  main{grid-template-columns:var(--w-stack) 7px minmax(0,1fr); }
+  #gutterR{display:none}
+  .pane-detail{display:none; }
+  body.show-detail .pane-detail{display:flex; position:fixed; inset:44px 0 0 auto; width:min(420px,92vw); background:var(--ink-2); z-index:20; border-left:1px solid var(--rule)}
+}
+@media (max-width:720px){
+  main{grid-template-columns:minmax(0,1fr)}
+  #gutterL{display:none}
+  .tagline{display:none}
+  .bar{padding:8px 12px; gap:10px}
+  .docbar,.wspbar{padding:0 6px}
+  .doc-tab{max-width:190px; padding-left:9px}
+  .wsp-tab{max-width:170px; padding-left:9px}
+  .doc-kind{display:none}
+  .btn,.tab{padding:4px 9px}
+  .pane-stack{display:none; border-right:none}
+  body.show-stack .pane-stack{display:flex}
+  body.show-stack .pane-plan{display:none}
+  .mobile-tabs{display:flex}
+}
+
+/* A dump with nothing to draw — `dumpsys package`, an ANR trace — has nothing
+   honest to put on the sheet, so the middle pane takes the list of things
+   instead and the left pane takes the groups they are split into: processes
+   or Android users down the left, the tree in the middle, the details on the
+   right. It is the same three panes and the same gutters; what sits in the
+   middle is what changes. These come after the width rules above so they win
+   at every size. */
+body.layout-list .pane-plan > .sheet,
+body.layout-list .pane-plan > .legend,
+body.layout-list .pane-plan > .sheet-foot{display:none}
+/* The groups are a short list of short names and the details pane is doing
+   all the drawing, so the room goes to the middle and the right. */
+body.layout-list main{--w-stack:280px; --w-detail:460px}
+
+/* ---------- search across the workspace ---------- */
+/* The filter above the list is about the dump you are reading. This is about
+   the desk: it comes up over the page, holds every match in every dump open in
+   the workspace, and drops you into the one you pick with the query already
+   on. It is a card rather than a pane because it is a way through the work,
+   not part of it — it goes away as soon as it has answered. */
+.find{
+  position:fixed; inset:0; z-index:60; display:flex; justify-content:center;
+  /* Start rather than stretch: the card is as tall as what it found, and only
+     grows to the room it has when that is more. */
+  align-items:flex-start;
+  padding:8vh 16px 16px; background:rgba(0,0,0,.45);
+}
+:root[data-theme="light"] .find{background:rgba(31,41,34,.28)}
+.find-card{
+  width:min(720px,100%); max-height:calc(100vh - 8vh - 32px); display:flex; flex-direction:column;
+  background:var(--ink-2); border:1px solid var(--rule); border-radius:4px;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.find-box{
+  flex:none; width:100%; padding:12px 14px; font-size:14px;
+  background:var(--ink); border:none; border-bottom:1px solid var(--rule);
+  color:var(--fg-strong);
+}
+.find-box::placeholder{color:var(--placeholder)}
+.find-box:focus{outline:none}
+.find-results{flex:1; min-height:0; overflow:auto; padding:4px 0}
+.find-group{padding:2px 0 6px}
+/* Which dump and which reader a run of hits came out of. It sticks because a
+   long run of matches off one dump otherwise scrolls its own heading away. */
+.find-src{
+  margin:0; padding:7px 14px 4px; font-size:11.5px; color:var(--dim);
+  position:sticky; top:0; background:var(--ink-2);
+}
+.find-src b{color:var(--fg); font-weight:600}
+.find-hit{
+  display:block; width:100%; text-align:left; cursor:pointer;
+  padding:5px 14px; background:none; border:none; color:inherit; font:inherit;
+  border-left:2px solid transparent;
+}
+.find-hit:hover{background-color:var(--ink-3)}
+.find-hit[aria-selected="true"]{background-color:var(--ink-3); border-left-color:var(--mark)}
+.find-title{
+  display:block; color:var(--fg-strong);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.find-meta{
+  display:block; font-size:11.5px; color:var(--dim);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.find-more{margin:2px 0 0; padding:0 14px; font-size:11.5px; color:var(--graphite)}
+.find-empty{margin:0; padding:22px 14px; color:var(--dim); font-size:12.5px}
+.find-empty b{color:var(--fg-strong)}
+.find-foot{
+  flex:none; padding:7px 14px; border-top:1px solid var(--rule);
+  color:var(--graphite); font-size:11.5px;
+}

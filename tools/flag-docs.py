@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Rebuild the FLAG_DOCS table inside index.html from AOSP.
+"""Rebuild the FLAG_DOCS table in js/detail/window.js from AOSP.
 
-Oriel ships as one file with no build step, so the flag text lives inline. This
-script is how that block is written: it reads WindowManager.java straight from
+Telltale has no build step, so the flag text lives in the source. This script is
+how that block is written: it reads WindowManager.java straight from
 android.googlesource.com, pulls the javadoc of every FLAG_*, PRIVATE_FLAG_* and
 SYSTEM_FLAG_* constant, keys it by the name the ViewDebug tables make dumpsys
-print, and splices the result between the markers in index.html.
+print, and splices the result between the markers in js/detail/window.js.
 
-    python3 tools/flag-docs.py            # rewrite index.html in place
+    python3 tools/flag-docs.py            # rewrite js/detail/window.js in place
     python3 tools/flag-docs.py --check    # exit 1 if the file is out of date
     python3 tools/flag-docs.py --print    # write the block to stdout instead
 
 Several branches are read, newest first, and the first release to define a name
 wins. That is deliberate: a dump from an old build can carry a flag that main
-has since deleted, and Oriel should still have text for it.
+has since deleted, and Telltale should still have text for it.
 """
 
 import argparse
@@ -25,7 +25,7 @@ import sys
 import urllib.request
 
 HERE = pathlib.Path(__file__).resolve().parent
-INDEX = HERE.parent / "index.html"
+INDEX = HERE.parent / "js/detail/window.js"
 
 SOURCE = ("https://android.googlesource.com/platform/frameworks/base/+/"
           "refs/heads/{branch}/core/java/android/view/WindowManager.java?format=TEXT")
@@ -179,9 +179,9 @@ def splice(page, block):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true",
-                    help="exit 1 if index.html does not already hold this block")
+                    help="exit 1 if the file does not already hold this block")
     ap.add_argument("--print", dest="to_stdout", action="store_true",
-                    help="write the block to stdout and leave index.html alone")
+                    help="write the block to stdout and leave the file alone")
     args = ap.parse_args()
 
     block = render(harvest())
