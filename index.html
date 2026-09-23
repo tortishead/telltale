@@ -9009,9 +9009,31 @@ function paintRowWindow(){
   }
 }
 
+/* A repaint throws the rows away and builds them again, which takes any text
+   selection with it. That is nothing while reading and everything while
+   dragging a selection across the rows to copy them: a drag that reaches the
+   bottom of the pane scrolls it, and the scroll would wipe what had been
+   selected so far. So a drag holds the window still. What is under the fold
+   is off the end of the drawn slice anyway; the next scroll after the button
+   comes up paints it back. */
+let rowDrag = false;
+$('wlist').addEventListener('mousedown', (e) => { if(e.button === 0) rowDrag = true; });
+document.addEventListener('mouseup', () => {
+  if(!rowDrag) return;
+  rowDrag = false;
+  /* A drag that selected nothing was a click, and the window it held still
+     is stale by however far the pane scrolled under it. */
+  const sel = window.getSelection();
+  if(!S.tool || !S.tool.row || (sel && !sel.isCollapsed)) return;
+  const box = $('stackScroll'), h = rowWin.rowH;
+  const from = Math.floor(box.scrollTop / h);
+  const to = Math.ceil((box.scrollTop + (box.clientHeight || 600)) / h);
+  if(from < rowWin.from || to > rowWin.to) paintRowWindow();
+});
+
 /* Scrolling repaints, at most once a frame. */
 $('stackScroll').addEventListener('scroll', () => {
-  if(!S.data || !S.tool || !S.tool.row || rowWin.pending) return;
+  if(!S.data || !S.tool || !S.tool.row || rowWin.pending || rowDrag) return;
   rowWin.pending = true;
   requestAnimationFrame(() => {
     rowWin.pending = false;
@@ -13353,11 +13375,56 @@ const typingInField = () => {
   return !!el && (/^(INPUT|TEXTAREA)$/.test(el.tagName) || el.isContentEditable === true);
 };
 
+/* Whether there is selected text inside an element. A click is the release of
+   a drag as much as it is a click, so this is what tells the two apart. */
+function textSelectedIn(el){
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed || !sel.rangeCount) return false;
+  const at = sel.getRangeAt(0).commonAncestorContainer;
+  return el.contains(at.nodeType === 1 ? at : at.parentNode);
+}
+
 $('wlist').addEventListener('click', (e) => {
+  /* Text was dragged out of the list: the release is the end of that gesture,
+     not a pick. Picking would redraw the list and drop the selection before
+     it could be copied. */
+  if(textSelectedIn($('wlist'))) return;
   const twist = e.target.closest('[data-toggle]');
   if(twist) return toggleCollapse(twist.dataset.toggle);
   const row = e.target.closest('.wrow'); if(row) select(row.dataset.hash);
 });
+
+/* Copying rows out of the list. A row is a grid of cells, so the browser's own
+   copy puts every column on a line of its own and a hundred log lines come off
+   the clipboard as five hundred — which is not a log. So the clipboard is
+   written from the rows instead: the line as the dump wrote it where the row
+   still has it, and its cells joined back onto one line where it does not.
+   A selection inside a single row is left as the reader drew it, minus the
+   line breaks the columns put in. */
+document.addEventListener('copy', (e) => {
+  const list = $('wlist');
+  const sel = window.getSelection();
+  /* Only the lists drawn a row at a time are columns like this. The window
+     tree is one row per line already and the browser copies it correctly. */
+  if(!S.tool || !S.tool.row) return;
+  if(!e.clipboardData || !sel || sel.isCollapsed || !textSelectedIn(list)) return;
+  const oneLine = (t) => t.replace(/[ \t]*\n[ \t]*/g, ' ').replace(/\s+$/, '');
+  const rows = [...list.querySelectorAll('.wrow')].filter(r => sel.containsNode(r, true));
+  const text = rows.length > 1
+    ? rows.map(rowCopyText).join('\n')
+    : oneLine(sel.toString());
+  if(!text) return;
+  e.clipboardData.setData('text/plain', text);
+  e.preventDefault();
+});
+
+function rowCopyText(row){
+  const n = row.dataset.i !== undefined ? rowWin.nodes[+row.dataset.i] : null;
+  const raw = n && ((n.entry && n.entry.raw) || n.raw);
+  if(raw) return raw;
+  return [...row.children].map(c => c.textContent.trim()).filter(Boolean).join(' ');
+}
+
 $('wlist').addEventListener('keydown', (e) => {
   const row = e.target.closest('.wrow'); if(!row) return;
   if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); select(row.dataset.hash); }
