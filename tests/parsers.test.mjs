@@ -27,10 +27,53 @@ import {
   parseDisplayManagerDump, dmRect, dmField, dmSize, dmBlocks, dmCutoutBounds, dmDegrees,
   parseActivityDump, actField, actBounds, actTaskHead,
   parseActivityServicesDump, svcConnection, svcClient, svcPid, svcFgsTypes,
+  diaRect, diaRectField, diaRectFields,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
 const read = (p) => readFileSync(dir(p), 'utf8');
+
+/* ---------------- the spellings a release changed ---------------- */
+
+test('a rect is read in every spelling a release prints it in', () => {
+  const want = { l: 0, t: 63, r: 1080, b: 2337 };
+  /* dumpsys window, and the activity manager up to Android 15. */
+  assert.deepEqual(diaRect('[0,63][1080,2337]'), want);
+  /* An input window handle, and SurfaceFlinger with spaces for commas. */
+  assert.deepEqual(diaRect('[0,63,1080,2337]'), want);
+  assert.deepEqual(diaRect('[0 63 1080 2337]'), want);
+  /* dumpsys display, and the activity manager from Android 16 on. */
+  assert.deepEqual(diaRect('Rect(0, 63 - 1080, 2337)'), want);
+  assert.equal(diaRect('nothing of the sort'), null);
+  assert.equal(diaRect(null), null);
+});
+
+test('a named rect is read whichever spelling that build printed it in', () => {
+  const a15 = 'mBounds=[0,0][1080,2400] mLastReportedBounds=[0,63][1080,2337]';
+  const a16 = 'mBounds=Rect(0, 0 - 1080, 2400)';
+  assert.deepEqual(diaRectField(a15, 'mBounds'), { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.deepEqual(diaRectField(a16, 'mBounds'), { l: 0, t: 0, r: 1080, b: 2400 });
+  /* The name is matched whole: `mBounds` is not `mLastReportedBounds`. */
+  assert.deepEqual(diaRectField(a15, 'mLastReportedBounds'), { l: 0, t: 63, r: 1080, b: 2337 });
+  assert.equal(diaRectField(a15, 'mNoSuchField'), null);
+});
+
+test('a float rect is rounded to the pixels the layer is drawn at', () => {
+  const layer = 'sourceBounds=[0.0, 63.5, 1079.4, 2337.0]';
+  assert.deepEqual(diaRectField(layer, 'sourceBounds', { float: true, round: true }),
+    { l: 0, t: 64, r: 1079, b: 2337 });
+  /* Asked for whole numbers, the decimals are not a rect at all — which is
+     what keeps a scale factor out of a table of frames. */
+  assert.equal(diaRectField(layer, 'sourceBounds'), null);
+});
+
+test('every named rect in a block comes back, the first of a name winning', () => {
+  const block = 'mFrame=[0,0][1080,2400]\n  mFrame=[9,9][9,9]\n  parent=Rect(0, 0 - 1080, 2400)';
+  const rects = diaRectFields(block);
+  assert.deepEqual(rects.mFrame, { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.deepEqual(rects.parent, { l: 0, t: 0, r: 1080, b: 2400 });
+  assert.deepEqual(diaRectFields(''), {});
+});
 
 /* ---------------- small helpers ---------------- */
 

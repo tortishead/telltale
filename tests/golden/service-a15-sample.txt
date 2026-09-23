@@ -1,0 +1,28 @@
+tool: service
+displays: 1
+nodes: 12
+
+display 0  name=owner  size=0x0
+    meta: 7 services · 0 foreground
+    1  svc-bound       vis=n                                             -                           com.android.vending/PhoneskyJobServiceBackground
+    2  svc-connection  vis=y         ^svc:3                              -                           system
+    3  svc-started     vis=y                                             -                           com.google.android.apps.messaging/JibeService
+    4  svc-dead        vis=n                                             not running                 com.google.android.as.oss/AstreaGrpcService
+    5  svc-started     vis=y                                             -                           com.google.android.gms/ReceiveSurfaceService
+    6  svc-bound       vis=n                                             -                           com.google.android.googlequicksearchbox/MultiInstanceInvalidationService
+    7  svc-connection  vis=y         ^svc:46                             -                           com.google.android.googlequicksearchbox:search
+    8  svc-connection  vis=y         ^svc:46                             -                           com.google.android.googlequicksearchbox:interactor
+    9  svc-bound       vis=n                                             -                           com.google.android.networkstack.tethering/TetheringService
+   10  svc-connection  vis=y         ^svc:131                            -                           system
+   11  svc-bound       vis=n                                             -                           com.google.android.permissioncontroller/PermissionControllerServiceImpl
+   12  svc-connection  vis=y         ^svc:174                            -                           system
+
+globals:
+  services: 7
+  foreground: 0
+  connections: 5
+  pending: 0
+  restarting: 0
+  destroying: 0
+  users: 1
+  lines: 257

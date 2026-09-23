@@ -1,0 +1,32 @@
+tool: input
+displays: 2
+nodes: 10
+
+display -1  name=Internal  size=1080x1920  rot=0
+
+display 0  name=Internal  size=1080x2424  rot=0  focus=e9abe4e com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity' result='OK
+    1  input-monitor   —                         —           vis=y                                             sees every touch            PointerEventDispatcher0 (server)
+    2  input-spy       —                         input window  vis=y                                             spy                         stylus-handwriting-event-receiver-0
+    3  input-spy       —                         input window  vis=y                                             spy                         [Gesture Monitor] swipe-up
+    4  input-spy       —                         input window  vis=y                                             spy                         [Gesture Monitor] edge-swipe
+    5  input-untouchable  [0,2361][1080,2424]       input window  vis=n                                             not visible                 Taskbar
+    6  input-untouchable  [0,0][1080,63]            input window  vis=n                                             not visible                 StatusBar
+    7  input-window    [0,0][1080,2424]          input window  vis=y  focus                                      focus                       com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity
+    8  input-untouchable  —                         input window  vis=y                                             -                           ActivityRecordInputSink com.google.android.apps.nexuslauncher/.NexusLauncherActivity
+    9  input-spy       —                         input window  vis=y                                             spy                         [Gesture Monitor] minus-one
+   10  input-wallpaper  —                         input window  vis=y                                             -                           com.android.systemui.wallpapers.ImageWallpaper
+
+globals:
+  dispatchEnabled: true
+  dispatchFrozen: false
+  inputFilter: false
+  focusedDisplay: 0
+  interactive: true
+  pointerCapture: Disabled, seq=0
+  pointerSpeed: 0
+  keyRepeatTimeout: 400ms
+  keyRepeatDelay: 50ms
+  windows: 9
+  monitors: 1
+  viewports: 2
+  named: true

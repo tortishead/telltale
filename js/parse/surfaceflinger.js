@@ -144,12 +144,9 @@ const sfRect = (a, b, c, d) =>
 
 /* SurfaceFlinger prints a rect of four numbers several ways depending on which
    struct is doing the printing — commas or spaces between them, ints or
-   floats. One matcher covers the lot. */
-function sfNamedRect(block, key) {
-  const m = block.match(new RegExp('\\b' + key +
-    '=\\[\\s*(-?[\\d.]+)[,\\s]+(-?[\\d.]+)[,\\s]+(-?[\\d.]+)[,\\s]+(-?[\\d.]+)\\s*\\]'));
-  return m ? sfRect(m[1], m[2], m[3], m[4]) : null;
-}
+   floats. The shared reader covers those and the spellings the other services
+   print, and rounds the floats to the pixels a layer is drawn at. */
+const sfNamedRect = (block, key) => diaRectField(block, key, { float: true, round: true });
 
 function unionRect(rects) {
   const ok = rects.filter(rectValid);

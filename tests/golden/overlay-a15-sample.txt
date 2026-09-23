@@ -1,0 +1,44 @@
+tool: overlay
+displays: 1
+nodes: 24
+
+display 0  label=user 0  size=0x0
+    meta: 16 overlays · 14 enabled · 8 targets
+    1  overlay-target  vis=y                                             1 broken,7 on               android
+    2  overlay-fixed   vis=y         ^overlay:u0:android                 wins,immutable              com.android.internal.ranchu.commonoverlay
+    3  overlay-fixed   vis=y         ^overlay:u0:android                 immutable                   android.auto_generated_rro_product__
+    4  overlay-fixed   vis=y         ^overlay:u0:android                 immutable                   com.google.android.overlay.pixelconfigcommon
+    5  overlay-fixed   vis=y         ^overlay:u0:android                 immutable                   com.google.android.overlay.largescreenconfig
+    6  overlay-broken  vis=n         ^overlay:u0:android                 no idmap,immutable          android.auto_generated_characteristics_rro
+    7  overlay-fixed   vis=y         ^overlay:u0:android                 immutable                   com.google.android.overlay.googlewebview
+    8  overlay-fixed   vis=y         ^overlay:u0:android                 immutable                   com.google.android.overlay.googleconfig
+    9  overlay-fixed   vis=y         ^overlay:u0:android                 immutable                   android.auto_generated_rro_vendor__
+   10  overlay-target  vis=y                                             1 on                        com.android.bips
+   11  overlay-fixed   vis=y         ^overlay:u0:com.android.bips        immutable                   com.android.bips.auto_generated_rro_product__
+   12  overlay-target  vis=y                                             2 on                        com.android.carrierconfig
+   13  overlay-fixed   vis=y         ^overlay:u0:com.android.carrierconfig  wins,immutable              com.android.carrierconfig.auto_generated_rro_product__
+   14  overlay-fixed   vis=y         ^overlay:u0:com.android.carrierconfig  immutable                   com.android.carrierconfig.auto_generated_rro_vendor__
+   15  overlay-target  vis=n                                             none enabled                com.android.companiondevicemanager
+   16  overlay-off     vis=n         ^overlay:u0:com.android.companiondevicemanager  off                         com.android.companiondevicemanager.auto_generated_characteristics_rro
+   17  overlay-target  vis=y                                             1 on                        com.android.phone
+   18  overlay-fixed   vis=y         ^overlay:u0:com.android.phone       immutable                   com.android.phone.auto_generated_rro_vendor__
+   19  overlay-target  vis=y                                             1 on                        com.android.systemui
+   20  overlay-fixed   vis=y         ^overlay:u0:com.android.systemui    immutable                   com.android.systemui.auto_generated_rro_vendor__
+   21  overlay-target  vis=y                                             1 on                        com.google.android.connectivity.resources
+   22  overlay-fixed   vis=y         ^overlay:u0:com.google.android.connectivity.resources  immutable                   com.google.android.connectivity.resources.goldfish.overlay
+   23  overlay-target  vis=y                                             1 on                        com.google.android.marvin.talkback
+   24  overlay-fixed   vis=y         ^overlay:u0:com.google.android.marvin.talkback  immutable                   com.google.android.marvin.talkbackoverlay
+
+globals:
+  users: 1
+  overlays: 16
+  targets: 8
+  enabled: 14
+  broken: 1
+  fabricated: 0
+  constrained: 0
+  idmaps: 0
+  missingIdmaps: 0
+  configured: 0
+  tail: Client PIDs: 975, 158
+  lines: 219

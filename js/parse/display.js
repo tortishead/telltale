@@ -18,14 +18,13 @@
 const DM_RECT_RE = /Rect\((-?\d+),\s*(-?\d+)\s*-\s*(-?\d+),\s*(-?\d+)\)/;
 const DM_RECT_G = new RegExp(DM_RECT_RE.source, 'g');
 
-const dmRect = (s) => {
-  const m = s && s.match(DM_RECT_RE);
-  return m ? { l: +m[1], t: +m[2], r: +m[3], b: +m[4] } : null;
-};
+/* This service prints `Rect(l, t - r, b)` and always has; both of these go
+   through the shared reader anyway, so a field that turns up in another
+   spelling on some build is still read. */
+const dmRect = (s) => diaRect(s);
 
 /* A rect printed as a named field — `logicalFrame=Rect(0, 0 - 1080, 2400)`. */
-const dmRectField = (body, key) =>
-  dmRect((body.match(new RegExp(`\\b${key}=(Rect\\([^)]*\\))`)) || [])[1] || '');
+const dmRectField = (body, key) => diaRectField(body, key);
 
 /* The blocks this service prints hold blocks of their own — a cutout, an HDR
    table, a product descriptor — so one is taken by counting braces rather than

@@ -1,0 +1,141 @@
+tool: binder
+displays: 1
+nodes: 118
+
+display 0  label=user 0  size=0x0
+    meta: 61 callers · 106736 calls · 4.7 ms
+    1  binder-caller   vis=y                                             shared                      com.google.uid.shared
+    2  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     PackageManagerService#setComponentEnabledSetting
+    3  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ActivityManagerService#getIntentSenderWithFeature
+    4  binder-unnamed  vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ContentProvider#transaction 21
+    5  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ActivityManagerService#cancelIntentSender
+    6  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     PackageManagerService#getPackageInfo
+    7  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ContentService#notifyChange
+    8  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     PackageManagerService#queryIntentServices
+    9  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ActivityManagerService#startService
+   10  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     AlarmManagerService#set
+   11  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ActivityManagerService#serviceDoneExecuting
+   12  binder-unnamed  vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     BaseParceledListSlice#transaction 1
+   13  binder-unnamed  vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     CursorToBulkCursorAdaptor#transaction 7
+   14  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  -                           UiModeManagerService#getContrast
+   15  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     PackageManagerService#getApplicationInfo
+   16  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ActivityManagerService#getInfoForIntentSender
+   17  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     PackageManagerService#getNameForUid
+   18  binder-call     vis=y         ^binder:uid:shared:com.google.uid.shared/u0a144  sampled                     ActivityManagerService#checkPermissionForDevice
+   19  binder-caller   vis=y                                             shared                      android.uid.system
+   20  binder-call     vis=y         ^binder:uid:shared:android.uid.system/1000  sampled                     ActivityManagerService#attachApplication
+   21  binder-caller   vis=y                                             -                           com.google.android.apps.wellbeing
+   22  binder-call     vis=y         ^binder:uid:com.google.android.apps.wellbeing/u0a143  sampled                     PackageManagerService#resolveIntent
+   23  binder-call     vis=y         ^binder:uid:com.google.android.apps.wellbeing/u0a143  sampled                     PackageManagerService#queryIntentActivities
+   24  binder-call     vis=y         ^binder:uid:com.google.android.apps.wellbeing/u0a143  sampled                     PackageManagerService#queryIntentReceivers
+   25  binder-call     vis=y         ^binder:uid:com.google.android.apps.wellbeing/u0a143  sampled                     PackageManagerService#getApplicationInfo
+   26  binder-call     vis=y         ^binder:uid:com.google.android.apps.wellbeing/u0a143  sampled                     DevicePolicyManagerService#getProfileOwnerAsUser
+   27  binder-caller   vis=y                                             -                           com.google.android.apps.safetyhub
+   28  binder-call     vis=y         ^binder:uid:com.google.android.apps.safetyhub/u0a139  sampled                     ActivityManagerService#bindServiceInstance
+   29  binder-caller   vis=y                                             -                           com.google.android.permissioncontroller
+   30  binder-call     vis=y         ^binder:uid:com.google.android.permissioncontroller/u0a192  sampled                     PermissionManagerService#updatePermissionFlags
+   31  binder-call     vis=y         ^binder:uid:com.google.android.permissioncontroller/u0a192  -                           DisplayManagerService#getDisplayInfo
+   32  binder-call     vis=y         ^binder:uid:com.google.android.permissioncontroller/u0a192  sampled                     PermissionManagerService#getPermissionFlags
+   33  binder-caller   vis=y                                             shared                      android.uid.phone
+   34  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  sampled                     ContentService#registerContentObserver
+   35  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  sampled                     AppOpsService#setUidMode
+   36  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  sampled                     AppOpsService#noteOperation
+   37  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  sampled                     ActivityManagerService#checkPermissionForDevice
+   38  binder-call     vis=y         ^binder:uid:shared:android.uid.phone/1001  sampled                     PackageManagerService#getPackageUid
+   39  binder-caller   vis=y                                             -                           com.android.systemui
+   40  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a181  sampled                     ContentService#registerContentObserver
+   41  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a181  sampled                     SensorPrivacyService#isToggleSensorPrivacyEnabled
+   42  binder-unnamed  vis=y         ^binder:uid:com.android.systemui/u0a181  sampled                     ContentProvider#transaction 21
+   43  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a181  sampled                     UserManagerService#canAddMoreUsersOfType
+   44  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a181  sampled                     PackageManagerService#queryIntentServices
+   45  binder-call     vis=y         ^binder:uid:com.android.systemui/u0a181  sampled                     PackageManagerService#getComponentEnabledSetting
+   46  binder-caller   vis=y                                             -                           com.google.android.googlequicksearchbox
+   47  binder-call     vis=y         ^binder:uid:com.google.android.googlequicksearchbox/u0a145  sampled                     ActivityManagerService#getContentProvider
+   48  binder-call     vis=y         ^binder:uid:com.google.android.googlequicksearchbox/u0a145  sampled                     ActivityManagerService#getIntentSenderWithFeature
+   49  binder-caller   vis=y                                             reply 65 kB                 com.android.vending
+   50  binder-unnamed  vis=y         ^binder:uid:com.android.vending/u0a142  reply 65 kB,sampled         BaseParceledListSlice#transaction 1
+   51  binder-call     vis=y         ^binder:uid:com.android.vending/u0a142  sampled                     PackageManagerService#getPackageInfo
+   52  binder-call     vis=y         ^binder:uid:com.android.vending/u0a142  sampled                     NotificationManagerService#cancelNotificationWithTag
+   53  binder-caller   vis=y                                             shared                      android.uid.networkstack
+   54  binder-call     vis=y         ^binder:uid:shared:android.uid.networkstack/1073  -                           NetworkStatsService#registerNetworkStatsProvider
+   55  binder-caller   vis=y                                             -                           com.google.android.apps.nexuslauncher
+   56  binder-call     vis=y         ^binder:uid:com.google.android.apps.nexuslauncher/u0a176  sampled                     NotificationManagerService#getActiveNotificationsFromListener
+   57  binder-call     vis=y         ^binder:uid:com.google.android.apps.nexuslauncher/u0a176  sampled                     PackageManagerService#getApplicationInfo
+   58  binder-caller   vis=y                                             -                           com.google.android.as
+   59  binder-unnamed  vis=y         ^binder:uid:com.google.android.as/u0a134  sampled                     ContentProvider#transaction 21
+   60  binder-caller   vis=y                                             shared                      android.media
+   61  binder-call     vis=y         ^binder:uid:shared:android.media/u0a97  sampled                     ContentService#unregisterContentObserver
+   62  binder-caller   vis=y                                             -                           com.google.android.inputmethod.latin
+   63  binder-call     vis=y         ^binder:uid:com.google.android.inputmethod.latin/u0a157  sampled                     ConnectivityService#getActiveNetworkInfo
+   64  binder-caller   vis=y                                             -                           com.google.android.documentsui
+   65  binder-call     vis=y         ^binder:uid:com.google.android.documentsui/u0a99  sampled                     ActivityManagerService#registerReceiverWithFeature
+   66  binder-caller   vis=y                                             -                           com.android.providers.calendar
+   67  binder-call     vis=y         ^binder:uid:com.android.providers.calendar/u0a93  sampled                     ContentService#registerContentObserver
+   68  binder-caller   vis=y                                             -                           com.google.android.as.oss
+   69  binder-call     vis=y         ^binder:uid:com.google.android.as.oss/u0a129  sampled                     PackageManagerService#getApplicationInfo
+   70  binder-call     vis=y         ^binder:uid:com.google.android.as.oss/u0a129  -                           ActivityManagerService#serviceDoneExecuting
+   71  binder-caller   vis=y                                             -                           com.google.android.apps.messaging
+   72  binder-call     vis=y         ^binder:uid:com.google.android.apps.messaging/u0a141  sampled                     ActivityManagerService#refContentProvider
+   73  binder-caller   vis=y                                             -                           root
+   74  binder-unnamed  vis=y         ^binder:uid:0                       sampled                     NetworkManagementService#transaction 4
+   75  binder-caller   vis=y                                             -                           com.google.android.partnersetup
+   76  binder-call     vis=y         ^binder:uid:com.google.android.partnersetup/u0a136  sampled                     ActivityManagerService#refContentProvider
+   77  binder-caller   vis=y                                             -                           com.google.android.settings.intelligence
+   78  binder-call     vis=y         ^binder:uid:com.google.android.settings.intelligence/u0a140  sampled                     ActivityManagerService#refContentProvider
+   79  binder-caller   vis=y                                             -                           wifi
+   80  binder-caller   vis=y                                             -                           media
+   81  binder-caller   vis=y                                             -                           keystore
+   82  binder-caller   vis=y                                             -                           uid 1037
+   83  binder-caller   vis=y                                             -                           audioserver
+   84  binder-caller   vis=y                                             -                           cameraserver
+   85  binder-caller   vis=y                                             -                           network_stack
+   86  binder-caller   vis=y                                             -                           uid 1067
+   87  binder-caller   vis=y                                             -                           com.android.camera2
+   88  binder-caller   vis=y                                             -                           com.android.carrierconfig
+   89  binder-caller   vis=y                                             -                           com.android.carrierdefaultapp
+   90  binder-caller   vis=y                                             -                           com.android.cellbroadcastreceiver
+   91  binder-caller   vis=y                                             -                           com.android.chrome
+   92  binder-caller   vis=y                                             -                           com.android.externalstorage
+   93  binder-caller   vis=y                                             -                           com.android.imsserviceentitlement
+   94  binder-caller   vis=y                                             -                           com.android.managedprovisioning
+   95  binder-caller   vis=y                                             -                           com.android.nfc
+   96  binder-caller   vis=y                                             -                           com.android.printspooler
+   97  binder-caller   vis=y                                             -                           com.android.se
+   98  binder-caller   vis=y                                             -                           com.android.shell
+   99  binder-caller   vis=y                                             -                           com.android.traceur
+  100  binder-caller   vis=y                                             -                           com.google.android.apps.wallpaper
+  101  binder-caller   vis=y                                             -                           com.google.android.cellbroadcastreceiver
+  102  binder-caller   vis=y                                             -                           com.google.android.configupdater
+  103  binder-caller   vis=y                                             -                           com.google.android.devicelockcontroller
+  104  binder-caller   vis=y                                             -                           com.google.android.ext.services
+  105  binder-caller   vis=y                                             -                           com.google.android.federatedcompute
+  106  binder-caller   vis=y                                             -                           com.google.android.googlesdksetup
+  107  binder-caller   vis=y                                             -                           com.google.android.healthconnect.controller
+  108  binder-caller   vis=y                                             -                           com.google.android.marvin.talkback
+  109  binder-caller   vis=y                                             -                           com.google.android.ondevicepersonalization.services
+  110  binder-caller   vis=y                                             -                           com.google.android.onetimeinitializer
+  111  binder-caller   vis=y                                             -                           com.google.android.packageinstaller
+  112  binder-caller   vis=y                                             -                           com.google.android.providers.media.module
+  113  binder-caller   vis=y                                             -                           com.google.android.rkpdapp
+  114  binder-caller   vis=y                                             -                           com.google.android.tts
+  115  binder-caller   vis=y                                             -                           com.google.android.webview
+  116  binder-caller   vis=y                                             shared                      android.uid.bluetooth
+  117  binder-caller   vis=y                                             shared                      android.uid.shared
+  118  binder-caller   vis=y                                             -                           uid u0ai9000
+
+globals:
+  startTime: 2026-09-23 18:27:21
+  batteryMs: 39291
+  sampling: 1000
+  sharding: 1
+  totalCpu: 4650
+  totalCalls: 106736
+  avgCpu: 43
+  exceptions: 19,java.lang.SecurityException,15,java.lang.IllegalArgumentException,2,android.os.ServiceSpecificException,1,java.lang.IllegalStateException,1,java.lang.ArrayIndexOutOfBoundsException
+  threw: 38
+  callers: 61
+  rows: 57
+  users: 1
+  recording: true
+  detailed: true
+  lines: 235

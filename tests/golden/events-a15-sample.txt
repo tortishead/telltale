@@ -1,0 +1,225 @@
+tool: events
+displays: 1
+nodes: 202
+
+display 0  label=event log  size=0x0
+    meta: 202 events · 12 trouble
+    1  ev-other        vis=y                                             -                           snet_event_log [121035042,-1,]
+    2  ev-other        vis=y                                             -                           auditd SELinux: Loaded service context from:
+    3  ev-other        vis=y                                             -                           auditd 		/system/etc/selinux/plat_service_contexts
+    4  ev-other        vis=y                                             -                           auditd 		/system_ext/etc/selinux/system_ext_service_contexts
+    5  ev-other        vis=y                                             -                           auditd 		/vendor/etc/selinux/vendor_service_contexts
+    6  ev-other        vis=y                                             -                           auditd type=2000 audit(0.0:1): state=initialized audit_enabled=0 res=1
+    7  ev-other        vis=y                                             -                           auditd type=1403 audit(0.0:2): auid=4294967295 ses=4294967295 lsm=selinux res=1
+    8  ev-other        vis=y                                             -                           auditd type=1404 audit(0.0:3): enforcing=1 old_enforcing=0 auid=4294967295 ses=4294967295 enabled=1 old-enabled=1 lsm=selinux res=1
+    9  ev-other        vis=y                                             -                           auditd type=1107 audit(0.0:4): uid=0 auid=4294967295 ses=4294967295 subj=u:r:init:s0 msg='avc:  denied  { set } for property=persist.sys.usb.config pid=1 uid=0 gid=0 scontext=u:r:vendor_init:s0 tcontext=u:object_r:system_prop:s0 tclass=property_service permissive=0'
+   10  ev-other        vis=y                                             -                           auditd SELinux: Loaded keystore2 context from:
+   11  ev-other        vis=y                                             -                           auditd 		/system/etc/selinux/plat_keystore2_key_contexts
+   12  ev-other        vis=y                                             -                           auditd 		/system_ext/etc/selinux/system_ext_keystore2_key_contexts
+   13  ev-other        vis=y                                             -                           auditd 		/vendor/etc/selinux/vendor_keystore2_key_contexts
+   14  ev-other        vis=y                                             -                           auditd SELinux: Loaded file context from:
+   15  ev-other        vis=y                                             -                           auditd 		/system/etc/selinux/plat_file_contexts
+   16  ev-other        vis=y                                             -                           auditd 		/system_ext/etc/selinux/system_ext_file_contexts
+   17  ev-other        vis=y                                             -                           auditd 		/vendor/etc/selinux/vendor_file_contexts
+   18  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:5): avc:  denied  { write } for  comm="init" name="error_report_end" dev="tracefs" ino=6881 scontext=u:r:init:s0 tcontext=u:object_r:debugfs_bootreceiver_tracing:s0 tclass=dir permissive=0
+   19  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:6): avc:  denied  { getattr } for  comm="init" path="/system/bin/logcat" dev="dm-0" ino=15089047 scontext=u:r:init:s0 tcontext=u:object_r:logcat_exec:s0 tclass=file permissive=0
+   20  ev-system       vis=y                                             -                           Boot · init handed over · at 6168 ms
+   21  ev-other        vis=y                                             -                           snet_event_log [200284993,-1,]
+   22  ev-system       vis=y                                             -                           Boot · zygote preload started · at 6459 ms
+   23  ev-system       vis=y                                             -                           Boot · zygote preload finished · at 6760 ms
+   24  ev-other        vis=y                                             -                           system_server_start [1,6876,6876]
+   25  ev-system       vis=y                                             -                           Boot · system server running · at 6877 ms
+   26  ev-other        vis=y                                             -                           commit_sys_config_file [batterystats,1]
+   27  ev-other        vis=y                                             -                           commit_sys_config_file [batterystats,1]
+   28  ev-other        vis=y                                             -                           commit_sys_config_file [display-state,2]
+   29  ev-system       vis=y                                             -                           Boot · package manager started · at 7021 ms
+   30  ev-other        vis=y                                             -                           pm_critical_info No package manager settings file
+   31  ev-system       vis=y                                             -                           Boot · scanning system packages · at 7034 ms
+   32  ev-other        vis=y                                             -                           service_manager_stats [100,24,7125]
+   33  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=android
+   34  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10091 name=com.android.providers.blockednumber
+   35  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10091 name=com.android.calllogbackup
+   36  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10093 name=com.android.providers.calendar
+   37  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10091 name=com.android.providers.contacts
+   38  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.DeviceAsWebcam
+   39  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10097 name=com.android.providers.downloads.ui
+   40  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10097 name=com.android.providers.downloads
+   41  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10091 name=com.android.providers.contactkeys
+   42  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.dynsystem
+   43  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.location.fused
+   44  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.inputdevices
+   45  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.localtransport
+   46  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1001 name=com.android.mms.service
+   47  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10097 name=com.android.providers.media
+   48  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10097 name=com.android.mtp
+   49  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1073 name=com.google.android.networkstack
+   50  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.providers.settings
+   51  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1001 name=com.android.ons
+   52  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10097 name=com.android.soundpicker
+   53  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1001 name=com.android.providers.telephony
+   54  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 2000 name=com.android.shell
+   55  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10091 name=com.android.providers.userdictionary
+   56  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.server.telecom
+   57  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1001 name=com.android.phone
+   58  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1002 name=com.android.bluetooth
+   59  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1068 name=com.android.se
+   60  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.keychain
+   61  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1001 name=com.android.stk
+   62  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10131 name=com.google.android.projection.gearhead
+   63  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10144 name=com.google.android.gms
+   64  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10149 name=com.google.android.calendar
+   65  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10156 name=com.google.android.apps.maps
+   66  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.emulator.multidisplay
+   67  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10144 name=com.google.android.gsf
+   68  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10181 name=com.android.systemui
+   69  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1000 name=com.android.settings
+   70  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10183 name=com.android.emergency
+   71  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1073 name=com.google.android.cellbroadcastservice
+   72  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1002 name=com.google.android.bluetooth
+   73  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1027 name=com.android.nfc
+   74  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate app id: 10201 name=com.android.cts.ctsshim
+   75  ev-other        vis=y                                             -                           pm_critical_info Adding duplicate shared id: 1073 name=com.google.android.networkstack.tethering
+   76  ev-system       vis=y                                             -                           Boot · scanning data packages · at 7885 ms
+   77  ev-system       vis=y                                             -                           Boot · package scan finished · at 9502 ms
+   78  ev-other        vis=y                                             -                           commit_sys_config_file [package,12]
+   79  ev-system       vis=y                                             -                           Boot · package manager ready · at 9578 ms
+   80  ev-other        vis=y                                             -                           commit_sys_config_file [package-user-0,7]
+   81  ev-process      vis=y                                             -                           uid 1000 running
+   82  ev-process      vis=y                                             -                           uid 1000 active
+   83  ev-other        vis=y                                             -                           commit_sys_config_file [overlays,3]
+   84  ev-system       vis=y                                             -                           Battery status changed
+   85  ev-system       vis=y                                             -                           Battery 100% · 25.0°C
+   86  ev-other        vis=y                                             -                           am_cpu [54,0,kworker/u8:3-loop3,2698,0,10]
+   87  ev-other        vis=y                                             -                           am_cpu [55,0,kworker/1:1-mm_percpu_wq,2698,0,10]
+   88  ev-other        vis=y                                             -                           am_cpu [57,0,kswapd0,2698,0,20]
+   89  ev-other        vis=y                                             -                           am_cpu [59,0,erofs_worker/0,2698,0,60]
+   90  ev-other        vis=y                                             -                           am_cpu [81,0,ext4lazyinit,2698,20,0]
+   91  ev-other        vis=y                                             -                           am_cpu [92,0,kworker/1:1H-kblockd,2698,0,20]
+   92  ev-other        vis=y                                             -                           am_cpu [156,1036,logd,2697,10,0]
+   93  ev-other        vis=y                                             -                           am_cpu [158,1000,servicemanager,2697,0,10]
+   94  ev-other        vis=y                                             -                           am_cpu [309,0,kworker/2:3H-kverityd,2697,0,10]
+   95  ev-other        vis=y                                             -                           am_cpu [387,1000,binder:387_2,2697,10,150]
+   96  ev-other        vis=y                                             -                           am_cpu [412,1000,surfaceflinger,2696,120,1020]
+   97  ev-other        vis=y                                             -                           am_cpu [420,2000,adbd,2696,0,10]
+   98  ev-other        vis=y                                             -                           am_cpu [425,1000,binder:425_2,2696,40,10]
+   99  ev-other        vis=y                                             -                           am_cpu [429,0,binder:429_2,2696,40,40]
+  100  ev-other        vis=y                                             -                           am_cpu [544,1003,bootanimation,2696,40,210]
+  101  ev-other        vis=y                                             -                           am_cpu [574,1000,system_server,2696,1620,660]
+  102  ev-other        vis=y                                             -                           am_cpu [655,0,kworker/u9:3-blk_crypto_wq,0,0,0]
+  103  ev-other        vis=y                                             -                           commit_sys_config_file [settings-1-0,1]
+  104  ev-other        vis=y                                             -                           commit_sys_config_file [settings-0-0,1]
+  105  ev-other        vis=y                                             -                           commit_sys_config_file [settings-2-0,1]
+  106  ev-other        vis=y                                             -                           commit_sys_config_file [settings-1-0,0]
+  107  ev-other        vis=y                                             -                           wm_task_created 1
+  108  ev-other        vis=y                                             -                           sysui_multi_action [757,1594,758,4,759,1,806,NULL]
+  109  ev-other        vis=y                                             -                           commit_sys_config_file [net-watchlist,2]
+  110  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: No service published for: jobscheduler
+  111  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: Manager wrapper not available: jobscheduler
+  112  ev-system       vis=y                                             -                           Configuration changed · touchscreen, keyboard, keyboardHidden, navigation, orientation, screenLayout, screenSize, smallestScreenSize, density, colorMode, windowConfiguration
+  113  ev-other        vis=y                                             -                           sysui_multi_action [757,1659,758,4,759,1,1660,0]
+  114  ev-process      vis=y                                             -                           uid 10189 running
+  115  ev-other        vis=y                                             -                           commit_sys_config_file [settings-0-0,18]
+  116  ev-other        vis=y                                             -                           sysui_multi_action [757,804,799,opt_dialog_num_dexopted,801,22,802,1]
+  117  ev-other        vis=y                                             -                           sysui_multi_action [757,804,799,opt_dialog_num_skipped,801,130,802,1]
+  118  ev-other        vis=y                                             -                           sysui_multi_action [757,804,799,opt_dialog_num_failed,801,0,802,1]
+  119  ev-other        vis=y                                             -                           sysui_multi_action [757,804,799,opt_dialog_num_total,801,152,802,1]
+  120  ev-other        vis=y                                             -                           sysui_multi_action [757,804,799,opt_dialog_time_s,801,1,802,1]
+  121  ev-system       vis=y                                             -                           Doze state 0 · boot
+  122  ev-other        vis=y                                             -                           device_idle_light [0,boot]
+  123  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: No service published for: jobscheduler
+  124  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: Manager wrapper not available: jobscheduler
+  125  ev-process      vis=y                                             -                           uid 10143 running
+  126  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: No service published for: jobscheduler
+  127  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: Manager wrapper not available: jobscheduler
+  128  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: No service published for: jobscheduler
+  129  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: Manager wrapper not available: jobscheduler
+  130  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: No service published for: jobscheduler
+  131  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: Manager wrapper not available: jobscheduler
+  132  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,PHYSICAL_KEYBOARD,858,2]
+  133  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,SECURITY,858,2]
+  134  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,CAR_MODE,858,2]
+  135  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,ACCOUNT,858,2]
+  136  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,DEVELOPER,858,2]
+  137  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,DEVELOPER_IMPORTANT,858,4]
+  138  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,UPDATES,858,2]
+  139  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,NETWORK_STATUS,858,2]
+  140  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,NETWORK_ALERTS,858,4]
+  141  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,NETWORK_AVAILABLE,858,2]
+  142  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,VPN,858,2]
+  143  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,DEVICE_ADMIN_ALERTS,858,4]
+  144  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,ALERTS,858,3]
+  145  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,RETAIL_MODE,858,2]
+  146  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,USB,858,1]
+  147  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,FOREGROUND_SERVICE,858,2]
+  148  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,HEAVY_WEIGHT_APP,858,3]
+  149  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,SYSTEM_CHANGES_ALERTS,858,3]
+  150  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,DO_NOT_DISTURB,858,2]
+  151  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,ACCESSIBILITY_MAGNIFICATION,858,4]
+  152  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,ACCESSIBILITY_SECURITY_POLICY,858,2]
+  153  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,ABUSIVE_BACKGROUND_APPS,858,2]
+  154  ev-other        vis=y                                             -                           storage_state [41217664-9172-527a-b3d5-edabb50a7d69,0,0,5534420992,6228115456]
+  155  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: No service published for: jobscheduler
+  156  ev-trouble      vis=y                                             trouble                     WTF in system_server · SystemServiceRegistry: Manager wrapper not available: jobscheduler
+  157  ev-other        vis=y                                             -                           commit_sys_config_file [settings-2-0,2]
+  158  ev-other        vis=y                                             -                           stream_devices_changed [4,0,2]
+  159  ev-other        vis=y                                             -                           stream_devices_changed [6,0,2]
+  160  ev-other        vis=y                                             -                           stream_devices_changed [3,0,2]
+  161  ev-other        vis=y                                             -                           stream_devices_changed [5,0,2]
+  162  ev-other        vis=y                                             -                           stream_devices_changed [2,0,2]
+  163  ev-other        vis=y                                             -                           stream_devices_changed [0,0,2]
+  164  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:7): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+  165  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:8): avc:  denied  { write } for  comm="android.hardwar" name="property_service" dev="tmpfs" ino=374 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0
+  166  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:9): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+  167  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:10): avc:  denied  { write } for  comm="android.hardwar" name="property_service" dev="tmpfs" ino=374 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0
+  168  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:11): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+  169  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:12): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+  170  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:13): avc:  denied  { write } for  comm="android.hardwar" name="property_service" dev="tmpfs" ino=374 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0
+  171  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:14): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+  172  ev-other        vis=y                                             -                           auditd type=1400 audit(0.0:15): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+  173  ev-system       vis=y                                             -                           Configuration changed · uiMode
+  174  ev-other        vis=y                                             -                           sysui_multi_action [757,856,758,1,806,android,857,APM_ALERTS,858,4]
+  175  ev-other        vis=y                                             -                           commit_sys_config_file [package-session,1]
+  176  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.dynsystem,1241,android.permission.POST_NOTIFICATIONS]
+  177  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.READ_CALL_LOG]
+  178  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.ACCESS_FINE_LOCATION]
+  179  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_PHONE_NUMBERS]
+  180  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_VISUAL_USER_SELECTED]
+  181  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.BLUETOOTH_CONNECT]
+  182  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.READ_EXTERNAL_STORAGE]
+  183  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.ACCESS_COARSE_LOCATION]
+  184  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_PHONE_STATE]
+  185  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.SEND_SMS]
+  186  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.CALL_PHONE]
+  187  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_IMAGES]
+  188  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.WRITE_CONTACTS]
+  189  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.DeviceAsWebcam,1241,android.permission.CAMERA]
+  190  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.WRITE_CALL_LOG]
+  191  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_AUDIO]
+  192  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_VIDEO]
+  193  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.BLUETOOTH_ADVERTISE]
+  194  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,android,1241,android.permission.GET_ACCOUNTS]
+  195  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.WRITE_EXTERNAL_STORAGE]
+  196  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,android,1241,android.permission.READ_CONTACTS]
+  197  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.location.fused,1241,android.permission.ACCESS_BACKGROUND_LOCATION]
+  198  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.settings,1241,android.permission.BLUETOOTH_SCAN]
+  199  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.mms.service,1241,android.permission.READ_SMS]
+  200  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.stk,1241,android.permission.POST_NOTIFICATIONS]
+  201  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.phone,1241,android.permission.READ_CALL_LOG]
+  202  ev-other        vis=y                                             -                           sysui_multi_action [757,1243,758,4,806,com.android.phone,1241,android.permission.ACCESS_FINE_LOCATION]
+
+globals:
+  events: 202
+  sections: 1
+  tags: 28
+  unknown: 12
+  counts: 4 entries
+  first: 09-23 18:27:13.899
+  last: 09-23 18:27:21.571
+  anrs: 
+  crashes: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+  kills: 
+  lowMemory: 0
+  boot: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+  started: 0
+  died: 0
+  configChanges: 2

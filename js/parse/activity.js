@@ -73,17 +73,13 @@ const actBool = (text, key) => {
   return v === 'true' ? true : v === 'false' ? false : null;
 };
 
-/* The rect a container was given, in either of the two spellings a release
-   prints it in. A task that fills its parent prints an empty rect rather than
-   the parent's, so an empty one is no answer and the caller inherits. */
+/* The rect a container was given, in whichever spelling the release prints it
+   in — the shared reader takes both. A task that fills its parent prints an
+   empty rect rather than the parent's, so an empty one is no answer and the
+   caller inherits. */
 function actBounds(text) {
   for (const key of ['mBounds', 'bounds', 'mLastReportedBounds']) {
-    const flat = text.match(new RegExp(`\\b${key}=\\[(-?\\d+),\\s*(-?\\d+)\\]\\[(-?\\d+),\\s*(-?\\d+)\\]`));
-    if (flat) {
-      const r = rectFrom(flat, 1);
-      if (rectValid(r)) return r;
-    }
-    const rect = dmRectField(text, key);
+    const rect = diaRectField(text, key);
     if (rectValid(rect)) return rect;
   }
   return null;
@@ -168,6 +164,16 @@ function parseActivityDump(input) {
 
   for (let i = from; i < to; i++) {
     const line = lines[i];
+    /* Indentation closes what it is shallower than, and the line that does the
+       closing need not be a head of its own. A section follows a display's
+       tasks with the window manager's hierarchy, whose headings sit at the
+       depth of the tasks above them; a reader that only unwound on heads would
+       hang everything under that heading off the last task of the list. */
+    if (line.trim()) {
+      const at = indentOf(line);
+      while (stack.length && stack[stack.length - 1].indent >= at) stack.pop();
+    }
+
     const dm = line.match(ACT_DISPLAY_HEAD);
     if (dm) {
       displayId = +dm[1];
@@ -321,6 +327,42 @@ function parseActivityDump(input) {
   }
 
   if (!nodes.length) return finaliseScene('activity', [], [], {});
+
+  /* The same tree, printed twice. A section states each display's tasks top to
+     bottom, and then the window manager's own hierarchy — `Task display areas
+     in top down Z order` — states them again, the second copy carrying the
+     bounds and the activities the first one leaves out. They are the same
+     objects said twice, and an object says which it is: the identity hash in
+     its brace. So a tree every one of whose objects turns up in another tree
+     is the copy to drop, and where two copies hold exactly the same objects
+     the later one is the fuller. A tree holding anything of its own is nobody
+     else's copy and stays, which is what keeps this from eating a display
+     whose tasks the dump really did print once. */
+  const trees = new Map();
+  for (const n of nodes) {
+    if (!trees.has(n.rootIndex)) trees.set(n.rootIndex, { hashes: new Set(), nodes: [] });
+    const t = trees.get(n.rootIndex);
+    t.hashes.add(n.idHash);
+    t.nodes.push(n);
+  }
+  const grown = [...trees.values()];
+  const inside = (a, b) => [...a.hashes].every((h) => b.hashes.has(h));
+  const copies = new Set();
+  for (let a = 0; a < grown.length; a++) {
+    for (let b = 0; b < grown.length; b++) {
+      if (a === b || !inside(grown[a], grown[b])) continue;
+      if (grown[a].hashes.size < grown[b].hashes.size || b > a) { copies.add(a); break; }
+    }
+  }
+  if (copies.size) {
+    const gone = new Set();
+    for (const a of copies) for (const n of grown[a].nodes) gone.add(n);
+    const kept = nodes.filter((n) => !gone.has(n));
+    nodes.length = 0;
+    for (const n of kept) nodes.push(n);
+    byIdHash.clear();
+    for (const n of nodes) if (!byIdHash.has(n.idHash)) byIdHash.set(n.idHash, n);
+  }
 
   /* Front to back is the order the dump printed in — the first task on a
      display is the one on top — and inside a task the nesting decides it: an

@@ -1,0 +1,1301 @@
+tool: props
+displays: 44
+nodes: 1133
+
+display 0  label=ro  size=0x0
+    meta: 391 properties · 44 sections
+    1  prop-section    vis=y                                             -                           ro.actionable_compatible_property
+    2  prop-ro         vis=y         ^props:582:ro.actionable_compatible_property  -                           ro.actionable_compatible_property.enabled
+    3  prop-section    vis=y                                             -                           ro.adb
+    4  prop-ro         vis=y         ^props:583:ro.adb                   -                           ro.adb.secure
+    5  prop-section    vis=y                                             -                           ro.allow
+    6  prop-ro         vis=y         ^props:584:ro.allow                 -                           ro.allow.mock.location
+    7  prop-section    vis=y                                             -                           ro.apex
+    8  prop-ro         vis=y         ^props:585:ro.apex                  -                           ro.apex.updatable
+    9  prop-ro         vis=y                                             -                           ro.baseband
+   10  prop-section    vis=y                                             -                           ro.bionic
+   11  prop-ro         vis=y         ^props:587:ro.bionic                -                           ro.bionic.2nd_arch
+   12  prop-ro         vis=y         ^props:587:ro.bionic                -                           ro.bionic.2nd_cpu_variant
+   13  prop-ro         vis=y         ^props:587:ro.bionic                -                           ro.bionic.arch
+   14  prop-ro         vis=y         ^props:587:ro.bionic                -                           ro.bionic.cpu_variant
+   15  prop-section    vis=y                                             -                           ro.board
+   16  prop-ro         vis=y         ^props:591:ro.board                 -                           ro.board.api_frozen
+   17  prop-ro         vis=y         ^props:591:ro.board                 -                           ro.board.api_level
+   18  prop-ro         vis=y         ^props:591:ro.board                 -                           ro.board.platform
+   19  prop-section    vis=y                                             -                           ro.boot
+   20  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.boot_devices
+   21  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.bootreason
+   22  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.dalvik.vm.heapsize
+   23  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.debug.hwui.renderer
+   24  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.dynamic_partitions
+   25  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.hardware
+   26  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.hardware.gltransport
+   27  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.hardware.vulkan
+   28  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.logcat
+   29  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.opengles.version
+   30  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu
+   31  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.adb.pubkey
+   32  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.avd_name
+   33  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.camera_hq_edge_processing
+   34  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.camera_protocol_ver
+   35  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.cpuvulkan.version
+   36  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.gltransport.drawFlushInterval
+   37  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.gltransport.name
+   38  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.hwcodec.avcdec
+   39  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.hwcodec.hevcdec
+   40  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.hwcodec.vpxdec
+   41  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.settings.system.screen_off_timeout
+   42  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.virtiowifi
+   43  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.qemu.vsync
+   44  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.serialno
+   45  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.vbmeta.digest
+   46  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.vbmeta.hash_alg
+   47  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.vbmeta.size
+   48  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.vendor.overlay.theme
+   49  prop-ro         vis=y         ^props:594:ro.boot                  -                           ro.boot.veritymode
+   50  prop-section    vis=y                                             -                           ro.bootimage
+   51  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.date
+   52  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.date.utc
+   53  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.fingerprint
+   54  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.id
+   55  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.tags
+   56  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.type
+   57  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.version.incremental
+   58  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.version.release
+   59  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.version.release_or_codename
+   60  prop-ro         vis=y         ^props:624:ro.bootimage             -                           ro.bootimage.build.version.sdk
+   61  prop-ro         vis=y                                             -                           ro.bootloader
+   62  prop-ro         vis=y                                             -                           ro.bootmode
+   63  prop-section    vis=y                                             -                           ro.boottime
+   64  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.aconfigd
+   65  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.aconfigd-mainline-init
+   66  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.aconfigd-platform-init
+   67  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.adbd
+   68  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.android-hardware-media-c2-goldfish-hal-1-0
+   69  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.apexd
+   70  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.apexd-bootstrap
+   71  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.apexd-snapshotde
+   72  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.art_boot
+   73  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.artd
+   74  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.audioserver
+   75  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.bootanim
+   76  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.boringssl_self_test64
+   77  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.boringssl_self_test64_vendor
+   78  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.boringssl_self_test_apex64
+   79  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.bpfloader
+   80  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.bt_vhci_forwarder
+   81  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.cameraserver
+   82  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.credstore
+   83  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.derive_classpath
+   84  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.derive_sdk
+   85  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.dhcpclient_wifi
+   86  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.dmesgd
+   87  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.drm
+   88  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.dumpstatez
+   89  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.gatekeeperd
+   90  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.gpu
+   91  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.gsid
+   92  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.hidl_memory
+   93  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.hwservicemanager
+   94  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.idmap2d
+   95  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.incidentd
+   96  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init
+   97  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.cold_boot_wait
+   98  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.first_stage
+   99  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.fsck.data
+  100  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.modules
+  101  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.mount.data
+  102  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.mount_all.early
+  103  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.mount_all.late
+  104  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.init.selinux
+  105  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.installd
+  106  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.keystore2
+  107  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.lmkd
+  108  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.logd
+  109  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.logd-auditctl
+  110  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.logd-reinit
+  111  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.lpdumpd
+  112  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.mdnsd
+  113  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.media
+  114  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.media.swcodec
+  115  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.mediaextractor
+  116  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.mediametrics
+  117  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.misctrl
+  118  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.netd
+  119  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.neuralnetworks_hal_service_aidl_sample_all
+  120  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.neuralnetworks_hal_service_aidl_sample_limited
+  121  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.neuralnetworks_hal_service_shim_sample
+  122  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.odsign
+  123  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.prng_seeder
+  124  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.qemu-device-state
+  125  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.qemu-props
+  126  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.qemu-props-bootcomplete
+  127  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.ranchu-adb-setup
+  128  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.ranchu-net
+  129  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.ranchu-setup
+  130  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.servicemanager
+  131  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.statsd
+  132  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.storaged
+  133  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.surfaceflinger
+  134  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.system_suspend
+  135  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.tombstoned
+  136  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.traced
+  137  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.traced_probes
+  138  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.ueventd
+  139  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.update_verifier
+  140  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.usbd
+  141  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.atrace-hal-1-0
+  142  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.audio-hal
+  143  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.authsecret_default
+  144  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.biometrics.fingerprint-service.ranchu
+  145  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.bluetooth-default
+  146  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.camera-provider-2-7-google
+  147  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.camera-provider-ranchu
+  148  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.cas-default
+  149  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.contexthub-default
+  150  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.dlkm_loader
+  151  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.drm-clearkey-service
+  152  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.drm-widevine-hal
+  153  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.dumpstate-default
+  154  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.face-example
+  155  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.gatekeeper-1-0
+  156  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.gnss.ranchu
+  157  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.gralloc-3-0
+  158  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.health-default
+  159  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.hwcomposer-3
+  160  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.identity-default
+  161  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.keymint-default
+  162  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.light-default
+  163  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.power-default
+  164  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.power.stats-default
+  165  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.rebootescrow-default
+  166  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.ril-daemon
+  167  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.sensors-hal-multihal
+  168  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.thermal-hal-2-0-mock
+  169  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.usb_default
+  170  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.vibrator-default
+  171  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vendor.wifi_hal_legacy
+  172  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.vold
+  173  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.wificond
+  174  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.wpa_supplicant
+  175  prop-ro         vis=y         ^props:636:ro.boottime              -                           ro.boottime.zygote
+  176  prop-section    vis=y                                             -                           ro.build
+  177  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.ab_update
+  178  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.characteristics
+  179  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.date
+  180  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.date.utc
+  181  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.description
+  182  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.display.id
+  183  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.fingerprint
+  184  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.flavor
+  185  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.host
+  186  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.id
+  187  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.product
+  188  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.tags
+  189  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.type
+  190  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.user
+  191  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.all_codenames
+  192  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.base_os
+  193  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.codename
+  194  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.incremental
+  195  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.known_codenames
+  196  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.min_supported_target_sdk
+  197  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.preview_sdk
+  198  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.preview_sdk_fingerprint
+  199  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.release
+  200  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.release_or_codename
+  201  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.release_or_preview_display
+  202  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.sdk
+  203  prop-ro         vis=y         ^props:748:ro.build                 -                           ro.build.version.security_patch
+  204  prop-ro         vis=y                                             -                           ro.carrier
+  205  prop-ro         vis=y                                             -                           ro.cold_boot_done
+  206  prop-section    vis=y                                             -                           ro.com
+  207  prop-ro         vis=y         ^props:777:ro.com                   -                           ro.com.android.dataroaming
+  208  prop-ro         vis=y         ^props:777:ro.com                   -                           ro.com.google.acsa
+  209  prop-section    vis=y                                             -                           ro.config
+  210  prop-ro         vis=y         ^props:779:ro.config                -                           ro.config.alarm_alert
+  211  prop-ro         vis=y         ^props:779:ro.config                -                           ro.config.notification_sound
+  212  prop-ro         vis=y         ^props:779:ro.config                -                           ro.config.ringtone
+  213  prop-ro         vis=y                                             -                           ro.control_privapp_permissions
+  214  prop-ro         vis=y                                             -                           ro.cp_system_other_odex
+  215  prop-section    vis=y                                             -                           ro.cpuvulkan
+  216  prop-ro         vis=y         ^props:784:ro.cpuvulkan             -                           ro.cpuvulkan.version
+  217  prop-section    vis=y                                             -                           ro.crypto
+  218  prop-ro         vis=y         ^props:785:ro.crypto                -                           ro.crypto.dm_default_key.options_format.version
+  219  prop-ro         vis=y         ^props:785:ro.crypto                -                           ro.crypto.metadata.enabled
+  220  prop-ro         vis=y         ^props:785:ro.crypto                -                           ro.crypto.state
+  221  prop-ro         vis=y         ^props:785:ro.crypto                -                           ro.crypto.type
+  222  prop-ro         vis=y         ^props:785:ro.crypto                -                           ro.crypto.volume.filenames_mode
+  223  prop-section    vis=y                                             -                           ro.dalvik
+  224  prop-ro         vis=y         ^props:790:ro.dalvik                -                           ro.dalvik.vm.enable_uffd_gc
+  225  prop-ro         vis=y         ^props:790:ro.dalvik                -                           ro.dalvik.vm.native.bridge
+  226  prop-ro         vis=y                                             -                           ro.debuggable
+  227  prop-section    vis=y                                             -                           ro.force
+  228  prop-ro         vis=y         ^props:793:ro.force                 -                           ro.force.debuggable
+  229  prop-section    vis=y                                             -                           ro.fstype
+  230  prop-ro         vis=y         ^props:794:ro.fstype                -                           ro.fstype.data
+  231  prop-section    vis=y                                             -                           ro.fuse
+  232  prop-ro         vis=y         ^props:795:ro.fuse                  -                           ro.fuse.bpf.is_running
+  233  prop-section    vis=y                                             -                           ro.gsid
+  234  prop-ro         vis=y         ^props:796:ro.gsid                  -                           ro.gsid.image_running
+  235  prop-ro         vis=y                                             -                           ro.hardware
+  236  prop-section    vis=y                                             -                           ro.hardware
+  237  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.audio.tinyalsa.host_latency_ms
+  238  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.audio.tinyalsa.period_count
+  239  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.audio.tinyalsa.period_size_multiplier
+  240  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.egl
+  241  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.gralloc
+  242  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.power
+  243  prop-ro         vis=y         ^props:798:ro.hardware              -                           ro.hardware.vulkan
+  244  prop-section    vis=y                                             -                           ro.hwui
+  245  prop-ro         vis=y         ^props:805:ro.hwui                  -                           ro.hwui.use_vulkan
+  246  prop-section    vis=y                                             -                           ro.incremental
+  247  prop-ro         vis=y         ^props:806:ro.incremental           -                           ro.incremental.enable
+  248  prop-section    vis=y                                             -                           ro.kernel
+  249  prop-ro         vis=y         ^props:807:ro.kernel                -                           ro.kernel.qemu
+  250  prop-ro         vis=y         ^props:807:ro.kernel                -                           ro.kernel.version
+  251  prop-ro         vis=y         ^props:807:ro.kernel                -                           ro.kernel.watermark_scale_factor
+  252  prop-section    vis=y                                             -                           ro.llndk
+  253  prop-ro         vis=y         ^props:810:ro.llndk                 -                           ro.llndk.api_level
+  254  prop-section    vis=y                                             -                           ro.logd
+  255  prop-ro         vis=y         ^props:811:ro.logd                  -                           ro.logd.size
+  256  prop-ro         vis=y         ^props:811:ro.logd                  -                           ro.logd.size.stats
+  257  prop-section    vis=y                                             -                           ro.nnapi
+  258  prop-ro         vis=y         ^props:813:ro.nnapi                 -                           ro.nnapi.extensions.deny_on_product
+  259  prop-section    vis=y                                             -                           ro.odm
+  260  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.date
+  261  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.date.utc
+  262  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.fingerprint
+  263  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.id
+  264  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.tags
+  265  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.type
+  266  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.version.incremental
+  267  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.version.release
+  268  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.version.release_or_codename
+  269  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.build.version.sdk
+  270  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.product.cpu.abilist
+  271  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.product.cpu.abilist32
+  272  prop-ro         vis=y         ^props:814:ro.odm                   -                           ro.odm.product.cpu.abilist64
+  273  prop-section    vis=y                                             -                           ro.opengles
+  274  prop-ro         vis=y         ^props:827:ro.opengles              -                           ro.opengles.version
+  275  prop-section    vis=y                                             -                           ro.persistent_properties
+  276  prop-ro         vis=y         ^props:828:ro.persistent_properties  -                           ro.persistent_properties.ready
+  277  prop-section    vis=y                                             -                           ro.postinstall
+  278  prop-ro         vis=y         ^props:829:ro.postinstall           -                           ro.postinstall.fstab.prefix
+  279  prop-section    vis=y                                             -                           ro.product
+  280  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.board
+  281  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.bootimage.brand
+  282  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.bootimage.device
+  283  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.bootimage.manufacturer
+  284  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.bootimage.model
+  285  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.bootimage.name
+  286  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.brand
+  287  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.16k_page.enabled
+  288  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.date
+  289  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.date.utc
+  290  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.fingerprint
+  291  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.id
+  292  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.no_bionic_page_size_macro
+  293  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.tags
+  294  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.type
+  295  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.version.incremental
+  296  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.version.release
+  297  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.version.release_or_codename
+  298  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.build.version.sdk
+  299  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.cpu.abi
+  300  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.cpu.abilist
+  301  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.cpu.abilist32
+  302  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.cpu.abilist64
+  303  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.cpu.pagesize.max
+  304  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.device
+  305  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.first_api_level
+  306  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.locale
+  307  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.manufacturer
+  308  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.model
+  309  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.name
+  310  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.odm.brand
+  311  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.odm.device
+  312  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.odm.manufacturer
+  313  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.odm.model
+  314  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.odm.name
+  315  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.product.brand
+  316  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.product.device
+  317  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.product.manufacturer
+  318  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.product.model
+  319  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.product.name
+  320  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system.brand
+  321  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system.device
+  322  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system.manufacturer
+  323  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system.model
+  324  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system.name
+  325  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_dlkm.brand
+  326  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_dlkm.device
+  327  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_dlkm.manufacturer
+  328  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_dlkm.model
+  329  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_dlkm.name
+  330  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_ext.brand
+  331  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_ext.device
+  332  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_ext.manufacturer
+  333  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_ext.model
+  334  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.system_ext.name
+  335  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor.brand
+  336  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor.device
+  337  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor.manufacturer
+  338  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor.model
+  339  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor.name
+  340  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor_dlkm.brand
+  341  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor_dlkm.device
+  342  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor_dlkm.manufacturer
+  343  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor_dlkm.model
+  344  prop-ro         vis=y         ^props:830:ro.product               -                           ro.product.vendor_dlkm.name
+  345  prop-section    vis=y                                             -                           ro.property_service
+  346  prop-ro         vis=y         ^props:895:ro.property_service      -                           ro.property_service.version
+  347  prop-section    vis=y                                             -                           ro.recovery
+  348  prop-ro         vis=y         ^props:896:ro.recovery              -                           ro.recovery.usb.adb.pid
+  349  prop-ro         vis=y         ^props:896:ro.recovery              -                           ro.recovery.usb.fastboot.pid
+  350  prop-ro         vis=y         ^props:896:ro.recovery              -                           ro.recovery.usb.vid
+  351  prop-ro         vis=y                                             -                           ro.revision
+  352  prop-section    vis=y                                             -                           ro.runtime
+  353  prop-ro         vis=y         ^props:900:ro.runtime               -                           ro.runtime.firstboot
+  354  prop-ro         vis=y                                             -                           ro.secure
+  355  prop-ro         vis=y                                             -                           ro.serialno
+  356  prop-section    vis=y                                             -                           ro.soc
+  357  prop-ro         vis=y         ^props:903:ro.soc                   -                           ro.soc.manufacturer
+  358  prop-ro         vis=y         ^props:903:ro.soc                   -                           ro.soc.model
+  359  prop-section    vis=y                                             -                           ro.surface_flinger
+  360  prop-ro         vis=y         ^props:905:ro.surface_flinger       -                           ro.surface_flinger.game_default_frame_rate_override
+  361  prop-ro         vis=y         ^props:905:ro.surface_flinger       -                           ro.surface_flinger.has_HDR_display
+  362  prop-ro         vis=y         ^props:905:ro.surface_flinger       -                           ro.surface_flinger.has_wide_color_display
+  363  prop-ro         vis=y         ^props:905:ro.surface_flinger       -                           ro.surface_flinger.protected_contents
+  364  prop-ro         vis=y         ^props:905:ro.surface_flinger       -                           ro.surface_flinger.supports_background_blur
+  365  prop-ro         vis=y         ^props:905:ro.surface_flinger       -                           ro.surface_flinger.use_color_management
+  366  prop-section    vis=y                                             -                           ro.system
+  367  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.date
+  368  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.date.utc
+  369  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.fingerprint
+  370  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.id
+  371  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.tags
+  372  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.type
+  373  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.version.incremental
+  374  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.version.release
+  375  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.version.release_or_codename
+  376  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.build.version.sdk
+  377  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.product.cpu.abilist
+  378  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.product.cpu.abilist32
+  379  prop-ro         vis=y         ^props:911:ro.system                -                           ro.system.product.cpu.abilist64
+  380  prop-section    vis=y                                             -                           ro.system_dlkm
+  381  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.date
+  382  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.date.utc
+  383  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.fingerprint
+  384  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.id
+  385  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.tags
+  386  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.type
+  387  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.version.incremental
+  388  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.version.release
+  389  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.version.release_or_codename
+  390  prop-ro         vis=y         ^props:924:ro.system_dlkm           -                           ro.system_dlkm.build.version.sdk
+  391  prop-section    vis=y                                             -                           ro.system_ext
+  392  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.date
+  393  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.date.utc
+  394  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.fingerprint
+  395  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.id
+  396  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.tags
+  397  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.type
+  398  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.version.incremental
+  399  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.version.release
+  400  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.version.release_or_codename
+  401  prop-ro         vis=y         ^props:934:ro.system_ext            -                           ro.system_ext.build.version.sdk
+  402  prop-section    vis=y                                             -                           ro.treble
+  403  prop-ro         vis=y         ^props:944:ro.treble                -                           ro.treble.enabled
+  404  prop-section    vis=y                                             -                           ro.vendor
+  405  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.api_level
+  406  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.date
+  407  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.date.utc
+  408  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.fingerprint
+  409  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.id
+  410  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.security_patch
+  411  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.tags
+  412  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.type
+  413  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.version.incremental
+  414  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.version.release
+  415  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.version.release_or_codename
+  416  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.build.version.sdk
+  417  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.product.cpu.abilist
+  418  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.product.cpu.abilist32
+  419  prop-ro         vis=y         ^props:945:ro.vendor                -                           ro.vendor.product.cpu.abilist64
+  420  prop-section    vis=y                                             -                           ro.vendor_dlkm
+  421  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.date
+  422  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.date.utc
+  423  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.fingerprint
+  424  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.id
+  425  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.tags
+  426  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.type
+  427  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.version.incremental
+  428  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.version.release
+  429  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.version.release_or_codename
+  430  prop-ro         vis=y         ^props:960:ro.vendor_dlkm           -                           ro.vendor_dlkm.build.version.sdk
+  431  prop-section    vis=y                                             -                           ro.wifi
+  432  prop-ro         vis=y         ^props:970:ro.wifi                  -                           ro.wifi.channels
+  433  prop-ro         vis=y                                             -                           ro.zygote
+  434  prop-section    vis=y                                             -                           ro.zygote
+  435  prop-ro         vis=y         ^props:972:ro.zygote                -                           ro.zygote.disable_gl_preload
+
+display 1  label=init  size=0x0
+    meta: 213 properties · 2 sections
+    1  prop-section    vis=y                                             34 flagged                  init.svc
+    2  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.aconfigd
+    3  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.aconfigd-mainline-init
+    4  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.aconfigd-platform-init
+    5  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.adbd
+    6  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.android-hardware-media-c2-goldfish-hal-1-0
+    7  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.apexd
+    8  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.apexd-bootstrap
+    9  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.apexd-snapshotde
+   10  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.art_boot
+   11  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.artd
+   12  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.audioserver
+   13  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.bootanim
+   14  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.boringssl_self_test64
+   15  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.boringssl_self_test64_vendor
+   16  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.boringssl_self_test_apex64
+   17  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.bpfloader
+   18  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.bt_vhci_forwarder
+   19  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.cameraserver
+   20  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.credstore
+   21  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.derive_classpath
+   22  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.derive_sdk
+   23  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.dhcpclient_wifi
+   24  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.dmesgd
+   25  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.drm
+   26  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.dumpstatez
+   27  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.gatekeeperd
+   28  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.gpu
+   29  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.gsid
+   30  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.heapprofd
+   31  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.hidl_memory
+   32  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.hwservicemanager
+   33  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.idmap2d
+   34  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.incidentd
+   35  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.installd
+   36  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.keystore2
+   37  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.lmkd
+   38  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.logd
+   39  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.logd-auditctl
+   40  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.logd-reinit
+   41  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.lpdumpd
+   42  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.mdnsd
+   43  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.media
+   44  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.media.swcodec
+   45  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.mediadrm
+   46  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.mediaextractor
+   47  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.mediametrics
+   48  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.misctrl
+   49  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.netd
+   50  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.neuralnetworks_hal_service_aidl_sample_all
+   51  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.neuralnetworks_hal_service_aidl_sample_limited
+   52  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.neuralnetworks_hal_service_shim_sample
+   53  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.odsign
+   54  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.perfetto_persistent_sysui_tracing_for_bugreport
+   55  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.prng_seeder
+   56  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.qemu-device-state
+   57  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.qemu-props
+   58  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.qemu-props-bootcomplete
+   59  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.ranchu-adb-setup
+   60  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.ranchu-net
+   61  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.ranchu-setup
+   62  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.servicemanager
+   63  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.statsd
+   64  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.storaged
+   65  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.surfaceflinger
+   66  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.system_suspend
+   67  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.tombstoned
+   68  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.traced
+   69  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.traced_perf
+   70  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.traced_probes
+   71  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.ueventd
+   72  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.update_verifier
+   73  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.usbd
+   74  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.atrace-hal-1-0
+   75  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.audio-hal
+   76  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.authsecret_default
+   77  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.biometrics.fingerprint-service.ranchu
+   78  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.bluetooth-default
+   79  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.camera-provider-2-7-google
+   80  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.camera-provider-ranchu
+   81  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.cas-default
+   82  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.contexthub-default
+   83  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.vendor.dlkm_loader
+   84  prop-flagged    vis=y         ^props:146:init.svc                 stopped                     init.svc.vendor.drm-clearkey-service
+   85  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.drm-widevine-hal
+   86  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.dumpstate-default
+   87  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.face-example
+   88  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.gatekeeper-1-0
+   89  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.gnss.ranchu
+   90  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.gralloc-3-0
+   91  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.health-default
+   92  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.hwcomposer-3
+   93  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.identity-default
+   94  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.keymint-default
+   95  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.light-default
+   96  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.power-default
+   97  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.power.stats-default
+   98  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.rebootescrow-default
+   99  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.ril-daemon
+  100  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.sensors-hal-multihal
+  101  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.thermal-hal-2-0-mock
+  102  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.usb_default
+  103  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.vibrator-default
+  104  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vendor.wifi_hal_legacy
+  105  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.vold
+  106  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.wificond
+  107  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.wpa_supplicant
+  108  prop-service    vis=y         ^props:146:init.svc                 -                           init.svc.zygote
+  109  prop-section    vis=y                                             -                           init.svc_debug_pid
+  110  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.aconfigd
+  111  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.aconfigd-mainline-init
+  112  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.aconfigd-platform-init
+  113  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.adbd
+  114  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.android-hardware-media-c2-goldfish-hal-1-0
+  115  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.apexd
+  116  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.apexd-bootstrap
+  117  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.apexd-snapshotde
+  118  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.art_boot
+  119  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.artd
+  120  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.audioserver
+  121  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.bootanim
+  122  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.boringssl_self_test64
+  123  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.boringssl_self_test64_vendor
+  124  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.boringssl_self_test_apex64
+  125  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.bpfloader
+  126  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.bt_vhci_forwarder
+  127  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.cameraserver
+  128  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.credstore
+  129  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.derive_classpath
+  130  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.derive_sdk
+  131  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.dhcpclient_wifi
+  132  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.dmesgd
+  133  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.drm
+  134  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.dumpstatez
+  135  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.gatekeeperd
+  136  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.gpu
+  137  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.gsid
+  138  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.heapprofd
+  139  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.hidl_memory
+  140  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.hwservicemanager
+  141  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.idmap2d
+  142  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.incidentd
+  143  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.installd
+  144  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.keystore2
+  145  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.lmkd
+  146  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.logd
+  147  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.logd-auditctl
+  148  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.logd-reinit
+  149  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.lpdumpd
+  150  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.mdnsd
+  151  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.media
+  152  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.media.swcodec
+  153  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.mediaextractor
+  154  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.mediametrics
+  155  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.misctrl
+  156  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.netd
+  157  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.neuralnetworks_hal_service_aidl_sample_all
+  158  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.neuralnetworks_hal_service_aidl_sample_limited
+  159  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.neuralnetworks_hal_service_shim_sample
+  160  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.odsign
+  161  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.perfetto_persistent_sysui_tracing_for_bugreport
+  162  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.prng_seeder
+  163  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.qemu-device-state
+  164  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.qemu-props
+  165  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.qemu-props-bootcomplete
+  166  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.ranchu-adb-setup
+  167  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.ranchu-net
+  168  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.ranchu-setup
+  169  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.servicemanager
+  170  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.statsd
+  171  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.storaged
+  172  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.surfaceflinger
+  173  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.system_suspend
+  174  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.tombstoned
+  175  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.traced
+  176  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.traced_perf
+  177  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.traced_probes
+  178  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.ueventd
+  179  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.update_verifier
+  180  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.usbd
+  181  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.atrace-hal-1-0
+  182  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.audio-hal
+  183  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.authsecret_default
+  184  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.biometrics.fingerprint-service.ranchu
+  185  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.bluetooth-default
+  186  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.camera-provider-2-7-google
+  187  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.camera-provider-ranchu
+  188  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.cas-default
+  189  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.contexthub-default
+  190  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.dlkm_loader
+  191  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.drm-clearkey-service
+  192  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.drm-widevine-hal
+  193  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.dumpstate-default
+  194  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.face-example
+  195  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.gatekeeper-1-0
+  196  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.gnss.ranchu
+  197  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.gralloc-3-0
+  198  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.health-default
+  199  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.hwcomposer-3
+  200  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.identity-default
+  201  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.keymint-default
+  202  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.light-default
+  203  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.power-default
+  204  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.power.stats-default
+  205  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.rebootescrow-default
+  206  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.ril-daemon
+  207  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.sensors-hal-multihal
+  208  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.thermal-hal-2-0-mock
+  209  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.usb_default
+  210  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.vibrator-default
+  211  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vendor.wifi_hal_legacy
+  212  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.vold
+  213  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.wificond
+  214  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.wpa_supplicant
+  215  prop-runtime    vis=y         ^props:253:init.svc_debug_pid       -                           init.svc_debug_pid.zygote
+
+display 2  label=persist  size=0x0
+    meta: 188 properties · 9 sections
+    1  prop-section    vis=y                                             -                           persist.adb
+    2  prop-persist    vis=y         ^props:373:persist.adb              -                           persist.adb.wifi.guid
+    3  prop-section    vis=y                                             -                           persist.bluetooth
+    4  prop-persist    vis=y         ^props:374:persist.bluetooth        -                           persist.bluetooth.btsnoopdefaultmode
+    5  prop-section    vis=y                                             -                           persist.bootanim
+    6  prop-persist    vis=y         ^props:375:persist.bootanim         -                           persist.bootanim.color1
+    7  prop-persist    vis=y         ^props:375:persist.bootanim         -                           persist.bootanim.color2
+    8  prop-persist    vis=y         ^props:375:persist.bootanim         -                           persist.bootanim.color3
+    9  prop-persist    vis=y         ^props:375:persist.bootanim         -                           persist.bootanim.color4
+   10  prop-section    vis=y                                             -                           persist.device_config
+   11  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.accessibility.enable_magnifier_thumbnail
+   12  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.activity_manager_native_boot.modern_queue_enabled
+   13  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.INIT_gd_hal_snoop_logger_filtering
+   14  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.INIT_gd_hal_snoop_logger_socket
+   15  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.audio_policy_ag_enabled
+   16  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.audio_policy_hf_enabled
+   17  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.le_audio_enabled_by_default
+   18  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.location_denylist_advertising_data
+   19  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.location_denylist_mac
+   20  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.location_denylist_name
+   21  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.bluetooth.scan_timeout_millis
+   22  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.companion.enable_context_sync_telecom
+   23  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.beta_launch
+   24  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.beta_public_launch
+   25  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.demo_flag
+   26  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.droidfood_launch
+   27  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.flag
+   28  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.flag_five
+   29  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.flag_four
+   30  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.flag_six
+   31  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.flag_three
+   32  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.flag_two
+   33  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.public_launch
+   34  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.configuration.rescue_party_throttle_duration_min
+   35  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.data_stall_consecutive_dns_timeout_threshold
+   36  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_init_reboot_enabled
+   37  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_init_reboot_version
+   38  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_ip_conflict_detect_version
+   39  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_rapid_commit_enabled
+   40  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_rapid_commit_version
+   41  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_restart_configuration_delay
+   42  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.dhcp_server_decline_version
+   43  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.ipclient_accept_ipv6_link_local_dns_version
+   44  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.connectivity.ipclient_multicast_ns_version
+   45  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.edgetpu_native.allowlist_app11
+   46  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.edgetpu_native.allowlist_app12
+   47  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.edgetpu_native.allowlist_app5
+   48  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.edgetpu_native.allowlist_app6
+   49  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.edgetpu_native.allowlist_app7
+   50  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.lmkd_native.thrashing_limit_critical
+   51  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.nearby.nearby_enable_presence_broadcast_legacy
+   52  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.nearby.nearby_nano_app_min_version
+   53  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.nearby.nearby_support_test_app
+   54  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dns_event_subsample_map
+   55  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.doh
+   56  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dot_connect_timeout_ms
+   57  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dot_query_timeout_ms
+   58  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dot_revalidation_threshold
+   59  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dot_validation_latency_factor
+   60  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dot_validation_latency_offset_ms
+   61  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.dot_xport_unusable_threshold
+   62  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.max_cache_entries
+   63  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.max_queries_global
+   64  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.parallel_lookup
+   65  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.netd_native.sort_nameservers
+   66  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.nnapi_native.current_feature_level
+   67  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.nnapi_native.telemetry_enable
+   68  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.remote_key_provisioning_native.enable_rkpd
+   69  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.reporting-mods
+   70  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.reporting-mods-server
+   71  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.reporting-num-mods
+   72  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.reporting-num-mods-server
+   73  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.reporting-spec
+   74  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.reporting-spec-server
+   75  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.metrics.write-to-statsd
+   76  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native.use_app_image_startup_cache
+   77  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.disable_lock_profiling
+   78  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.force_disable_uffd_gc
+   79  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.iorap_blacklisted_packages
+   80  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.iorap_perfetto_enable
+   81  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.iorap_readahead_enable
+   82  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.iorapd_options
+   83  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.runtime_native_boot.use_generational_gc
+   84  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.charging_required
+   85  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.dirty_reclaim_rate
+   86  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.fuse_enabled
+   87  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.lifetime_threshold
+   88  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.low_battery_level
+   89  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.min_gc_sleeptime
+   90  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.min_segments_threshold
+   91  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.segment_reclaim_weight
+   92  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.smart_idle_maint_enabled
+   93  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.smart_idle_maint_period
+   94  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.take_over_get_content
+   95  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.target_dirty_ratio
+   96  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.storage_native_boot.transcode_compat_stale
+   97  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.aconfig_flags.surface_flinger_native_boot.SkiaTracingFeature__use_skia_tracing
+   98  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.activity_manager_native_boot.modern_queue_enabled
+   99  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.attempted_boot_count
+  100  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.beta_launch
+  101  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.beta_public_launch
+  102  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.demo_flag
+  103  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.droidfood_launch
+  104  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.flag
+  105  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.flag_five
+  106  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.flag_four
+  107  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.flag_six
+  108  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.flag_three
+  109  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.flag_two
+  110  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.public_launch
+  111  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.configuration.rescue_party_throttle_duration_min
+  112  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.data_stall_consecutive_dns_timeout_threshold
+  113  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_init_reboot_enabled
+  114  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_init_reboot_version
+  115  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_ip_conflict_detect_version
+  116  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_rapid_commit_enabled
+  117  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_rapid_commit_version
+  118  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_restart_configuration_delay
+  119  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.dhcp_server_decline_version
+  120  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.ipclient_accept_ipv6_link_local_dns_version
+  121  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.connectivity.ipclient_multicast_ns_version
+  122  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.edgetpu_native.allowlist_app11
+  123  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.edgetpu_native.allowlist_app12
+  124  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.edgetpu_native.allowlist_app5
+  125  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.edgetpu_native.allowlist_app6
+  126  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.edgetpu_native.allowlist_app7
+  127  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.lmkd_native.thrashing_limit_critical
+  128  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dns_event_subsample_map
+  129  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.doh
+  130  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dot_connect_timeout_ms
+  131  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dot_query_timeout_ms
+  132  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dot_revalidation_threshold
+  133  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dot_validation_latency_factor
+  134  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dot_validation_latency_offset_ms
+  135  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.dot_xport_unusable_threshold
+  136  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.max_cache_entries
+  137  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.max_queries_global
+  138  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.parallel_lookup
+  139  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.netd_native.sort_nameservers
+  140  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.nnapi_native.current_feature_level
+  141  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.nnapi_native.telemetry_enable
+  142  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.remote_key_provisioning_native.enable_rkpd
+  143  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.reporting-mods
+  144  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.reporting-mods-server
+  145  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.reporting-num-mods
+  146  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.reporting-num-mods-server
+  147  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.reporting-spec
+  148  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.reporting-spec-server
+  149  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.metrics.write-to-statsd
+  150  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native.use_app_image_startup_cache
+  151  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.disable_lock_profiling
+  152  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.force_disable_uffd_gc
+  153  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.iorap_blacklisted_packages
+  154  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.iorap_perfetto_enable
+  155  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.iorap_readahead_enable
+  156  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.iorapd_options
+  157  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.runtime_native_boot.use_generational_gc
+  158  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.charging_required
+  159  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.dirty_reclaim_rate
+  160  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.fuse_enabled
+  161  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.lifetime_threshold
+  162  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.low_battery_level
+  163  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.min_gc_sleeptime
+  164  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.min_segments_threshold
+  165  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.segment_reclaim_weight
+  166  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.smart_idle_maint_enabled
+  167  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.smart_idle_maint_period
+  168  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.take_over_get_content
+  169  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.target_dirty_ratio
+  170  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.storage_native_boot.transcode_compat_stale
+  171  prop-persist    vis=y         ^props:379:persist.device_config    -                           persist.device_config.surface_flinger_native_boot.SkiaTracingFeature__use_skia_tracing
+  172  prop-section    vis=y                                             -                           persist.netd
+  173  prop-persist    vis=y         ^props:540:persist.netd             -                           persist.netd.stable_secret
+  174  prop-section    vis=y                                             -                           persist.radio
+  175  prop-persist    vis=y         ^props:541:persist.radio            -                           persist.radio.is_vonr_enabled_0
+  176  prop-section    vis=y                                             -                           persist.sys
+  177  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.boot.reason
+  178  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.dalvik.vm.lib.2
+  179  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.device_provisioned
+  180  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.disable_rescue
+  181  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.displayinset.top
+  182  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.fuse
+  183  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.gps.lpp
+  184  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.lmk.reportkills
+  185  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.theme
+  186  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.time.dst_offset
+  187  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.time.dst_transition
+  188  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.time.offset
+  189  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.timezone
+  190  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.timezone_confidence
+  191  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.usb.config
+  192  prop-persist    vis=y         ^props:542:persist.sys              -                           persist.sys.zram_enabled
+  193  prop-section    vis=y                                             -                           persist.traced
+  194  prop-persist    vis=y         ^props:560:persist.traced           -                           persist.traced.enable
+  195  prop-section    vis=y                                             -                           persist.wm
+  196  prop-persist    vis=y         ^props:561:persist.wm               -                           persist.wm.extensions.activity_embedding_guard_with_android_15
+  197  prop-persist    vis=y         ^props:561:persist.wm               -                           persist.wm.extensions.enabled
+
+display 3  label=dalvik  size=0x0
+    meta: 31 properties · 1 section
+    1  prop-section    vis=y                                             -                           dalvik.vm
+    2  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.appimageformat
+    3  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dex2oat-Xms
+    4  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dex2oat-Xmx
+    5  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dex2oat-max-image-block-size
+    6  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dex2oat-minidebuginfo
+    7  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dex2oat-resolve-startup-strings
+    8  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dex2oat64.enabled
+    9  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dexopt.secondary
+   10  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.dexopt.thermal-cutoff
+   11  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.enable_pr_dexopt
+   12  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.heapgrowthlimit
+   13  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.heapmaxfree
+   14  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.heapminfree
+   15  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.heapsize
+   16  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.heapstartsize
+   17  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.heaptargetutilization
+   18  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.image-dex2oat-Xms
+   19  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.image-dex2oat-Xmx
+   20  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.isa.arm64.features
+   21  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.isa.arm64.variant
+   22  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.madvise.artfile.size
+   23  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.madvise.odexfile.size
+   24  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.madvise.vdexfile.size
+   25  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.minidebuginfo
+   26  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.usap_pool_enabled
+   27  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.usap_pool_refill_delay_ms
+   28  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.usap_pool_size_max
+   29  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.usap_pool_size_min
+   30  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.usap_refill_threshold
+   31  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.useartservice
+   32  prop-runtime    vis=y         ^props:57:dalvik.vm                 -                           dalvik.vm.usejit
+
+display 4  label=cache_key  size=0x0
+    meta: 24 properties · 3 sections
+    1  prop-section    vis=y                                             -                           cache_key.bluetooth
+    2  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_adapter_get_connection_state
+    3  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_adapter_get_profile_connection_state
+    4  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_adapter_get_state
+    5  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_adapter_is_offloaded_filtering_supported
+    6  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_device_get_bond_state
+    7  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_map_get_connection_state
+    8  prop-runtime    vis=y         ^props:31:cache_key.bluetooth       -                           cache_key.bluetooth.bluetooth_sap_get_connection_state
+    9  prop-runtime    vis=y                                             -                           cache_key.display_info
+   10  prop-runtime    vis=y                                             -                           cache_key.get_packages_for_uid
+   11  prop-runtime    vis=y                                             -                           cache_key.has_system_feature
+   12  prop-runtime    vis=y                                             -                           cache_key.is_compat_change_enabled
+   13  prop-runtime    vis=y                                             -                           cache_key.is_interactive
+   14  prop-runtime    vis=y                                             -                           cache_key.is_power_save_mode
+   15  prop-runtime    vis=y                                             -                           cache_key.is_user_unlocked
+   16  prop-runtime    vis=y                                             -                           cache_key.location_enabled
+   17  prop-runtime    vis=y                                             -                           cache_key.package_info
+   18  prop-section    vis=y                                             -                           cache_key.system_server
+   19  prop-runtime    vis=y         ^props:47:cache_key.system_server   -                           cache_key.system_server.accounts_data
+   20  prop-runtime    vis=y         ^props:47:cache_key.system_server   -                           cache_key.system_server.connectionless_stylus_handwriting
+   21  prop-runtime    vis=y         ^props:47:cache_key.system_server   -                           cache_key.system_server.device_policy_manager_caches
+   22  prop-runtime    vis=y         ^props:47:cache_key.system_server   -                           cache_key.system_server.get_credential_type
+   23  prop-runtime    vis=y         ^props:47:cache_key.system_server   -                           cache_key.system_server.get_night_mode
+   24  prop-runtime    vis=y         ^props:47:cache_key.system_server   -                           cache_key.system_server.stylus_handwriting
+   25  prop-section    vis=y                                             -                           cache_key.telephony
+   26  prop-runtime    vis=y         ^props:53:cache_key.telephony       -                           cache_key.telephony.phone_account_to_subid
+   27  prop-runtime    vis=y         ^props:53:cache_key.telephony       -                           cache_key.telephony.subscription_manager_service
+
+display 5  label=sys  size=0x0
+    meta: 23 properties · 12 sections
+    1  prop-section    vis=y                                             -                           sys.boot
+    2  prop-runtime    vis=y         ^props:979:sys.boot                 -                           sys.boot.reason
+    3  prop-runtime    vis=y         ^props:979:sys.boot                 -                           sys.boot.reason.last
+    4  prop-runtime    vis=y                                             -                           sys.boot_completed
+    5  prop-section    vis=y                                             -                           sys.bootstat
+    6  prop-runtime    vis=y         ^props:982:sys.bootstat             -                           sys.bootstat.first_boot_completed
+    7  prop-section    vis=y                                             -                           sys.fuse
+    8  prop-runtime    vis=y         ^props:983:sys.fuse                 -                           sys.fuse.transcode_enabled
+    9  prop-section    vis=y                                             -                           sys.init
+   10  prop-runtime    vis=y         ^props:984:sys.init                 -                           sys.init.perf_lsm_hooks
+   11  prop-section    vis=y                                             -                           sys.lmk
+   12  prop-runtime    vis=y         ^props:985:sys.lmk                  -                           sys.lmk.minfree_levels
+   13  prop-runtime    vis=y         ^props:985:sys.lmk                  -                           sys.lmk.reportkills
+   14  prop-runtime    vis=y                                             -                           sys.lpdumpd
+   15  prop-section    vis=y                                             -                           sys.retaildemo
+   16  prop-runtime    vis=y         ^props:988:sys.retaildemo           -                           sys.retaildemo.enabled
+   17  prop-section    vis=y                                             -                           sys.sysctl
+   18  prop-runtime    vis=y         ^props:989:sys.sysctl               -                           sys.sysctl.extra_free_kbytes
+   19  prop-section    vis=y                                             -                           sys.system_server
+   20  prop-runtime    vis=y         ^props:990:sys.system_server        -                           sys.system_server.start_count
+   21  prop-runtime    vis=y         ^props:990:sys.system_server        -                           sys.system_server.start_elapsed
+   22  prop-runtime    vis=y         ^props:990:sys.system_server        -                           sys.system_server.start_uptime
+   23  prop-section    vis=y                                             -                           sys.trace
+   24  prop-runtime    vis=y         ^props:993:sys.trace                -                           sys.trace.traced_started
+   25  prop-section    vis=y                                             -                           sys.usb
+   26  prop-runtime    vis=y         ^props:994:sys.usb                  -                           sys.usb.config
+   27  prop-runtime    vis=y         ^props:994:sys.usb                  -                           sys.usb.configfs
+   28  prop-runtime    vis=y         ^props:994:sys.usb                  -                           sys.usb.controller
+   29  prop-runtime    vis=y         ^props:994:sys.usb                  -                           sys.usb.ffs.ready
+   30  prop-runtime    vis=y         ^props:994:sys.usb                  -                           sys.usb.state
+   31  prop-runtime    vis=y                                             -                           sys.use_memfd
+   32  prop-section    vis=y                                             -                           sys.user
+   33  prop-runtime    vis=y         ^props:1000:sys.user                -                           sys.user.0.ce_available
+   34  prop-section    vis=y                                             -                           sys.wifitracing
+   35  prop-runtime    vis=y         ^props:1001:sys.wifitracing         -                           sys.wifitracing.started
+
+display 6  label=bluetooth  size=0x0
+    meta: 20 properties · 2 sections
+    1  prop-section    vis=y                                             -                           bluetooth.device
+    2  prop-runtime    vis=y         ^props:3:bluetooth.device           -                           bluetooth.device.class_of_device
+    3  prop-section    vis=y                                             -                           bluetooth.profile
+    4  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.a2dp.source.enabled
+    5  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.avrcp.target.enabled
+    6  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.bap.broadcast.assist.enabled
+    7  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.bap.unicast.client.enabled
+    8  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.bas.client.enabled
+    9  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.ccp.server.enabled
+   10  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.csip.set_coordinator.enabled
+   11  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.gatt.enabled
+   12  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.hap.client.enabled
+   13  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.hfp.ag.enabled
+   14  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.hid.device.enabled
+   15  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.hid.host.enabled
+   16  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.map.server.enabled
+   17  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.mcp.server.enabled
+   18  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.opp.enabled
+   19  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.pan.nap.enabled
+   20  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.pan.panu.enabled
+   21  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.pbap.server.enabled
+   22  prop-runtime    vis=y         ^props:4:bluetooth.profile          -                           bluetooth.profile.vcp.controller.enabled
+
+display 7  label=dev  size=0x0
+    meta: 19 properties · 1 section
+    1  prop-runtime    vis=y                                             -                           dev.bootcomplete
+    2  prop-section    vis=y                                             -                           dev.mnt
+    3  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.blk.metadata
+    4  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.blk.product
+    5  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.blk.root
+    6  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.blk.system_dlkm
+    7  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.blk.system_ext
+    8  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.blk.vendor
+    9  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.dev.metadata
+   10  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.dev.product
+   11  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.dev.root
+   12  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.dev.system_dlkm
+   13  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.dev.system_ext
+   14  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.dev.vendor
+   15  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.rootdisk.metadata
+   16  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.rootdisk.product
+   17  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.rootdisk.root
+   18  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.rootdisk.system_dlkm
+   19  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.rootdisk.system_ext
+   20  prop-runtime    vis=y         ^props:107:dev.mnt                  -                           dev.mnt.rootdisk.vendor
+
+display 8  label=debug  size=0x0
+    meta: 18 properties · 7 sections
+    1  prop-section    vis=y                                             -                           debug.atrace
+    2  prop-runtime    vis=y         ^props:88:debug.atrace              -                           debug.atrace.tags.enableflags
+    3  prop-runtime    vis=y                                             -                           debug.force_rtl
+    4  prop-section    vis=y                                             -                           debug.hwui
+    5  prop-runtime    vis=y         ^props:90:debug.hwui                -                           debug.hwui.renderer
+    6  prop-runtime    vis=y         ^props:90:debug.hwui                -                           debug.hwui.skia_tracing_enabled
+    7  prop-runtime    vis=y         ^props:90:debug.hwui                -                           debug.hwui.skia_use_perfetto_track_events
+    8  prop-section    vis=y                                             -                           debug.perfetto
+    9  prop-runtime    vis=y         ^props:93:debug.perfetto            -                           debug.perfetto.sdk_sysprop_guard_generation
+   10  prop-section    vis=y                                             -                           debug.renderengine
+   11  prop-runtime    vis=y         ^props:94:debug.renderengine        -                           debug.renderengine.backend
+   12  prop-runtime    vis=y         ^props:94:debug.renderengine        -                           debug.renderengine.skia_tracing_enabled
+   13  prop-runtime    vis=y         ^props:94:debug.renderengine        -                           debug.renderengine.skia_use_perfetto_track_events
+   14  prop-section    vis=y                                             -                           debug.sf
+   15  prop-runtime    vis=y         ^props:97:debug.sf                  -                           debug.sf.vsync_reactor_ignore_present_fences
+   16  prop-section    vis=y                                             -                           debug.stagefright
+   17  prop-runtime    vis=y         ^props:98:debug.stagefright         -                           debug.stagefright.c2inputsurface
+   18  prop-runtime    vis=y         ^props:98:debug.stagefright         -                           debug.stagefright.ccodec
+   19  prop-section    vis=y                                             -                           debug.tracing
+   20  prop-runtime    vis=y         ^props:100:debug.tracing            -                           debug.tracing.battery_status
+   21  prop-runtime    vis=y         ^props:100:debug.tracing            -                           debug.tracing.device_state
+   22  prop-runtime    vis=y         ^props:100:debug.tracing            -                           debug.tracing.mcc
+   23  prop-runtime    vis=y         ^props:100:debug.tracing            -                           debug.tracing.mnc
+   24  prop-runtime    vis=y         ^props:100:debug.tracing            -                           debug.tracing.plug_type
+   25  prop-runtime    vis=y         ^props:100:debug.tracing            -                           debug.tracing.screen_brightness
+
+display 9  label=pm  size=0x0
+    meta: 15 properties · 1 section
+    1  prop-section    vis=y                                             -                           pm.dexopt
+    2  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.ab-ota
+    3  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.bg-dexopt
+    4  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.boot-after-mainline-update
+    5  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.boot-after-ota
+    6  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.cmdline
+    7  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.first-boot
+    8  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.inactive
+    9  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.install
+   10  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.install-bulk
+   11  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.install-bulk-downgraded
+   12  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.install-bulk-secondary
+   13  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.install-bulk-secondary-downgraded
+   14  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.install-fast
+   15  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.post-boot
+   16  prop-runtime    vis=y         ^props:563:pm.dexopt                -                           pm.dexopt.shared
+
+display 10  label=vendor  size=0x0
+    meta: 15 properties · 5 sections
+    1  prop-section    vis=y                                             -                           vendor.dlkm
+    2  prop-runtime    vis=y         ^props:1002:vendor.dlkm             -                           vendor.dlkm.modules.ready
+    3  prop-section    vis=y                                             -                           vendor.net
+    4  prop-runtime    vis=y         ^props:1003:vendor.net              -                           vendor.net.wifi_mac_prefix
+    5  prop-runtime    vis=y         ^props:1003:vendor.net              -                           vendor.net.wlan0.dns1
+    6  prop-runtime    vis=y         ^props:1003:vendor.net              -                           vendor.net.wlan0.dns2
+    7  prop-runtime    vis=y         ^props:1003:vendor.net              -                           vendor.net.wlan0.dns3
+    8  prop-runtime    vis=y         ^props:1003:vendor.net              -                           vendor.net.wlan0.dns4
+    9  prop-runtime    vis=y         ^props:1003:vendor.net              -                           vendor.net.wlan0.gw
+   10  prop-section    vis=y                                             -                           vendor.qemu
+   11  prop-runtime    vis=y         ^props:1009:vendor.qemu             -                           vendor.qemu.dev.bootcomplete
+   12  prop-runtime    vis=y         ^props:1009:vendor.qemu             -                           vendor.qemu.sf.fake_camera
+   13  prop-runtime    vis=y         ^props:1009:vendor.qemu             -                           vendor.qemu.timezone
+   14  prop-runtime    vis=y         ^props:1009:vendor.qemu             -                           vendor.qemu.vport.bluetooth
+   15  prop-runtime    vis=y         ^props:1009:vendor.qemu             -                           vendor.qemu.vport.modem
+   16  prop-section    vis=y                                             -                           vendor.rild
+   17  prop-runtime    vis=y         ^props:1014:vendor.rild             -                           vendor.rild.libpath
+   18  prop-section    vis=y                                             -                           vendor.wlan
+   19  prop-runtime    vis=y         ^props:1015:vendor.wlan             -                           vendor.wlan.driver.version
+   20  prop-runtime    vis=y         ^props:1015:vendor.wlan             -                           vendor.wlan.firmware.version
+
+display 11  label=gsm  size=0x0
+    meta: 12 properties · 5 sections
+    1  prop-section    vis=y                                             -                           gsm.current
+    2  prop-runtime    vis=y         ^props:133:gsm.current              -                           gsm.current.phone-type
+    3  prop-section    vis=y                                             -                           gsm.network
+    4  prop-runtime    vis=y         ^props:134:gsm.network              -                           gsm.network.type
+    5  prop-section    vis=y                                             -                           gsm.operator
+    6  prop-runtime    vis=y         ^props:135:gsm.operator             -                           gsm.operator.alpha
+    7  prop-runtime    vis=y         ^props:135:gsm.operator             -                           gsm.operator.iso-country
+    8  prop-runtime    vis=y         ^props:135:gsm.operator             -                           gsm.operator.isroaming
+    9  prop-runtime    vis=y         ^props:135:gsm.operator             -                           gsm.operator.numeric
+   10  prop-section    vis=y                                             -                           gsm.sim
+   11  prop-runtime    vis=y         ^props:139:gsm.sim                  -                           gsm.sim.operator.alpha
+   12  prop-runtime    vis=y         ^props:139:gsm.sim                  -                           gsm.sim.operator.iso-country
+   13  prop-runtime    vis=y         ^props:139:gsm.sim                  -                           gsm.sim.operator.numeric
+   14  prop-runtime    vis=y         ^props:139:gsm.sim                  -                           gsm.sim.state
+   15  prop-section    vis=y                                             -                           gsm.version
+   16  prop-runtime    vis=y         ^props:143:gsm.version              -                           gsm.version.baseband
+   17  prop-runtime    vis=y         ^props:143:gsm.version              -                           gsm.version.ril-impl
+
+display 12  label=build  size=0x0
+    meta: 6 properties · 1 section
+    1  prop-section    vis=y                                             -                           build.version
+    2  prop-runtime    vis=y         ^props:25:build.version             -                           build.version.extensions.ad_services
+    3  prop-runtime    vis=y         ^props:25:build.version             -                           build.version.extensions.r
+    4  prop-runtime    vis=y         ^props:25:build.version             -                           build.version.extensions.s
+    5  prop-runtime    vis=y         ^props:25:build.version             -                           build.version.extensions.t
+    6  prop-runtime    vis=y         ^props:25:build.version             -                           build.version.extensions.u
+    7  prop-runtime    vis=y         ^props:25:build.version             -                           build.version.extensions.v
+
+display 13  label=vold  size=0x0
+    meta: 4 properties
+    1  prop-runtime    vis=y                                             -                           vold.has_adoptable
+    2  prop-runtime    vis=y                                             -                           vold.has_compress
+    3  prop-runtime    vis=y                                             -                           vold.has_quota
+    4  prop-runtime    vis=y                                             -                           vold.has_reserved
+
+display 14  label=external_storage  size=0x0
+    meta: 3 properties · 3 sections
+    1  prop-section    vis=y                                             -                           external_storage.casefold
+    2  prop-runtime    vis=y         ^props:128:external_storage.casefold  -                           external_storage.casefold.enabled
+    3  prop-section    vis=y                                             -                           external_storage.projid
+    4  prop-runtime    vis=y         ^props:129:external_storage.projid  -                           external_storage.projid.enabled
+    5  prop-section    vis=y                                             -                           external_storage.sdcardfs
+    6  prop-runtime    vis=y         ^props:130:external_storage.sdcardfs  -                           external_storage.sdcardfs.enabled
+
+display 15  label=odsign  size=0x0
+    meta: 3 properties · 2 sections
+    1  prop-section    vis=y                                             -                           odsign.key
+    2  prop-runtime    vis=y         ^props:370:odsign.key               -                           odsign.key.done
+    3  prop-section    vis=y                                             -                           odsign.verification
+    4  prop-runtime    vis=y         ^props:371:odsign.verification      -                           odsign.verification.done
+    5  prop-runtime    vis=y         ^props:371:odsign.verification      -                           odsign.verification.success
+
+display 16  label=service  size=0x0
+    meta: 3 properties · 2 sections
+    1  prop-section    vis=y                                             -                           service.bootanim
+    2  prop-runtime    vis=y         ^props:975:service.bootanim         -                           service.bootanim.exit
+    3  prop-runtime    vis=y         ^props:975:service.bootanim         -                           service.bootanim.progress
+    4  prop-section    vis=y                                             -                           service.sf
+    5  prop-runtime    vis=y         ^props:977:service.sf               -                           service.sf.present_timestamp
+
+display 17  label=wifi  size=0x0
+    meta: 3 properties · 2 sections
+    1  prop-section    vis=y                                             -                           wifi.active
+    2  prop-runtime    vis=y         ^props:1021:wifi.active             -                           wifi.active.interface
+    3  prop-section    vis=y                                             -                           wifi.direct
+    4  prop-runtime    vis=y         ^props:1022:wifi.direct             -                           wifi.direct.interface
+    5  prop-runtime    vis=y                                             -                           wifi.interface
+
+display 18  label=keystore  size=0x0
+    meta: 2 properties
+    1  prop-runtime    vis=y                                             -                           keystore.boot_level
+    2  prop-runtime    vis=y                                             -                           keystore.crash_count
+
+display 19  label=log  size=0x0
+    meta: 2 properties · 1 section
+    1  prop-section    vis=y                                             -                           log.tag
+    2  prop-runtime    vis=y         ^props:364:log.tag                  -                           log.tag.APM_AudioPolicyManager
+    3  prop-runtime    vis=y         ^props:364:log.tag                  -                           log.tag.stats_log
+
+display 20  label=net  size=0x0
+    meta: 2 properties · 1 section
+    1  prop-section    vis=y                                             -                           net.bt
+    2  prop-runtime    vis=y         ^props:368:net.bt                   -                           net.bt.name
+    3  prop-runtime    vis=y                                             -                           net.tcp_def_init_rwnd
+
+display 21  label=qemu  size=0x0
+    meta: 2 properties · 2 sections
+    1  prop-section    vis=y                                             -                           qemu.hw
+    2  prop-runtime    vis=y         ^props:578:qemu.hw                  -                           qemu.hw.mainkeys
+    3  prop-section    vis=y                                             -                           qemu.sf
+    4  prop-runtime    vis=y         ^props:579:qemu.sf                  -                           qemu.sf.lcd_density
+
+display 22  label=remote_provisioning  size=0x0
+    meta: 2 properties
+    1  prop-runtime    vis=y                                             -                           remote_provisioning.enable_rkpd
+    2  prop-runtime    vis=y                                             -                           remote_provisioning.hostname
+
+display 23  label=apex  size=0x0
+    meta: 1 property · 1 section
+    1  prop-section    vis=y                                             -                           apex.all
+    2  prop-runtime    vis=y         ^props:1:apex.all                   -                           apex.all.ready
+
+display 24  label=apexd  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           apexd.status
+
+display 25  label=bootreceiver  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           bootreceiver.enable
+
+display 26  label=bpf  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           bpf.progs_loaded
+
+display 27  label=camera  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           camera.enable_landscape_to_portrait
+
+display 28  label=crashrecovery  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           crashrecovery.rescue_boot_count
+
+display 29  label=dmesgd  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           dmesgd.start
+
+display 30  label=drm  size=0x0
+    meta: 1 property · 1 section
+    1  prop-section    vis=y                                             -                           drm.service
+    2  prop-runtime    vis=y         ^props:126:drm.service              -                           drm.service.enabled
+
+display 31  label=dumpstate  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           dumpstate.last_id
+
+display 32  label=graphics  size=0x0
+    meta: 1 property · 1 section
+    1  prop-section    vis=y                                             -                           graphics.gpu
+    2  prop-runtime    vis=y         ^props:131:graphics.gpu             -                           graphics.gpu.profiler.support
+
+display 33  label=gsid  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           gsid.image_installed
+
+display 34  label=hwservicemanager  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           hwservicemanager.ready
+
+display 35  label=khungtask  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           khungtask.enable
+
+display 36  label=llk  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           llk.enable
+
+display 37  label=lmkd  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           lmkd.reinit
+
+display 38  label=logd  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           logd.ready
+
+display 39  label=media  size=0x0
+    meta: 1 property · 1 section
+    1  prop-section    vis=y                                             -                           media.mediadrmservice
+    2  prop-runtime    vis=y         ^props:367:media.mediadrmservice    -                           media.mediadrmservice.enable
+
+display 40  label=security  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           security.perf_harden
+
+display 41  label=selinux  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           selinux.restorecon_recursive
+
+display 42  label=servicemanager  size=0x0
+    meta: 1 property
+    1  prop-runtime    vis=y                                             -                           servicemanager.ready
+
+display 43  label=wlan  size=0x0
+    meta: 1 property · 1 section
+    1  prop-section    vis=y                                             -                           wlan.driver
+    2  prop-runtime    vis=y         ^props:1024:wlan.driver             -                           wlan.driver.status
+
+globals:
+  count: 1022
+  namespaces: 44
+  sections: 111
+  lines: 1026
+  fingerprint: google/sdk_gphone64_arm64/emu64a:15/AE3A.240806.036/12592187:user/release-keys
+  brand: google
+  model: sdk_gphone64_arm64
+  device: emu64a
+  product: sdk_gphone64_arm64
+  manufacturer: Google
+  hardware: ranchu
+  board: goldfish_arm64
+  abi: arm64-v8a
+  characteristics: emulator
+  sdk: 35
+  release: 15
+  patch: 2024-09-05
+  buildId: AE3A.240806.036
+  incremental: 12592187
+  buildType: user
+  tags: release-keys
+  buildDate: Fri Nov  1 16:42:52 UTC 2024
+  firstApi: 35
+  treble: true
+  locale: en-US
+  timezone: Europe/Berlin
+  bootReason: reboot,factory_reset
+  bootCompleted: 1
+  services: 107
+  servicesRunning: 73
+  flagged: [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]

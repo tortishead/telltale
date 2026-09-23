@@ -16,56 +16,16 @@ import { fileURLToPath } from 'node:url';
 
 import * as parsers from '../tools/parse-layer.mjs';
 import { digest } from '../tools/scene-digest.mjs';
+/* Which fixture is which, and which release it came off, is stated once in
+   tools/fixtures.mjs — the coverage tool reads the same list. */
+import { CASES, fixtureName } from '../tools/fixtures.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
 const UPDATE = process.env.UPDATE_GOLDEN === '1';
 
-/* The fixtures, and which parser each one is for. */
-const CASES = [
-  { name: 'window-sample',  parse: 'parseWindowDump' },
-  { name: 'sf-sample',      parse: 'parseSurfaceFlingerDump' },
-  /* The same reader on an Android 16 dump, which prints none of the lists the
-     one above is made of. */
-  { name: 'sf-a16-sample',  parse: 'parseSurfaceFlingerDump' },
-  { name: 'display-sample', parse: 'parseDisplayManagerDump' },
-  /* The same reader on an Android 16 dump, which underlines every heading
-     inside itself with a rule of the shape that ends a bugreport section. */
-  { name: 'display-a16-sample', parse: 'parseDisplayManagerDump' },
-  { name: 'activity-sample', parse: 'parseActivityDump' },
-  /* The same reader on an Android 16 dump: tasks inside tasks for split
-     screen, a TaskFragment under one of them for activity embedding, a task
-     in desktop windowing, and every rect printed as `Rect(l, t - r, b)`
-     rather than `[l,t][r,b]`. */
-  { name: 'activity-a16-sample', parse: 'parseActivityDump' },
-  { name: 'service-sample', parse: 'parseActivityServicesDump' },
-  /* The same reader on an Android 16 dump, where a foreground service states
-     the type it declared, a short one states the deadline it is running
-     against, and the manager prints what let it start. */
-  { name: 'service-a16-sample', parse: 'parseActivityServicesDump' },
-  { name: 'package-sample', parse: 'parsePackageDump' },
-  { name: 'anr-sample',     parse: 'parseAnrDump' },
-  { name: 'anr-native-sample', parse: 'parseAnrDump' },
-  { name: 'car-service-sample', parse: 'parseCarServiceDump' },
-  { name: 'user-sample', parse: 'parseUserDump' },
-  { name: 'overlay-sample', parse: 'parseOverlayDump' },
-  { name: 'binder-sample', parse: 'parseBinderCallsStatsDump' },
-  /* One text, two readers: `dumpsys input` prints the dispatcher's windows
-     and the reader's devices one after the other, and each is its own scene.
-     A case names the fixture it reads when that is not its own name. */
-  { name: 'input-sample', parse: 'parseInputDump' },
-  { name: 'input-devices', file: 'input-sample', parse: 'parseInputDevicesDump' },
-  { name: 'logcat-sample', parse: 'parseLogcatDump' },
-  { name: 'props-sample', parse: 'parseSystemPropertiesDump' },
-  { name: 'events-sample', parse: 'parseEventLogDump' },
-  { name: 'getevent-sample', parse: 'parseGeteventCapture' },
-  /* The same reader on a capture taken with a device argument, which prints
-     no node in front of its events. */
-  { name: 'getevent-bare-sample', parse: 'parseGeteventCapture' },
-];
-
 /* Every golden is `tests/golden/<name>.txt` and every fixture is
    `tests/fixtures/<name>.txt` unless the case names another one. */
-const fixture = (c) => dir(`fixtures/${c.file || c.name}.txt`);
+const fixture = (c) => dir(`fixtures/${fixtureName(c)}`);
 
 if (UPDATE && !existsSync(dir('golden'))) mkdirSync(dir('golden'));
 
@@ -92,23 +52,23 @@ for (const c of CASES) {
    set, so a parser reports "not mine" by coming back with it false, not by
    returning nothing. */
 const OWN = {
-  parseWindowDump: ['window-sample'],
-  parseSurfaceFlingerDump: ['sf-sample', 'sf-a16-sample'],
-  parsePackageDump: ['package-sample'],
-  parseDisplayManagerDump: ['display-sample', 'display-a16-sample'],
-  parseActivityDump: ['activity-sample', 'activity-a16-sample'],
-  parseActivityServicesDump: ['service-sample', 'service-a16-sample'],
+  parseWindowDump: ['window-sample', 'window-a15-sample'],
+  parseSurfaceFlingerDump: ['sf-sample', 'sf-a15-sample', 'sf-a16-sample'],
+  parsePackageDump: ['package-sample', 'package-a15-sample'],
+  parseDisplayManagerDump: ['display-sample', 'display-a15-sample', 'display-a16-sample'],
+  parseActivityDump: ['activity-sample', 'activity-a15-sample', 'activity-a16-sample'],
+  parseActivityServicesDump: ['service-sample', 'service-a15-sample', 'service-a16-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
-  parseOverlayDump: ['overlay-sample'],
-  parseBinderCallsStatsDump: ['binder-sample'],
-  parseInputDump: ['input-sample'],
-  parseInputDevicesDump: ['input-sample'],
+  parseOverlayDump: ['overlay-sample', 'overlay-a15-sample'],
+  parseBinderCallsStatsDump: ['binder-sample', 'binder-a15-sample'],
+  parseInputDump: ['input-sample', 'input-a15-sample'],
+  parseInputDevicesDump: ['input-sample', 'input-a15-sample'],
   /* The event log is a log, and it is the one log the log reader does not
      read: its lines are tags and numbers, and the event reader next door is
      what they are for. So a pasted event buffer is that reader's alone. */
-  parseLogcatDump: ['logcat-sample'],
-  parseSystemPropertiesDump: ['props-sample'],
-  parseEventLogDump: ['events-sample', 'logcat-sample'],
+  parseLogcatDump: ['logcat-sample', 'logcat-a15-sample'],
+  parseSystemPropertiesDump: ['props-sample', 'props-a15-sample'],
+  parseEventLogDump: ['events-sample', 'events-a15-sample', 'logcat-sample'],
 };
 
 test('each parser recognises its own dumps and no others', () => {

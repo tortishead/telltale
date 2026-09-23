@@ -113,3 +113,10 @@ python3 tools/stamp-build.py     # once per copy you publish
 ```
 node --test tests/*.test.mjs
 ```
+
+Dumps are read from builds years apart, and a fixture is the only proof a
+reader still reads the release it came off:
+
+```
+node tools/coverage.mjs          # which reader is proven against which release
+```

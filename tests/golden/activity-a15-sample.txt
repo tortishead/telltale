@@ -1,0 +1,22 @@
+tool: activity
+displays: 1
+nodes: 7
+
+display 0  size=1080x3636
+    tasks: 5
+    activities: 1
+    resumed: com.google.android.apps.nexuslauncher/NexusLauncherActivity
+    1  act-activity    [0,0][1080,2424]          parent bounds  vis=?  focus  ^act:152                            -                           com.google.android.apps.nexuslauncher/NexusLauncherActivity
+    2  act-fragment    [0,0][1080,2424]          bounds      vis=?         ^act:152                            -                           fragment 4fc8933
+    3  act-home        [0,0][1080,2424]          bounds      vis=y         ^act:150                            -                           task #7 · com.google.android.apps.nexuslauncher/NexusLauncherActivity
+    4  act-home        [0,0][1080,2424]          bounds      vis=y                                             -                           task #1
+    5  act-task        [0,2424][1080,3636]       bounds      vis=n         ^act:157                            multi-window,empty          task #4
+    6  act-task        [0,0][1080,2424]          bounds      vis=n         ^act:157                            multi-window,empty          task #3
+    7  act-task        [0,0][1080,2424]          bounds      vis=n                                             -                           task #2
+
+globals:
+  focusedApp: ActivityRecord{93e7be8 u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t7}
+  tasks: 5
+  fragments: 1
+  activities: 1
+  lines: 165

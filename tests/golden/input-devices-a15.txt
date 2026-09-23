@@ -1,0 +1,66 @@
+tool: inputdev
+displays: 1
+nodes: 51
+
+display -1  label=no display  name=Internal  size=0x0
+    meta: 15 devices · keyboard, touchscreen
+    1  input-key       vis=y                                             -                           Virtual
+    2  input-mapper    vis=y         ^input:dev:-1                       -                           Keyboard
+    3  input-key       vis=y                                             -                           qwerty2
+    4  input-mapper    vis=y         ^input:dev:0                        -                           Keyboard
+    5  input-key       vis=y                                             not configured              gpio-keys
+    6  input-touch     vis=y                                             -                           virtio_input_multi_touch_11
+    7  input-mapper    vis=y         ^input:dev:2                        -                           Switch
+    8  input-mapper    vis=y         ^input:dev:2                        -                           Keyboard
+    9  input-mapper    vis=y         ^input:dev:2                        -                           Touch
+   10  input-touch     vis=y                                             -                           virtio_input_multi_touch_10
+   11  input-mapper    vis=y         ^input:dev:3                        -                           Switch
+   12  input-mapper    vis=y         ^input:dev:3                        -                           Keyboard
+   13  input-mapper    vis=y         ^input:dev:3                        -                           Touch
+   14  input-touch     vis=y                                             -                           virtio_input_multi_touch_9
+   15  input-mapper    vis=y         ^input:dev:4                        -                           Switch
+   16  input-mapper    vis=y         ^input:dev:4                        -                           Keyboard
+   17  input-mapper    vis=y         ^input:dev:4                        -                           Touch
+   18  input-touch     vis=y                                             -                           virtio_input_multi_touch_8
+   19  input-mapper    vis=y         ^input:dev:5                        -                           Switch
+   20  input-mapper    vis=y         ^input:dev:5                        -                           Keyboard
+   21  input-mapper    vis=y         ^input:dev:5                        -                           Touch
+   22  input-touch     vis=y                                             -                           virtio_input_multi_touch_7
+   23  input-mapper    vis=y         ^input:dev:6                        -                           Switch
+   24  input-mapper    vis=y         ^input:dev:6                        -                           Keyboard
+   25  input-mapper    vis=y         ^input:dev:6                        -                           Touch
+   26  input-touch     vis=y                                             -                           virtio_input_multi_touch_6
+   27  input-mapper    vis=y         ^input:dev:7                        -                           Switch
+   28  input-mapper    vis=y         ^input:dev:7                        -                           Keyboard
+   29  input-mapper    vis=y         ^input:dev:7                        -                           Touch
+   30  input-touch     vis=y                                             -                           virtio_input_multi_touch_5
+   31  input-mapper    vis=y         ^input:dev:8                        -                           Switch
+   32  input-mapper    vis=y         ^input:dev:8                        -                           Keyboard
+   33  input-mapper    vis=y         ^input:dev:8                        -                           Touch
+   34  input-touch     vis=y                                             -                           virtio_input_multi_touch_4
+   35  input-mapper    vis=y         ^input:dev:9                        -                           Switch
+   36  input-mapper    vis=y         ^input:dev:9                        -                           Keyboard
+   37  input-mapper    vis=y         ^input:dev:9                        -                           Touch
+   38  input-touch     vis=y                                             -                           virtio_input_multi_touch_3
+   39  input-mapper    vis=y         ^input:dev:10                       -                           Switch
+   40  input-mapper    vis=y         ^input:dev:10                       -                           Keyboard
+   41  input-mapper    vis=y         ^input:dev:10                       -                           Touch
+   42  input-touch     vis=y                                             -                           virtio_input_multi_touch_2
+   43  input-mapper    vis=y         ^input:dev:11                       -                           Switch
+   44  input-mapper    vis=y         ^input:dev:11                       -                           Keyboard
+   45  input-mapper    vis=y         ^input:dev:11                       -                           Touch
+   46  input-touch     vis=y                                             -                           virtio_input_multi_touch_1
+   47  input-mapper    vis=y         ^input:dev:12                       -                           Switch
+   48  input-mapper    vis=y         ^input:dev:12                       -                           Keyboard
+   49  input-mapper    vis=y         ^input:dev:12                       -                           Touch
+   50  input-key       vis=y                                             -                           gpio-keys
+   51  input-mapper    vis=y         ^input:dev:13                       -                           Keyboard
+
+globals:
+  devices: 15
+  mappers: 36
+  external: 0
+  builtInKeyboard: 13
+  excluded: []
+  viewports: 2
+  hub: 14

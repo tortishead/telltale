@@ -1,0 +1,15 @@
+tool: package
+displays: 1
+nodes: 5
+
+display 0  name=owner  size=0x0
+    meta: 5 packages · 0 third-party
+    1  pkg-apex        vis=y                                             -                           com.android.cts.priv.ctsshim
+    2  pkg-system      vis=y                                             -                           com.android.internal.display.cutout.emulation.corner
+    3  pkg-apex        vis=y                                             -                           com.google.android.ext.services
+    4  pkg-apex        vis=y                                             -                           com.google.android.networkstack.tethering
+    5  pkg-system      vis=y                                             stopped                     com.google.android.youtube
+
+globals:
+  packages: 5
+  shadowed: 0

@@ -1,0 +1,256 @@
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{3ba283d u0 com.android.vending/com.google.android.finsky.scheduler.process.backgroundimpl.PhoneskyJobServiceBackground c:android}
+    intent={cmp=com.android.vending/com.google.android.finsky.scheduler.process.backgroundimpl.PhoneskyJobServiceBackground}
+    packageName=com.android.vending
+    processName=com.android.vending:background
+    targetSdkVersion=34
+    permission=android.permission.BIND_JOB_SERVICE
+    baseDir=/product/priv-app/Phonesky/Phonesky.apk
+    dataDir=/data/user/0/com.android.vending
+    app=ProcessRecord{cee8f5c 2493:com.android.vending:background/u0a142}
+    useNewWiuLogic_forCapabilities()=false
+    useNewWiuLogic_forStart()=false
+    useNewBfslLogic()=false
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=PROC_STATE_PERSISTENT
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=PROC_STATE_PERSISTENT
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=PROC_STATE_PERSISTENT
+    getFgsAllowWiu_forCapabilities=PROC_STATE_PERSISTENT
+    allowUiJobScheduling=false
+    recentCallingPackage=android
+    recentCallingUid=1000
+    mAllowStart_noBinding=DENIED
+    mAllowStart_inBindService=PROC_STATE_PERSISTENT
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_PERSISTENT
+    getFgsAllowStart_new=DENIED
+    getFgsAllowStart=PROC_STATE_PERSISTENT
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: android; callingUid: 1000; uidState: PER ; uidBFSL: [BFSL]; intent: Intent { flg=0x4 cmp=com.android.vending/com.google.android.finsky.scheduler.process.backgroundimpl.PhoneskyJobServiceBackground }; code:PROC_STATE_PERSISTENT; tempAllowListReason:<1825c77 android.intent.action.BOOT_COMPLETED/u0,reasonCode:BOOT_COMPLETED,duration:20000,callingUid:1000>; targetSdkVersion:34; callerTargetSdkVersion:35; startForegroundCount:0; bindFromPackage:null: isBindService:true]
+    createTime=-16s688ms startingBgTimeout=--
+    lastActivity=-16s685ms restartTime=-16s688ms createdFromFg=true
+    Bindings:
+    * IntentBindRecord{e1d4db5 CREATE}:
+      intent={flg=0x4 cmp=com.android.vending/com.google.android.finsky.scheduler.process.backgroundimpl.PhoneskyJobServiceBackground}
+      binder=android.os.BinderProxy@4b16b7a
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{f256c4a ProcessRecord{14f8e20 574:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{4f86700 u0 CR !FG com.android.vending/com.google.android.finsky.scheduler.process.backgroundimpl.PhoneskyJobServiceBackground:@8054983 flags=0x18005}
+    All Connections:
+      ConnectionRecord{4f86700 u0 CR !FG com.android.vending/com.google.android.finsky.scheduler.process.backgroundimpl.PhoneskyJobServiceBackground:@8054983 flags=0x18005}
+
+  * ServiceRecord{4f9712d u0 com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService c:com.google.android.googlequicksearchbox}
+    intent={cmp=com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService}
+    packageName=com.google.android.googlequicksearchbox
+    processName=com.google.android.googlequicksearchbox:interactor
+    targetSdkVersion=34
+    baseDir=/product/priv-app/Velvet/Velvet.apk
+    dataDir=/data/user/0/com.google.android.googlequicksearchbox
+    app=ProcessRecord{c276876 1575:com.google.android.googlequicksearchbox:interactor/u0a145}
+    useNewWiuLogic_forCapabilities()=false
+    useNewWiuLogic_forStart()=false
+    useNewBfslLogic()=false
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=ACTIVITY_STARTER
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=ACTIVITY_STARTER
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=ACTIVITY_STARTER
+    getFgsAllowWiu_forCapabilities=ACTIVITY_STARTER
+    allowUiJobScheduling=false
+    recentCallingPackage=com.google.android.googlequicksearchbox
+    recentCallingUid=10145
+    mAllowStart_noBinding=DENIED
+    mAllowStart_inBindService=ACTIVITY_STARTER
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=ACTIVITY_STARTER
+    getFgsAllowStart_new=DENIED
+    getFgsAllowStart=ACTIVITY_STARTER
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: com.google.android.googlequicksearchbox; callingUid: 10145; uidState: BTOP; uidBFSL: [BFSL]; intent: Intent { cmp=com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService }; code:ACTIVITY_STARTER; tempAllowListReason:<1825c77 android.intent.action.BOOT_COMPLETED/u0,reasonCode:BOOT_COMPLETED,duration:20000,callingUid:1000>; targetSdkVersion:34; callerTargetSdkVersion:34; startForegroundCount:0; bindFromPackage:null: isBindService:true]
+    createTime=-24s808ms startingBgTimeout=--
+    lastActivity=-3s959ms restartTime=-24s808ms createdFromFg=true
+    Bindings:
+    * IntentBindRecord{82e04d8 CREATE}:
+      intent={cmp=com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService}
+      binder=android.os.BinderProxy@90f1c34
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{8221031 ProcessRecord{27c897e 1639:com.google.android.googlequicksearchbox:search/u0a145}}
+        Per-process Connections:
+          ConnectionRecord{d4a9c44 u0 CR com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService:@d7db957 flags=0x1}
+      * Client AppBindRecord{e560316 ProcessRecord{c276876 1575:com.google.android.googlequicksearchbox:interactor/u0a145}}
+        Per-process Connections:
+          ConnectionRecord{462f18 u0 CR com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService:@dbb42fb flags=0x1}
+    All Connections:
+      ConnectionRecord{d4a9c44 u0 CR com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService:@d7db957 flags=0x1}
+      ConnectionRecord{462f18 u0 CR com.google.android.googlequicksearchbox/androidx.room.MultiInstanceInvalidationService:@dbb42fb flags=0x1}
+
+  * ServiceRecord{6c92346 u0 com.google.android.apps.messaging/com.google.android.ims.service.JibeService c:com.google.android.apps.messaging}
+    intent={cmp=com.google.android.apps.messaging/com.google.android.ims.service.JibeService}
+    packageName=com.google.android.apps.messaging
+    processName=com.google.android.apps.messaging:rcs
+    targetSdkVersion=35
+    baseDir=/product/priv-app/PrebuiltBugle/PrebuiltBugle.apk
+    dataDir=/data/user/0/com.google.android.apps.messaging
+    app=ProcessRecord{373ffd3 3947:com.google.android.apps.messaging:rcs/u0a141}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=PROC_STATE_TOP
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=PROC_STATE_TOP
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=com.google.android.apps.messaging
+    recentCallingUid=10141
+    mAllowStart_noBinding=PROC_STATE_BFGS
+    mAllowStart_inBindService=PROC_STATE_BFGS
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_BFGS
+    getFgsAllowStart_new=PROC_STATE_BFGS
+    getFgsAllowStart=PROC_STATE_BFGS
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: com.google.android.apps.messaging; callingUid: 10141; uidState: BFGS; uidBFSL: [BFSL]; intent: Intent { act=com.google.android.ims.rcs.engine.IRcsEngineTemporaryController cmp=com.google.android.apps.messaging/com.google.android.ims.service.JibeService (has extras) }; code:PROC_STATE_BFGS; tempAllowListReason:<null>; targetSdkVersion:35; callerTargetSdkVersion:35; startForegroundCount:0; bindFromPackage:null: isBindService:true]
+    createTime=-20s198ms startingBgTimeout=--
+    lastActivity=-1s344ms restartTime=-20s198ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+ startCommandResult=1
+    Bindings:
+    * IntentBindRecord{8943497}:
+      intent={act=com.google.android.ims.rcs.engine.IRcsEngineTemporaryController cmp=com.google.android.apps.messaging/com.google.android.ims.service.JibeService}
+      binder=android.os.BinderProxy@a3f0a5d
+      requested=true received=true hasBound=false doRebind=false
+
+  * ServiceRecord{a81fcc7 u0 com.google.android.networkstack.tethering/com.android.networkstack.tethering.TetheringService c:android}
+    intent={act=android.net.ITetheringConnector cmp=com.google.android.networkstack.tethering/com.android.networkstack.tethering.TetheringService}
+    packageName=com.google.android.networkstack.tethering
+    processName=com.android.networkstack.process
+    targetSdkVersion=35
+    permission=android.permission.MAINLINE_NETWORK_STACK
+    baseDir=/apex/com.android.tethering/priv-app/TetheringGoogle@350820300/TetheringGoogle.apk
+    dataDir=/data/user_de/0/com.google.android.networkstack.tethering
+    app=ProcessRecord{63c427e 1070:com.android.networkstack.process/1073}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=PROC_STATE_PERSISTENT
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=PROC_STATE_PERSISTENT
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=android
+    recentCallingUid=1000
+    mAllowStart_noBinding=DENIED
+    mAllowStart_inBindService=PROC_STATE_PERSISTENT
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_PERSISTENT
+    getFgsAllowStart_new=DENIED
+    getFgsAllowStart=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: android; callingUid: 1000; uidState: PER ; uidBFSL: [BFSL]; intent: Intent { act=android.net.ITetheringConnector cmp=com.google.android.networkstack.tethering/com.android.networkstack.tethering.TetheringService }; code:PROC_STATE_PERSISTENT; tempAllowListReason:<null>; targetSdkVersion:35; callerTargetSdkVersion:35; startForegroundCount:0; bindFromPackage:null: isBindService:true]
+    createTime=-38s53ms startingBgTimeout=--
+    lastActivity=-37s903ms restartTime=-37s903ms createdFromFg=true
+    Bindings:
+    * IntentBindRecord{2ea9684 CREATE}:
+      intent={act=android.net.ITetheringConnector cmp=com.google.android.networkstack.tethering/com.android.networkstack.tethering.TetheringService}
+      binder=android.os.BinderProxy@2edefd2
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{5d67e6d ProcessRecord{14f8e20 574:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{474b0e1 u0 CR IMP com.google.android.networkstack.tethering/com.android.networkstack.tethering.TetheringService:@d78fa48 flags=0x41}
+    All Connections:
+      ConnectionRecord{474b0e1 u0 CR IMP com.google.android.networkstack.tethering/com.android.networkstack.tethering.TetheringService:@d78fa48 flags=0x41}
+
+  * ServiceRecord{19e81bb u0 com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.PermissionControllerServiceImpl c:android}
+    intent={act=android.permission.PermissionControllerService cmp=com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.PermissionControllerServiceImpl}
+    packageName=com.google.android.permissioncontroller
+    processName=com.google.android.permissioncontroller
+    targetSdkVersion=35
+    baseDir=/apex/com.android.permission/priv-app/GooglePermissionController@350820360/GooglePermissionController.apk
+    dataDir=/data/user_de/0/com.google.android.permissioncontroller
+    app=ProcessRecord{63fca31 989:com.google.android.permissioncontroller/u0a192}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=PROC_STATE_PERSISTENT
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=PROC_STATE_PERSISTENT
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=android
+    recentCallingUid=1000
+    mAllowStart_noBinding=DENIED
+    mAllowStart_inBindService=PROC_STATE_PERSISTENT
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_PERSISTENT
+    getFgsAllowStart_new=DENIED
+    getFgsAllowStart=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: android; callingUid: 1000; uidState: PER ; uidBFSL: [BFSL]; intent: Intent { act=android.permission.PermissionControllerService cmp=com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.PermissionControllerServiceImpl }; code:PROC_STATE_PERSISTENT; tempAllowListReason:<null>; targetSdkVersion:35; callerTargetSdkVersion:35; startForegroundCount:0; bindFromPackage:null: isBindService:true]
+    createTime=-38s180ms startingBgTimeout=--
+    lastActivity=-38s101ms restartTime=-38s101ms createdFromFg=true
+    Bindings:
+    * IntentBindRecord{c273aa2 CREATE}:
+      intent={act=android.permission.PermissionControllerService cmp=com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.PermissionControllerServiceImpl}
+      binder=android.os.BinderProxy@ccd48a3
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{bdd8333 ProcessRecord{14f8e20 574:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{b3a7e4a u0 CR com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.PermissionControllerServiceImpl:@bf367b5 flags=0x1}
+    All Connections:
+      ConnectionRecord{b3a7e4a u0 CR com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.PermissionControllerServiceImpl:@bf367b5 flags=0x1}
+
+  * ServiceRecord{30bbaff u0 com.google.android.gms/.nearby.sharing.ReceiveSurfaceService c:com.google.android.gms}
+    intent={cmp=com.google.android.gms/.nearby.sharing.ReceiveSurfaceService}
+    packageName=com.google.android.gms
+    processName=com.google.android.gms.persistent
+    targetSdkVersion=34
+    baseDir=/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk
+    dataDir=/data/user/0/com.google.android.gms
+    app=ProcessRecord{ede6fe0 1263:com.google.android.gms.persistent/u0a144}
+    useNewWiuLogic_forCapabilities()=false
+    useNewWiuLogic_forStart()=false
+    useNewBfslLogic()=false
+    mAllowWiu_noBinding=BACKGROUND_ACTIVITY_PERMISSION
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=BACKGROUND_ACTIVITY_PERMISSION
+    getFgsAllowWiu_new=BACKGROUND_ACTIVITY_PERMISSION
+    getFgsAllowWiu_forStart=BACKGROUND_ACTIVITY_PERMISSION
+    getFgsAllowWiu_forCapabilities=BACKGROUND_ACTIVITY_PERMISSION
+    allowUiJobScheduling=false
+    recentCallingPackage=com.google.android.gms
+    recentCallingUid=10144
+    mAllowStart_noBinding=BACKGROUND_ACTIVITY_PERMISSION
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=BACKGROUND_ACTIVITY_PERMISSION
+    getFgsAllowStart_new=BACKGROUND_ACTIVITY_PERMISSION
+    getFgsAllowStart=BACKGROUND_ACTIVITY_PERMISSION
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: com.google.android.gms; callingUid: 10144; uidState: BTOP; uidBFSL: [BFSL]; intent: Intent { cmp=com.google.android.gms/.nearby.sharing.ReceiveSurfaceService }; code:BACKGROUND_ACTIVITY_PERMISSION; tempAllowListReason:<,reasonCode:SYSTEM_ALLOW_LISTED,duration:9223372036854775807,callingUid:-1>; targetSdkVersion:34; callerTargetSdkVersion:34; startForegroundCount:0; bindFromPackage:null: isBindService:false]
+    createTime=-31s423ms startingBgTimeout=--
+    lastActivity=-2s114ms restartTime=-31s423ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=5
+ startCommandResult=1
+
+  * ServiceRecord{e7e6916 u0 com.google.android.as.oss/com.google.android.apps.miphone.astrea.grpc.AstreaGrpcService c:com.google.android.as}
+    intent={act=grpc.io.action.BIND cmp=com.google.android.as.oss/com.google.android.apps.miphone.astrea.grpc.AstreaGrpcService}
+    packageName=com.google.android.as.oss
+    processName=com.google.android.as.oss
+    targetSdkVersion=34
+    baseDir=/product/priv-app/DeviceIntelligenceNetworkPrebuilt-astrea_20240329.00_RC02/DeviceIntelligenceNetworkPrebuilt-astrea_20240329.00_RC02.apk
+    dataDir=/data/user/0/com.google.android.as.oss

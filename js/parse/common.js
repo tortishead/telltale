@@ -38,10 +38,6 @@ function sectionSpan(lines, startRe, endRe, missing) {
   return { start, end };
 }
 
-const RECT_RE = /\[(-?\d+),\s*(-?\d+)\]\[(-?\d+),\s*(-?\d+)\]/;
-const NAMED_RECT_RE = /([A-Za-z_][\w.]*)=\[(-?\d+),\s*(-?\d+)\]\[(-?\d+),\s*(-?\d+)\]/g;
-/* Some sections print a rect as one bracket of four: frame=[l,t,r,b]. */
-const FLAT_RECT_RE = /([A-Za-z_][\w.]*)=\[(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)\]/g;
 /* Dumps from some builds print ty= as the raw int instead of the name, and the
    SurfaceFlinger HWC table only ever prints the int. */
 const TYPE_INTS = {
@@ -114,18 +110,10 @@ function takeDisplaySection(lines, start) {
 }
 
 function harvest(text) {
-  const rects = {};
+  /* Every named rect in the block, in whichever spelling the build printed it
+     — which is the shared reader's business rather than this one's. */
+  const rects = diaRectFields(text);
   let m;
-  NAMED_RECT_RE.lastIndex = 0;
-  while ((m = NAMED_RECT_RE.exec(text)) !== null) {
-    const key = m[1];
-    if (!(key in rects)) rects[key] = rectFrom(m, 2);
-  }
-  FLAT_RECT_RE.lastIndex = 0;
-  while ((m = FLAT_RECT_RE.exec(text)) !== null) {
-    const key = m[1];
-    if (!(key in rects)) rects[key] = rectFrom(m, 2);
-  }
   const props = {};
   KV_RE.lastIndex = 0;
   while ((m = KV_RE.exec(text)) !== null) {

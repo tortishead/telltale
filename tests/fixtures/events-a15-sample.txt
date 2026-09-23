@@ -1,0 +1,204 @@
+------ EVENT LOG (logcat -b events -v threadtime -v printable -v uid -d *:v) ------
+--------- beginning of events
+09-23 18:27:13.899  1000   158   158 I snet_event_log: [121035042,-1,]
+09-23 18:27:13.899  1000   158   158 I auditd  : SELinux: Loaded service context from:
+09-23 18:27:13.899  1000   158   158 I auditd  : 		/system/etc/selinux/plat_service_contexts
+09-23 18:27:13.899  1000   158   158 I auditd  : 		/system_ext/etc/selinux/system_ext_service_contexts
+09-23 18:27:13.899  1000   158   158 I auditd  : 		/vendor/etc/selinux/vendor_service_contexts
+01-01 01:00:00.024  logd   156   156 I auditd  : type=2000 audit(0.0:1): state=initialized audit_enabled=0 res=1
+09-23 18:27:13.704  logd   156   156 I auditd  : type=1403 audit(0.0:2): auid=4294967295 ses=4294967295 lsm=selinux res=1
+09-23 18:27:13.704  logd   156   156 I auditd  : type=1404 audit(0.0:3): enforcing=1 old_enforcing=0 auid=4294967295 ses=4294967295 enabled=1 old-enabled=1 lsm=selinux res=1
+09-23 18:27:13.712  root     1     1 I auditd  : type=1107 audit(0.0:4): uid=0 auid=4294967295 ses=4294967295 subj=u:r:init:s0 msg='avc:  denied  { set } for property=persist.sys.usb.config pid=1 uid=0 gid=0 scontext=u:r:vendor_init:s0 tcontext=u:object_r:system_prop:s0 tclass=property_service permissive=0'
+09-23 18:27:14.024  1017   180   180 I auditd  : SELinux: Loaded keystore2 context from:
+09-23 18:27:14.024  1017   180   180 I auditd  : 		/system/etc/selinux/plat_keystore2_key_contexts
+09-23 18:27:14.024  1017   180   180 I auditd  : 		/system_ext/etc/selinux/system_ext_keystore2_key_contexts
+09-23 18:27:14.024  1017   180   180 I auditd  : 		/vendor/etc/selinux/vendor_keystore2_key_contexts
+09-23 18:27:14.311  root   219   219 I auditd  : SELinux: Loaded file context from:
+09-23 18:27:14.311  root   219   219 I auditd  : 		/system/etc/selinux/plat_file_contexts
+09-23 18:27:14.311  root   219   219 I auditd  : 		/system_ext/etc/selinux/system_ext_file_contexts
+09-23 18:27:14.311  root   219   219 I auditd  : 		/vendor/etc/selinux/vendor_file_contexts
+09-23 18:27:15.368  root     1     1 I auditd  : type=1400 audit(0.0:5): avc:  denied  { write } for  comm="init" name="error_report_end" dev="tracefs" ino=6881 scontext=u:r:init:s0 tcontext=u:object_r:debugfs_bootreceiver_tracing:s0 tclass=dir permissive=0
+09-23 18:27:15.388  root     1     1 I auditd  : type=1400 audit(0.0:6): avc:  denied  { getattr } for  comm="init" path="/system/bin/logcat" dev="dm-0" ino=15089047 scontext=u:r:init:s0 tcontext=u:object_r:logcat_exec:s0 tclass=file permissive=0
+09-23 18:27:15.614  root   364   364 I boot_progress_start: 6168
+09-23 18:27:15.836  root   364   364 I snet_event_log: [200284993,-1,]
+09-23 18:27:15.904  root   364   364 I boot_progress_preload_start: 6459
+09-23 18:27:16.205  root   364   364 I boot_progress_preload_end: 6760
+09-23 18:27:16.322  1000   574   574 I system_server_start: [1,6876,6876]
+09-23 18:27:16.322  1000   574   574 I boot_progress_system_run: 6877
+09-23 18:27:16.439  1000   574   601 I commit_sys_config_file: [batterystats,1]
+09-23 18:27:16.441  1000   574   601 I commit_sys_config_file: [batterystats,1]
+09-23 18:27:16.466  1000   574   601 I commit_sys_config_file: [display-state,2]
+09-23 18:27:16.467  1000   574   574 I boot_progress_pms_start: 7021
+09-23 18:27:16.478  1000   574   574 I pm_critical_info: No package manager settings file
+09-23 18:27:16.479  1000   574   574 I boot_progress_pms_system_scan_start: 7034
+09-23 18:27:16.570  1000   574   574 I service_manager_stats: [100,24,7125]
+09-23 18:27:16.623  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=android
+09-23 18:27:16.628  1000   574   574 I pm_critical_info: Adding duplicate app id: 10091 name=com.android.providers.blockednumber
+09-23 18:27:16.631  1000   574   574 I pm_critical_info: Adding duplicate app id: 10091 name=com.android.calllogbackup
+09-23 18:27:16.632  1000   574   574 I pm_critical_info: Adding duplicate app id: 10093 name=com.android.providers.calendar
+09-23 18:27:16.634  1000   574   574 I pm_critical_info: Adding duplicate app id: 10091 name=com.android.providers.contacts
+09-23 18:27:16.636  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.DeviceAsWebcam
+09-23 18:27:16.641  1000   574   574 I pm_critical_info: Adding duplicate app id: 10097 name=com.android.providers.downloads.ui
+09-23 18:27:16.643  1000   574   574 I pm_critical_info: Adding duplicate app id: 10097 name=com.android.providers.downloads
+09-23 18:27:16.645  1000   574   574 I pm_critical_info: Adding duplicate app id: 10091 name=com.android.providers.contactkeys
+09-23 18:27:16.648  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.dynsystem
+09-23 18:27:16.652  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.location.fused
+09-23 18:27:16.654  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.inputdevices
+09-23 18:27:16.656  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.localtransport
+09-23 18:27:16.658  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1001 name=com.android.mms.service
+09-23 18:27:16.658  1000   574   574 I pm_critical_info: Adding duplicate app id: 10097 name=com.android.providers.media
+09-23 18:27:16.663  1000   574   574 I pm_critical_info: Adding duplicate app id: 10097 name=com.android.mtp
+09-23 18:27:16.667  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1073 name=com.google.android.networkstack
+09-23 18:27:16.669  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.providers.settings
+09-23 18:27:16.669  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1001 name=com.android.ons
+09-23 18:27:16.671  1000   574   574 I pm_critical_info: Adding duplicate app id: 10097 name=com.android.soundpicker
+09-23 18:27:16.671  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1001 name=com.android.providers.telephony
+09-23 18:27:16.672  1000   574   574 I pm_critical_info: Adding duplicate shared id: 2000 name=com.android.shell
+09-23 18:27:16.673  1000   574   574 I pm_critical_info: Adding duplicate app id: 10091 name=com.android.providers.userdictionary
+09-23 18:27:16.673  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.server.telecom
+09-23 18:27:16.675  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1001 name=com.android.phone
+09-23 18:27:16.682  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1002 name=com.android.bluetooth
+09-23 18:27:16.689  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1068 name=com.android.se
+09-23 18:27:16.690  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.keychain
+09-23 18:27:16.693  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1001 name=com.android.stk
+09-23 18:27:16.706  1000   574   574 I pm_critical_info: Adding duplicate app id: 10131 name=com.google.android.projection.gearhead
+09-23 18:27:16.842  1000   574   574 I pm_critical_info: Adding duplicate app id: 10144 name=com.google.android.gms
+09-23 18:27:16.912  1000   574   574 I pm_critical_info: Adding duplicate app id: 10149 name=com.google.android.calendar
+09-23 18:27:16.943  1000   574   574 I pm_critical_info: Adding duplicate app id: 10156 name=com.google.android.apps.maps
+09-23 18:27:17.066  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.emulator.multidisplay
+09-23 18:27:17.067  1000   574   574 I pm_critical_info: Adding duplicate app id: 10144 name=com.google.android.gsf
+09-23 18:27:17.102  1000   574   574 I pm_critical_info: Adding duplicate app id: 10181 name=com.android.systemui
+09-23 18:27:17.136  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1000 name=com.android.settings
+09-23 18:27:17.145  1000   574   574 I pm_critical_info: Adding duplicate app id: 10183 name=com.android.emergency
+09-23 18:27:17.172  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1073 name=com.google.android.cellbroadcastservice
+09-23 18:27:17.191  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1002 name=com.google.android.bluetooth
+09-23 18:27:17.237  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1027 name=com.android.nfc
+09-23 18:27:17.253  1000   574   574 I pm_critical_info: Adding duplicate app id: 10201 name=com.android.cts.ctsshim
+09-23 18:27:17.267  1000   574   574 I pm_critical_info: Adding duplicate shared id: 1073 name=com.google.android.networkstack.tethering
+09-23 18:27:17.331  1000   574   574 I boot_progress_pms_data_scan_start: 7885
+09-23 18:27:18.948  1000   574   574 I boot_progress_pms_scan_end: 9502
+09-23 18:27:19.023  1000   574   574 I commit_sys_config_file: [package,12]
+09-23 18:27:19.023  1000   574   574 I boot_progress_pms_ready: 9578
+09-23 18:27:19.030  1000   574   625 I commit_sys_config_file: [package-user-0,7]
+09-23 18:27:19.032  1000   574   574 I am_uid_running: 1000
+09-23 18:27:19.033  1000   574   574 I am_uid_active: 1000
+09-23 18:27:19.135  1000   574   574 I commit_sys_config_file: [overlays,3]
+09-23 18:27:19.141  1000   574   649 I battery_status: [4,2,1,0,Li-ion]
+09-23 18:27:19.142  1000   574   649 I battery_level: [100,5000,250]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [54,0,kworker/u8:3-loop3,2698,0,10]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [55,0,kworker/1:1-mm_percpu_wq,2698,0,10]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [57,0,kswapd0,2698,0,20]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [59,0,erofs_worker/0,2698,0,60]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [81,0,ext4lazyinit,2698,20,0]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [92,0,kworker/1:1H-kblockd,2698,0,20]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [156,1036,logd,2697,10,0]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [158,1000,servicemanager,2697,0,10]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [309,0,kworker/2:3H-kverityd,2697,0,10]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [387,1000,binder:387_2,2697,10,150]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [412,1000,surfaceflinger,2696,120,1020]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [420,2000,adbd,2696,0,10]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [425,1000,binder:425_2,2696,40,10]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [429,0,binder:429_2,2696,40,40]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [544,1003,bootanimation,2696,40,210]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [574,1000,system_server,2696,1620,660]
+09-23 18:27:19.147  1000   574   609 I am_cpu  : [655,0,kworker/u9:3-blk_crypto_wq,0,0,0]
+09-23 18:27:19.198  1000   574   678 I commit_sys_config_file: [settings-1-0,1]
+09-23 18:27:19.199  1000   574   678 I commit_sys_config_file: [settings-0-0,1]
+09-23 18:27:19.200  1000   574   678 I commit_sys_config_file: [settings-2-0,1]
+09-23 18:27:19.201  1000   574   678 I commit_sys_config_file: [settings-1-0,0]
+09-23 18:27:19.241  1000   574   574 I wm_task_created: 1
+09-23 18:27:19.244  1000   574   595 I sysui_multi_action: [757,1594,758,4,759,1,806,NULL]
+09-23 18:27:19.249  1000   574   574 I commit_sys_config_file: [net-watchlist,2]
+09-23 18:27:19.253  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,No service published for: jobscheduler]
+09-23 18:27:19.253  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,Manager wrapper not available: jobscheduler]
+09-23 18:27:19.261  1000   574   574 I configuration_changed: 536894968
+09-23 18:27:19.262  1000   574   574 I sysui_multi_action: [757,1659,758,4,759,1,1660,0]
+09-23 18:27:19.269  1000   574   594 I am_uid_running: 10189
+09-23 18:27:19.472  1000   574   678 I commit_sys_config_file: [settings-0-0,18]
+09-23 18:27:21.178  1000   574   574 I sysui_multi_action: [757,804,799,opt_dialog_num_dexopted,801,22,802,1]
+09-23 18:27:21.178  1000   574   574 I sysui_multi_action: [757,804,799,opt_dialog_num_skipped,801,130,802,1]
+09-23 18:27:21.178  1000   574   574 I sysui_multi_action: [757,804,799,opt_dialog_num_failed,801,0,802,1]
+09-23 18:27:21.178  1000   574   574 I sysui_multi_action: [757,804,799,opt_dialog_num_total,801,152,802,1]
+09-23 18:27:21.178  1000   574   574 I sysui_multi_action: [757,804,799,opt_dialog_time_s,801,1,802,1]
+09-23 18:27:21.192  1000   574   574 I device_idle: [0,boot]
+09-23 18:27:21.192  1000   574   574 I device_idle_light: [0,boot]
+09-23 18:27:21.208  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,No service published for: jobscheduler]
+09-23 18:27:21.208  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,Manager wrapper not available: jobscheduler]
+09-23 18:27:21.370  1000   574   574 I am_uid_running: 10143
+09-23 18:27:21.372  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,No service published for: jobscheduler]
+09-23 18:27:21.372  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,Manager wrapper not available: jobscheduler]
+09-23 18:27:21.372  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,No service published for: jobscheduler]
+09-23 18:27:21.373  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,Manager wrapper not available: jobscheduler]
+09-23 18:27:21.373  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,No service published for: jobscheduler]
+09-23 18:27:21.373  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,Manager wrapper not available: jobscheduler]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,PHYSICAL_KEYBOARD,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,SECURITY,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,CAR_MODE,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,ACCOUNT,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,DEVELOPER,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,DEVELOPER_IMPORTANT,858,4]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,UPDATES,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,NETWORK_STATUS,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,NETWORK_ALERTS,858,4]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,NETWORK_AVAILABLE,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,VPN,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,DEVICE_ADMIN_ALERTS,858,4]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,ALERTS,858,3]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,RETAIL_MODE,858,2]
+09-23 18:27:21.376  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,USB,858,1]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,FOREGROUND_SERVICE,858,2]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,HEAVY_WEIGHT_APP,858,3]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,SYSTEM_CHANGES_ALERTS,858,3]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,DO_NOT_DISTURB,858,2]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,ACCESSIBILITY_MAGNIFICATION,858,4]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,ACCESSIBILITY_SECURITY_POLICY,858,2]
+09-23 18:27:21.377  1000   574   574 I sysui_multi_action: [757,856,758,1,806,android,857,ABUSIVE_BACKGROUND_APPS,858,2]
+09-23 18:27:21.378  1000   574   901 I storage_state: [41217664-9172-527a-b3d5-edabb50a7d69,0,0,5534420992,6228115456]
+09-23 18:27:21.397  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,No service published for: jobscheduler]
+09-23 18:27:21.397  1000   574   602 I am_wtf  : [0,574,system_server,-1,SystemServiceRegistry,Manager wrapper not available: jobscheduler]
+09-23 18:27:21.409  1000   574   678 I commit_sys_config_file: [settings-2-0,2]
+09-23 18:27:21.413  1000   574   907 I stream_devices_changed: [4,0,2]
+09-23 18:27:21.413  1000   574   907 I stream_devices_changed: [6,0,2]
+09-23 18:27:21.415  1000   574   907 I stream_devices_changed: [3,0,2]
+09-23 18:27:21.415  1000   574   907 I stream_devices_changed: [5,0,2]
+09-23 18:27:21.416  1000   574   907 I stream_devices_changed: [2,0,2]
+09-23 18:27:21.417  1000   574   907 I stream_devices_changed: [0,0,2]
+09-23 18:27:21.452  9999   934   934 I auditd  : type=1400 audit(0.0:7): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+09-23 18:27:21.452  9999   934   934 I auditd  : type=1400 audit(0.0:8): avc:  denied  { write } for  comm="android.hardwar" name="property_service" dev="tmpfs" ino=374 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0
+09-23 18:27:21.452  9999   934   934 I auditd  : type=1400 audit(0.0:9): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+09-23 18:27:21.452  9999   934   934 I auditd  : type=1400 audit(0.0:10): avc:  denied  { write } for  comm="android.hardwar" name="property_service" dev="tmpfs" ino=374 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0
+09-23 18:27:21.460  9999   934   934 I auditd  : type=1400 audit(0.0:11): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+09-23 18:27:21.460  9999   934   934 I auditd  : type=1400 audit(0.0:12): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+09-23 18:27:21.460  9999   934   934 I auditd  : type=1400 audit(0.0:13): avc:  denied  { write } for  comm="android.hardwar" name="property_service" dev="tmpfs" ino=374 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:property_socket:s0 tclass=sock_file permissive=0
+09-23 18:27:21.460  9999   934   934 I auditd  : type=1400 audit(0.0:14): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+09-23 18:27:21.460  9999   934   934 I auditd  : type=1400 audit(0.0:15): avc:  denied  { read } for  comm="android.hardwar" name="u:object_r:virtual_face_hal_prop:s0" dev="tmpfs" ino=354 scontext=u:r:hal_face_default:s0 tcontext=u:object_r:virtual_face_hal_prop:s0 tclass=file permissive=0
+09-23 18:27:21.508  1000   574   574 I configuration_changed: 512
+09-23 18:27:21.515  1000   574   884 I sysui_multi_action: [757,856,758,1,806,android,857,APM_ALERTS,858,4]
+09-23 18:27:21.530  1000   574   574 I commit_sys_config_file: [package-session,1]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.dynsystem,1241,android.permission.POST_NOTIFICATIONS]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.READ_CALL_LOG]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.ACCESS_FINE_LOCATION]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_PHONE_NUMBERS]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_VISUAL_USER_SELECTED]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.BLUETOOTH_CONNECT]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.READ_EXTERNAL_STORAGE]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.ACCESS_COARSE_LOCATION]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_PHONE_STATE]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.SEND_SMS]
+09-23 18:27:21.569  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.CALL_PHONE]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_IMAGES]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.WRITE_CONTACTS]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.DeviceAsWebcam,1241,android.permission.CAMERA]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.server.telecom,1241,android.permission.WRITE_CALL_LOG]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_AUDIO]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.READ_MEDIA_VIDEO]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.BLUETOOTH_ADVERTISE]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,android,1241,android.permission.GET_ACCOUNTS]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.WRITE_EXTERNAL_STORAGE]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,android,1241,android.permission.READ_CONTACTS]
+09-23 18:27:21.570  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.location.fused,1241,android.permission.ACCESS_BACKGROUND_LOCATION]
+09-23 18:27:21.571  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.settings,1241,android.permission.BLUETOOTH_SCAN]
+09-23 18:27:21.571  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.mms.service,1241,android.permission.READ_SMS]
+09-23 18:27:21.571  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.stk,1241,android.permission.POST_NOTIFICATIONS]
+09-23 18:27:21.571  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.phone,1241,android.permission.READ_CALL_LOG]
+09-23 18:27:21.571  1000   574   574 I sysui_multi_action: [757,1243,758,4,806,com.android.phone,1241,android.permission.ACCESS_FINE_LOCATION]

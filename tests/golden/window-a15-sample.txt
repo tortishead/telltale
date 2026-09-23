@@ -1,0 +1,17 @@
+tool: window
+displays: 1
+nodes: 10
+
+display 0  size=2183x2424
+    1  bar             [402,860][678,1564]       frame       vis=n                                             -                           EdgeBackGestureHandler0
+    2  bar             [0,0][1080,63]            frame       vis=n                                             -                           ScreenDecorOverlay
+    3  bar             [0,2361][1080,2424]       frame       vis=n                                             -                           ScreenDecorOverlayBottom
+    4  bar             [0,2361][1080,2424]       frame       vis=y                                             -                           Taskbar
+    5  bar             [0,0][1080,2424]          frame       vis=n                                             -                           NotificationShade
+    6  bar             [0,0][1080,63]            frame       vis=y                                             -                           StatusBar
+    7  ime             [120,2298][960,2424]      frame       vis=n                                             -                           InputMethod
+    8  alert           [0,0][1080,2424]          frame       vis=n                                             -                           ShellDropTarget
+    9  app             [0,0][1080,2424]          frame       vis=y                                             -                           com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity
+   10  wallpaper       [0,0][2183,2424]          frame       vis=y                                             -                           com.android.systemui.wallpapers.ImageWallpaper
+
+globals:

@@ -1,0 +1,221 @@
+DUMP OF SERVICE overlay:
+Service host process PID: 574
+Threads in use: 0/32
+Client PIDs: 975, 158
+android.auto_generated_rro_vendor__:0 {
+  mPackageName...........: android.auto_generated_rro_vendor__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /vendor/overlay/framework-res__sdk_gphone64_arm64__auto_generated_rro_vendor.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 0
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.carrierconfig.auto_generated_rro_vendor__:0 {
+  mPackageName...........: com.android.carrierconfig.auto_generated_rro_vendor__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.android.carrierconfig
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /vendor/overlay/CarrierConfig__sdk_gphone64_arm64__auto_generated_rro_vendor.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 1
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.phone.auto_generated_rro_vendor__:0 {
+  mPackageName...........: com.android.phone.auto_generated_rro_vendor__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.android.phone
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /vendor/overlay/TeleService__sdk_gphone64_arm64__auto_generated_rro_vendor.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 2
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.systemui.auto_generated_rro_vendor__:0 {
+  mPackageName...........: com.android.systemui.auto_generated_rro_vendor__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.android.systemui
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /vendor/overlay/SystemUIGoogle__sdk_gphone64_arm64__auto_generated_rro_vendor.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 3
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.google.android.connectivity.resources.goldfish.overlay:0 {
+  mPackageName...........: com.google.android.connectivity.resources.goldfish.overlay
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.google.android.connectivity.resources
+  mTargetOverlayableName.: ServiceConnectivityResourcesConfig
+  mBaseCodePath..........: /vendor/overlay/goldfish_overlay_connectivity_google.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 4
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.google.android.marvin.talkbackoverlay:0 {
+  mPackageName...........: com.google.android.marvin.talkbackoverlay
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.google.android.marvin.talkback
+  mTargetOverlayableName.: PreferenceConfig
+  mBaseCodePath..........: /vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 5
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.google.android.overlay.googleconfig:0 {
+  mPackageName...........: com.google.android.overlay.googleconfig
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/GoogleConfigOverlay.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 6
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.google.android.overlay.googlewebview:0 {
+  mPackageName...........: com.google.android.overlay.googlewebview
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/GoogleWebViewOverlay.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 7
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+android.auto_generated_characteristics_rro:0 {
+  mPackageName...........: android.auto_generated_characteristics_rro
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/framework-res__emulator__auto_generated_characteristics_rro.apk
+  mState.................: STATE_NO_IDMAP
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 8
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.google.android.overlay.largescreenconfig:0 {
+  mPackageName...........: com.google.android.overlay.largescreenconfig
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/LargeScreenConfigOverlay.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 9
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.google.android.overlay.pixelconfigcommon:0 {
+  mPackageName...........: com.google.android.overlay.pixelconfigcommon
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/PixelConfigOverlayCommon.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 10
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+android.auto_generated_rro_product__:0 {
+  mPackageName...........: android.auto_generated_rro_product__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/framework-res__sdk_gphone64_arm64__auto_generated_rro_product.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 11
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.internal.ranchu.commonoverlay:0 {
+  mPackageName...........: com.android.internal.ranchu.commonoverlay
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: android
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/RanchuCommonOverlay.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 12
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.bips.auto_generated_rro_product__:0 {
+  mPackageName...........: com.android.bips.auto_generated_rro_product__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.android.bips
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/BuiltInPrintService__sdk_gphone64_arm64__auto_generated_rro_product.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 13
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.carrierconfig.auto_generated_rro_product__:0 {
+  mPackageName...........: com.android.carrierconfig.auto_generated_rro_product__
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.android.carrierconfig
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/CarrierConfig__sdk_gphone64_arm64__auto_generated_rro_product.apk
+  mState.................: STATE_ENABLED
+  mIsEnabled.............: true
+  mIsMutable.............: false
+  mPriority..............: 14
+  mCategory..............: null
+  mIsFabricated..........: false
+}
+com.android.companiondevicemanager.auto_generated_characteristics_rro:0 {
+  mPackageName...........: com.android.companiondevicemanager.auto_generated_characteristics_rro
+  mOverlayName...........: null
+  mUserId................: 0
+  mTargetPackageName.....: com.android.companiondevicemanager
+  mTargetOverlayableName.: null
+  mBaseCodePath..........: /product/overlay/CompanionDeviceManager__emulator__auto_generated_characteristics_rro.apk

@@ -1,0 +1,16 @@
+tool: display
+displays: 1
+nodes: 2
+
+display 0  label=display 0 · Built-in Screen  name=Built-in Screen  size=1080x2424  rot=0
+    meta: 1080 × 2424 · 420 dpi · 60 Hz
+    1  disp-panel      [0,0][1080,2424]          real        vis=y                                             -                           panel
+    2  disp-viewport   [0,0][1080,2424]          logicalFrame  vis=y                                             -                           input viewport
+
+globals:
+  displays: 1
+  devices: 1
+  viewports: 1
+  stableSize: 2 entries
+  safeMode: false
+  lines: 510

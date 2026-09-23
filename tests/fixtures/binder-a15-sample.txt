@@ -1,0 +1,234 @@
+DUMP OF SERVICE binder_calls_stats:
+Service host process PID: 574
+Threads in use: 1/32
+Client PIDs: 158
+Unknown command: -a
+Start time: 2026-09-23 18:27:21
+On battery time (ms): 39291
+Sampling interval period: 1000
+Sharding modulo: 1
+Per-UID raw data (package/uid, worksource, call_desc, screen_interactive, cpu_time_micros, max_cpu_time_micros, latency_time_micros, max_latency_time_micros, exception_count, max_request_size_bytes, max_reply_size_bytes, recorded_call_count, call_count):
+    shared:android.uid.system/1000,shared:android.uid.system/1000,com.android.server.am.ActivityManagerService#attachApplication,false,656,656,13607,13607,0,112,4,1,3
+    com.google.android.apps.safetyhub/u0a139,com.google.android.apps.safetyhub/u0a139,com.android.server.am.ActivityManagerService#bindServiceInstance,false,354,354,1386,1386,0,380,8,1,4
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.pm.PackageManagerService$IPackageManagerImpl#setComponentEnabledSetting,false,323,315,5777,5768,0,332,4,2,683
+    com.google.android.apps.wellbeing/u0a143,com.google.android.apps.wellbeing/u0a143,com.android.server.pm.PackageManagerService$IPackageManagerImpl#resolveIntent,false,282,120,720,557,0,232,2544,5,2183
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.am.ActivityManagerService#getIntentSenderWithFeature,false,241,73,240,73,0,52040,32,8,3865
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,android.content.ContentProvider$Transport#21,false,239,180,240,180,0,384,324,2,452
+    com.google.android.apps.wellbeing/u0a143,com.google.android.apps.wellbeing/u0a143,com.android.server.pm.PackageManagerService$IPackageManagerImpl#queryIntentActivities,false,179,68,181,69,0,288,2788,5,4423
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.am.ActivityManagerService#cancelIntentSender,false,178,141,168,131,0,104,4,3,699
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getPackageInfo,false,161,51,2015,1307,0,200,2436,20,19163
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.content.ContentService#notifyChange,false,142,88,141,88,0,284,4,2,721
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.content.ContentService#registerContentObserver,false,133,133,132,132,0,148,4,1,12
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.pm.PackageManagerService$IPackageManagerImpl#queryIntentServices,false,133,53,150,62,0,236,3920,3,1124
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.am.ActivityManagerService#startService,false,121,121,3415,3415,0,564,172,1,827
+    shared:android.uid.networkstack/1073,shared:android.uid.networkstack/1073,android.net.connectivity.com.android.server.net.NetworkStatsService#registerNetworkStatsProvider,false,117,117,116,116,0,148,32,1,1
+    com.google.android.googlequicksearchbox/u0a145,com.google.android.googlequicksearchbox/u0a145,com.android.server.am.ActivityManagerService#getContentProvider,false,102,102,2170,2170,0,264,2956,1,24
+    com.google.android.permissioncontroller/u0a192,com.google.android.permissioncontroller/u0a192,com.android.server.pm.permission.PermissionManagerService#updatePermissionFlags,false,95,87,2914,2906,0,292,4,2,146
+    com.google.android.permissioncontroller/u0a192,com.google.android.permissioncontroller/u0a192,com.android.server.display.DisplayManagerService$BinderService#getDisplayInfo,false,93,93,93,93,0,104,888,1,1
+    com.google.android.apps.nexuslauncher/u0a176,com.google.android.apps.nexuslauncher/u0a176,com.android.server.notification.NotificationManagerService$12#getActiveNotificationsFromListener,false,91,91,91,91,0,120,4252,1,4
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.alarm.AlarmManagerService$4#set,false,81,81,81,81,0,320,4,1,47
+    com.android.vending/u0a142,com.android.vending/u0a142,android.content.pm.BaseParceledListSlice$1#1,false,78,78,78,78,0,4,66056,1,51
+    com.google.android.as/u0a134,com.google.android.as/u0a134,android.content.ContentProvider$Transport#21,false,69,69,69,69,0,344,324,1,27
+    shared:android.media/u0a97,shared:android.media/u0a97,com.android.server.content.ContentService#unregisterContentObserver,false,62,62,63,63,0,108,4,1,136
+    com.android.systemui/u0a181,com.android.systemui/u0a181,com.android.server.content.ContentService#registerContentObserver,false,60,60,60,60,0,180,4,1,163
+    com.android.systemui/u0a181,com.android.systemui/u0a181,com.android.server.sensorprivacy.SensorPrivacyService$SensorPrivacyServiceImpl#isToggleSensorPrivacyEnabled,false,52,52,2680,2680,0,104,8,1,30
+    com.google.android.googlequicksearchbox/u0a145,com.google.android.googlequicksearchbox/u0a145,com.android.server.am.ActivityManagerService#getIntentSenderWithFeature,false,51,51,326,326,0,556,32,1,2
+    com.google.android.inputmethod.latin/u0a157,com.google.android.inputmethod.latin/u0a157,android.net.connectivity.com.android.server.ConnectivityService#getActiveNetworkInfo,false,50,45,51,45,0,84,112,2,1248
+    com.google.android.documentsui/u0a99,com.google.android.documentsui/u0a99,com.android.server.am.ActivityManagerService#registerReceiverWithFeature,false,46,46,6409,6409,0,760,8,1,3
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.am.ActivityManagerService#serviceDoneExecuting,false,44,40,44,40,0,120,0,2,2423
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,android.content.pm.BaseParceledListSlice$1#1,false,36,36,36,36,0,4,21720,1,330
+    com.android.vending/u0a142,com.android.vending/u0a142,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getPackageInfo,false,36,22,36,22,0,176,3076,2,493
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.appop.AppOpsService#setUidMode,false,35,23,40,23,0,108,4,2,129
+    com.android.providers.calendar/u0a93,com.android.providers.calendar/u0a93,com.android.server.content.ContentService#registerContentObserver,false,33,33,34,34,0,172,4,1,6
+    com.google.android.permissioncontroller/u0a192,com.google.android.permissioncontroller/u0a192,com.android.server.pm.permission.PermissionManagerService#getPermissionFlags,false,32,25,21,13,0,244,8,2,1322
+    com.google.android.apps.nexuslauncher/u0a176,com.google.android.apps.nexuslauncher/u0a176,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getApplicationInfo,false,25,25,25,25,0,164,2256,1,13
+    com.android.systemui/u0a181,com.android.systemui/u0a181,android.content.ContentProvider$Transport#21,false,23,23,23,23,0,376,324,1,309
+    com.google.android.apps.wellbeing/u0a143,com.google.android.apps.wellbeing/u0a143,com.android.server.pm.PackageManagerService$IPackageManagerImpl#queryIntentReceivers,false,23,23,23,23,0,408,2920,1,10
+    com.google.android.apps.messaging/u0a141,com.google.android.apps.messaging/u0a141,com.android.server.am.ActivityManagerService#refContentProvider,false,20,20,20,20,0,112,8,1,198
+    com.google.android.as.oss/u0a129,com.google.android.as.oss/u0a129,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getApplicationInfo,false,19,19,20,20,0,156,2852,1,2
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,android.database.CursorToBulkCursorAdaptor#7,false,14,14,14,14,0,72,4,1,20
+    0,0,com.android.server.net.NetworkManagementService$NetdUnsolicitedEventListener#4,false,14,14,14,14,0,152,0,1,5
+    com.android.vending/u0a142,com.android.vending/u0a142,com.android.server.notification.NotificationManagerService$12#cancelNotificationWithTag,false,13,10,55,52,0,184,4,2,769
+    com.android.systemui/u0a181,com.android.systemui/u0a181,com.android.server.pm.UserManagerService#canAddMoreUsersOfType,false,13,13,12,12,0,132,8,1,4
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.appop.AppOpsService#noteOperation,false,12,12,12,12,0,224,64,1,269
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.am.ActivityManagerService#checkPermissionForDevice,false,9,6,8,6,0,188,8,2,1169
+    com.google.android.apps.wellbeing/u0a143,com.google.android.apps.wellbeing/u0a143,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getApplicationInfo,false,9,5,9,5,0,224,1352,2,1830
+    com.google.android.apps.wellbeing/u0a143,com.google.android.apps.wellbeing/u0a143,com.android.server.devicepolicy.DevicePolicyManagerService#getProfileOwnerAsUser,false,8,8,6,6,0,100,8,1,32
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.UiModeManagerService$Stub#getContrast,false,7,7,6,6,0,72,8,1,1
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getApplicationInfo,false,7,7,7,7,0,152,2788,1,127
+    com.google.android.as.oss/u0a129,com.google.android.as.oss/u0a129,com.android.server.am.ActivityManagerService#serviceDoneExecuting,false,5,5,5,5,0,120,0,1,1
+    com.google.android.partnersetup/u0a136,com.google.android.partnersetup/u0a136,com.android.server.am.ActivityManagerService#refContentProvider,false,4,4,4,4,0,112,8,1,679
+    com.google.android.settings.intelligence/u0a140,com.google.android.settings.intelligence/u0a140,com.android.server.am.ActivityManagerService#refContentProvider,false,4,4,4,4,0,112,8,1,323
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.am.ActivityManagerService#getInfoForIntentSender,false,4,4,4,4,0,104,72,1,87
+    com.android.systemui/u0a181,com.android.systemui/u0a181,com.android.server.pm.PackageManagerService$IPackageManagerImpl#queryIntentServices,false,4,4,4,4,0,264,12,1,312
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getNameForUid,false,3,3,4,4,0,92,64,1,21
+    com.android.systemui/u0a181,com.android.systemui/u0a181,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getComponentEnabledSetting,false,3,3,3,3,0,304,8,1,109
+    shared:android.uid.phone/1001,shared:android.uid.phone/1001,com.android.server.pm.PackageManagerService$IPackageManagerImpl#getPackageUid,false,2,2,2,2,0,148,8,1,227
+    shared:com.google.uid.shared/u0a144,shared:com.google.uid.shared/u0a144,com.android.server.am.ActivityManagerService#checkPermissionForDevice,false,0,0,8,8,0,212,8,1,107
+
+Per-UID Summary (cpu_time, % of total cpu_time, recorded_call_count, call_count, package/uid):
+        1734  37%       51    51860 shared:com.google.uid.shared/u0a144
+         656  14%        1     3388 shared:android.uid.system/1000
+         501  11%       14    10490 com.google.android.apps.wellbeing/u0a143
+         354   8%        1      280 com.google.android.apps.safetyhub/u0a139
+         220   5%        5     2966 com.google.android.permissioncontroller/u0a192
+         191   4%        7     8552 shared:android.uid.phone/1001
+         155   3%        6     3251 com.android.systemui/u0a181
+         153   3%        2     1829 com.google.android.googlequicksearchbox/u0a145
+         127   3%        5     4868 com.android.vending/u0a142
+         117   3%        1      409 shared:android.uid.networkstack/1073
+         116   2%        2     1370 com.google.android.apps.nexuslauncher/u0a176
+          69   1%        1     2063 com.google.android.as/u0a134
+          62   1%        1     1093 shared:android.media/u0a97
+          50   1%        2     3734 com.google.android.inputmethod.latin/u0a157
+          46   1%        1       64 com.google.android.documentsui/u0a99
+          33   1%        1      103 com.android.providers.calendar/u0a93
+          24   1%        2       46 com.google.android.as.oss/u0a129
+          20   0%        1     2153 com.google.android.apps.messaging/u0a141
+          14   0%        1      543 0
+           4   0%        1     1241 com.google.android.partnersetup/u0a136
+           4   0%        1     1408 com.google.android.settings.intelligence/u0a140
+           0   0%        0      487 shared:android.uid.bluetooth/1002
+           0   0%        0       19 1010
+           0   0%        0       18 1013
+           0   0%        0       65 1017
+           0   0%        0       20 com.android.nfc/1027
+           0   0%        0        5 1037
+           0   0%        0      116 1041
+           0   0%        0      104 1047
+           0   0%        0      135 1066
+           0   0%        0       46 1067
+           0   0%        0       21 com.android.se/1068
+           0   0%        0       74 com.android.shell/2000
+           0   0%        0      694 shared:android.uid.shared/u0a91
+           0   0%        0       36 com.android.cellbroadcastreceiver/u0a95
+           0   0%        0       28 com.android.externalstorage/u0a98
+           0   0%        0       18 com.google.android.packageinstaller/u0a102
+           0   0%        0      356 com.android.managedprovisioning/u0a105
+           0   0%        0       27 com.android.carrierdefaultapp/u0a114
+           0   0%        0       48 com.android.printspooler/u0a126
+           0   0%        0       48 com.android.traceur/u0a127
+           0   0%        0      467 com.google.android.configupdater/u0a128
+           0   0%        0       23 com.google.android.onetimeinitializer/u0a130
+           0   0%        0       49 com.android.imsserviceentitlement/u0a132
+           0   0%        0      160 com.android.chrome/u0a146
+           0   0%        0       22 com.android.camera2/u0a147
+           0   0%        0      358 com.google.android.tts/u0a148
+           0   0%        0       69 com.google.android.webview/u0a162
+           0   0%        0       42 com.google.android.marvin.talkback/u0a167
+           0   0%        0       19 com.android.carrierconfig/u0a171
+           0   0%        0       72 com.google.android.googlesdksetup/u0a172
+           0   0%        0       79 com.google.android.apps.wallpaper/u0a180
+           0   0%        0      466 com.google.android.providers.media.module/u0a184
+           0   0%        0       42 com.google.android.healthconnect.controller/u0a185
+           0   0%        0      123 com.google.android.devicelockcontroller/u0a187
+           0   0%        0      138 com.google.android.cellbroadcastreceiver/u0a188
+           0   0%        0      308 com.google.android.ext.services/u0a189
+           0   0%        0      169 com.google.android.rkpdapp/u0a190
+           0   0%        0       22 com.google.android.ondevicepersonalization.services/u0a197
+           0   0%        0       19 com.google.android.federatedcompute/u0a198
+           0   0%        0       13 u0ai9000
+
+  Summary: total_cpu_time=4650, calls_count=106736, avg_call_cpu_time=43
+
+Exceptions thrown (exception_count, class_name):
+      19 java.lang.SecurityException
+      15 java.lang.IllegalArgumentException
+       2 android.os.ServiceSpecificException
+       1 java.lang.IllegalStateException
+       1 java.lang.ArrayIndexOutOfBoundsException
+
+/!\ Displayed data is sampled. See sampling interval at the top.
+--------- 0.015s was the duration of dumpsys binder_calls_stats, ending at: 2026-09-23 18:27:59
+-------------------------------------------------------------------------------
+DUMP OF SERVICE biometric:
+Service host process PID: 574
+Threads in use: 5/32
+Client PIDs: 158
+Legacy Settings: false
+
+Sensors:
+ ID(4), oemStrength: 15, updatedStrength: 15, modality 8, state: 0, cookie: 0
+ ID(0), oemStrength: 15, updatedStrength: 15, modality 2, state: 0, cookie: 0
+
+CurrentSession: null
+
+--------- 0.010s was the duration of dumpsys biometric, ending at: 2026-09-23 18:27:59
+-------------------------------------------------------------------------------
+DUMP OF SERVICE blob_store:
+Service host process PID: 574
+Threads in use: 0/32
+Client PIDs: 3695, 3123, 1639, 1575, 1479, 1538, 158
+mCurrentMaxSessionId: 0
+
+
+List of blobs (0):
+    <empty>
+
+BlobStore config:
+    XML current version: 6
+    Idle job ID: 191934935
+    Total bytes per app limit: 300 MB
+    Device config properties:
+        idle_job_period_ms: [cur: +1d0h0m0s0ms, def: +1d0h0m0s0ms]
+        session_expiry_timeout_ms: [cur: +7d0h0m0s0ms, def: +7d0h0m0s0ms]
+        total_bytes_per_app_limit_floor: [cur: 300 MB, def: 300 MB]
+        total_bytes_per_app_limit_fraction: [cur: 0.01, def: 0.01]
+        lease_acquisition_wait_time_ms: [cur: +6h0m0s0ms, def: +6h0m0s0ms]
+        commit_cool_off_duration_ms: [cur: +2d0h0m0s0ms, def: +2d0h0m0s0ms]
+        use_revocable_fd_for_reads: [cur: false, def: false]
+        delete_on_last_lease_delay_ms: [cur: +6h0m0s0ms, def: +6h0m0s0ms]
+        max_active_sessions: [cur: 250, def: 250]
+        max_committed_blobs: [cur: 1000, def: 1000]
+        max_leased_blobs: [cur: 500, def: 500]
+        max_permitted_pks: [cur: 300, def: 300]
+        lease_desc_char_limit: [cur: 300, def: 300]
+
+--------- 0.034s was the duration of dumpsys blob_store, ending at: 2026-09-23 18:27:59
+-------------------------------------------------------------------------------
+DUMP OF SERVICE bluetooth_manager:
+Service host process PID: 574
+Threads in use: 1/32
+Client PIDs: 3123, 2366, 1639, 1495, 1575, 1538, 1263, 1111, 1139, 975, 158
+Bluetooth Status
+  enabled: true
+  state: ON
+  address: XX:XX:XX:XX:17:00
+  name: sdk_gphone64_arm64
+  time since enabled: 00:00:38.984
+
+Enable log:
+  09-23 18:27:21.868 	Package [android] requested to [Enable]. 	Reason is SYSTEM_BOOT
+
+Bluetooth crashed 0 times
+
+0 BLE apps registered
+
+BluetoothManagerService:
+  mEnable:true
+  mQuietEnable:false
+  mEnableExternal:true
+  mQuietEnableExternal:false
+
+🚩Flag dump:
+	[■]: a2dpAsyncAllowLowLatency                               a2dp_async_allow_low_latency
+	[■]: a2dpConcurrentSourceSink                               a2dp_concurrent_source_sink
+	[ ]: a2dpIgnoreStartedWhenResponder                         a2dp_ignore_started_when_responder
+	[■]: a2dpOffloadCodecExtensibility                          a2dp_offload_codec_extensibility
+	[ ]: a2dpServiceLooper                                      a2dp_service_looper
+	[ ]: absVolumeSdpConflict                                   abs_volume_sdp_conflict
+	[■]: airplaneModeXBleOn                                     airplane_mode_x_ble_on
+	[■]: allowSwitchingHidAndHogp                               allow_switching_hid_and_hogp
+	[■]: androidHeadtrackerService                              android_headtracker_service
+	[■]: apiGetConnectionStateUsingIdentityAddress              api_get_connection_state_using_identity_address
+	[■]: ashaAsrc                                               asha_asrc
+	[■]: asymmetricPhyForUnidirectionalCis                      asymmetric_phy_for_unidirectional_cis
+	[ ]: audioPortBinderInheritRt                               audio_port_binder_inherit_rt
+	[ ]: audioRoutingCentralization                             audio_routing_centralization
+	[■]: autoConnectOnHfpWhenNoA2dpDevice                       auto_connect_on_hfp_when_no_a2dp_device
+	[ ]: autoConnectOnMultipleHfpWhenNoA2dpDevice               auto_connect_on_multiple_hfp_when_no_a2dp_device
+	[■]: autoOnFeature                                          auto_on_feature
+	[ ]: avdtpErrorCodes                                        avdtp_error_codes
+	[ ]: avoidStaticLoadingOfNative                             avoid_static_loading_of_native
+	[ ]: avrcpConnectA2dpDelayed                                avrcp_connect_a2dp_delayed
+	[ ]: avrcpSdpRecords                                        avrcp_sdp_records

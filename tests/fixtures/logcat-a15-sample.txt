@@ -1,0 +1,210 @@
+------ SYSTEM LOG (logcat -v threadtime -v printable -v uid -d *:v) ------
+--------- beginning of system
+09-23 18:27:22.203  1000   574   574 V NotificationManagerService$NotificationAssistants: binding: Intent { act=android.service.notification.NotificationAssistantService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.common.notification.service.AiAiNotificationAssistantService (has extras) }
+09-23 18:27:22.203  1000   574   574 W ActivityManager: Unable to start service Intent { act=android.service.notification.NotificationAssistantService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.common.notification.service.AiAiNotificationAssistantService } U=0: not found
+09-23 18:27:22.203  1000   574   574 W NotificationManagerService$NotificationAssistants: Unable to bind notification assistant service: Intent { act=android.service.notification.NotificationAssistantService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.common.notification.service.AiAiNotificationAssistantService (has extras) } in user 0
+09-23 18:27:22.209  1000   574   574 I MediaSessionStack: addSession to bottom of stack | record: com.android.server.telecom/HeadsetMediaButton/1 (userId=0)
+09-23 18:27:22.210  1000   574   574 I MediaSessionStack: removeSession | record: com.android.server.telecom/HeadsetMediaButton/1 (userId=0)
+09-23 18:27:22.212  1000   574   603 W ActivityManager: com.google.android.gms inode == 0 (b/152760674)
+09-23 18:27:22.212  1000   574   601 D AccessibilityManagerService: Ignoring non-encryption-aware service ComponentInfo{com.android.systemui.accessibility.accessibilitymenu/com.android.systemui.accessibility.accessibilitymenu.AccessibilityMenuService}
+09-23 18:27:22.213  1000   574   601 W MagnificationConnectionManager: requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-23 18:27:22.213  1000   574   574 W ActivityManager: Unable to start service Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } U=0: not found
+09-23 18:27:22.213  1000   574   574 W RemoteContentCaptureService: could not bind to Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } using flags 67112961
+09-23 18:27:22.213  1000   574   574 W ContentCapturePerUserService: remote service died: RemoteContentCaptureService[ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService} 145597722 (unbound)]
+09-23 18:27:22.213  1000   574   574 W ActivityManager: Unbind failed: could not find connection for android.app.LoadedApk$ServiceDispatcher$InnerConnection@659684b
+09-23 18:27:22.213  1000   574   574 W ActivityManager: Unable to start service Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } U=0: not found
+09-23 18:27:22.213  1000   574   574 W RemoteContentCaptureService: could not bind to Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } using flags 67112961
+09-23 18:27:22.213  1000   574   574 W ContentCapturePerUserService: remote service died: RemoteContentCaptureService[ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService} 213580609 (unbound)]
+09-23 18:27:22.213  1000   574   574 W ActivityManager: Unbind failed: could not find connection for android.app.LoadedApk$ServiceDispatcher$InnerConnection@970f8e6
+09-23 18:27:22.213  1000   574   574 D CompatChangeReporter: Compat change id reported: 311208629; UID 10189; state: ENABLED
+09-23 18:27:22.214  1000   574   574 W Looper  : Drained
+09-23 18:27:22.215  1000   574   603 I ActivityManager: Start proc 1263:com.google.android.gms.persistent/u0a144 for broadcast {com.google.android.gms/com.google.android.gms.chimera.GmsIntentOperationService$PersistentTrustedReceiver}
+09-23 18:27:22.216  1000   574   649 D WallpaperManagerService: WPMS.saveSettingsLocked-0
+09-23 18:27:22.230  1000   574   668 D CompatChangeReporter: Compat change id reported: 229362273; UID 1002; state: ENABLED
+09-23 18:27:22.231  1000   574  1066 D CompatChangeReporter: Compat change id reported: 161145287; UID 1002; state: ENABLED
+09-23 18:27:22.248  1000   574   691 W BroadcastLoopers: Found previously unknown looper Thread[BluetoothManagerService,5,main]
+09-23 18:27:22.265  1000   574   649 D CompatChangeReporter: Compat change id reported: 319212206; UID 10181; state: ENABLED
+09-23 18:27:22.272  1000   574   649 D SystemServerTiming: getUserSwitchability-0
+09-23 18:27:22.272  1000   574   649 D SystemServerTiming: TM.isInCall
+09-23 18:27:22.272  1000   574   649 D SystemServerTiming: hasUserRestriction-DISALLOW_USER_SWITCH
+09-23 18:27:22.272  1000   574   649 D SystemServerTiming: getInt-ALLOW_USER_SWITCHING_WHEN_SYSTEM_USER_LOCKED
+09-23 18:27:22.272  1000   574   649 D SystemServerTiming: isUserUnlocked-USER_SYSTEM
+09-23 18:27:22.276  1000   574   574 D WallpaperManagerService: WPMS.onServiceConnected-ComponentInfo{com.android.systemui/com.android.systemui.wallpapers.ImageWallpaper}
+09-23 18:27:22.276  1000   574   574 D WallpaperManagerService: WPMS.attachServiceLocked
+09-23 18:27:22.276  1000   574   574 D WallpaperManagerService: WPMS.connectLocked-ComponentInfo{com.android.systemui/com.android.systemui.wallpapers.ImageWallpaper}
+--------- beginning of main
+09-23 18:27:22.276  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+09-23 18:27:22.277  1002  1139  1139 E bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:608 init: 
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+09-23 18:27:22.277  1002  1139  1139 E bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:608 init: 
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+09-23 18:27:22.277  1002  1139  1139 E bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:608 init: 
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+09-23 18:27:22.277  1002  1139  1139 E bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:608 init: 
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+09-23 18:27:22.277  1002  1139  1139 E bluetooth-a2dp: system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:608 init: 
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+09-23 18:27:22.277  1002  1139  1139 I bluetooth-a2dp: system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001

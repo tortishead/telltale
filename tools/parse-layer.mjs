@@ -94,6 +94,9 @@ const EXPORTS = [
   'inputConfigOf',
   'inputViewports',
   'TYPE_INTS',
+  'diaRect',
+  'diaRectField',
+  'diaRectFields',
 ];
 
 function build() {
@@ -127,5 +130,6 @@ export const {
   propNamespace, propSectionOf, propReadOnly, propFlag,
   eventSplit, eventFields, configChanges, shortComponent, EVENT_TAGS,
   dmRect, dmField, dmSize, dmBlocks, dmCutoutBounds, dmDegrees,
+  diaRect, diaRectField, diaRectFields,
   TYPE_INTS,
 } = parsers;

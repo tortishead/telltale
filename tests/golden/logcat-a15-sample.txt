@@ -1,0 +1,226 @@
+tool: logcat
+displays: 1
+nodes: 207
+
+display 0  label=system log  size=0x0
+    meta: 207 lines · 13 tags · 5 errors
+    1  log-verbose     vis=y                                             -                           binding: Intent { act=android.service.notification.NotificationAssistantService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.common.notification.service.AiAiNotificationAssistantService (has extras) }
+    2  log-warn        vis=y                                             -                           Unable to start service Intent { act=android.service.notification.NotificationAssistantService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.common.notification.service.AiAiNotificationAssistantService } U=0: not found
+    3  log-warn        vis=y                                             -                           Unable to bind notification assistant service: Intent { act=android.service.notification.NotificationAssistantService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.common.notification.service.AiAiNotificationAssistantService (has extras) } in user 0
+    4  log-info        vis=y                                             -                           addSession to bottom of stack | record: com.android.server.telecom/HeadsetMediaButton/1 (userId=0)
+    5  log-info        vis=y                                             -                           removeSession | record: com.android.server.telecom/HeadsetMediaButton/1 (userId=0)
+    6  log-warn        vis=y                                             -                           com.google.android.gms inode == 0 (b/152760674)
+    7  log-debug       vis=y                                             -                           Ignoring non-encryption-aware service ComponentInfo{com.android.systemui.accessibility.accessibilitymenu/com.android.systemui.accessibility.accessibilitymenu.AccessibilityMenuService}
+    8  log-warn        vis=y                                             -                           requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+    9  log-warn        vis=y                                             -                           Unable to start service Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } U=0: not found
+   10  log-warn        vis=y                                             -                           could not bind to Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } using flags 67112961
+   11  log-warn        vis=y                                             -                           remote service died: RemoteContentCaptureService[ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService} 145597722 (unbound)]
+   12  log-warn        vis=y                                             -                           Unbind failed: could not find connection for android.app.LoadedApk$ServiceDispatcher$InnerConnection@659684b
+   13  log-warn        vis=y                                             -                           Unable to start service Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } U=0: not found
+   14  log-warn        vis=y                                             -                           could not bind to Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } using flags 67112961
+   15  log-warn        vis=y                                             -                           remote service died: RemoteContentCaptureService[ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService} 213580609 (unbound)]
+   16  log-warn        vis=y                                             -                           Unbind failed: could not find connection for android.app.LoadedApk$ServiceDispatcher$InnerConnection@970f8e6
+   17  log-debug       vis=y                                             -                           Compat change id reported: 311208629; UID 10189; state: ENABLED
+   18  log-warn        vis=y                                             -                           Drained
+   19  log-info        vis=y                                             -                           Start proc 1263:com.google.android.gms.persistent/u0a144 for broadcast {com.google.android.gms/com.google.android.gms.chimera.GmsIntentOperationService$PersistentTrustedReceiver}
+   20  log-debug       vis=y                                             -                           WPMS.saveSettingsLocked-0
+   21  log-debug       vis=y                                             -                           Compat change id reported: 229362273; UID 1002; state: ENABLED
+   22  log-debug       vis=y                                             -                           Compat change id reported: 161145287; UID 1002; state: ENABLED
+   23  log-warn        vis=y                                             -                           Found previously unknown looper Thread[BluetoothManagerService,5,main]
+   24  log-debug       vis=y                                             -                           Compat change id reported: 319212206; UID 10181; state: ENABLED
+   25  log-debug       vis=y                                             -                           getUserSwitchability-0
+   26  log-debug       vis=y                                             -                           TM.isInCall
+   27  log-debug       vis=y                                             -                           hasUserRestriction-DISALLOW_USER_SWITCH
+   28  log-debug       vis=y                                             -                           getInt-ALLOW_USER_SWITCHING_WHEN_SYSTEM_USER_LOCKED
+   29  log-debug       vis=y                                             -                           isUserUnlocked-USER_SYSTEM
+   30  log-debug       vis=y                                             -                           WPMS.onServiceConnected-ComponentInfo{com.android.systemui/com.android.systemui.wallpapers.ImageWallpaper}
+   31  log-debug       vis=y                                             -                           WPMS.attachServiceLocked
+   32  log-debug       vis=y                                             -                           WPMS.connectLocked-ComponentInfo{com.android.systemui/com.android.systemui.wallpapers.ImageWallpaper}
+   33  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+   34  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+   35  log-error       vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+   36  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+   37  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   38  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   39  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   40  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   41  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+   42  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+   43  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+   44  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+   45  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+   46  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+   47  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+   48  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+   49  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:608 init:
+   50  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+   51  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+   52  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+   53  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+   54  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+   55  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+   56  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+   57  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+   58  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+   59  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+   60  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+   61  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+   62  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+   63  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+   64  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   65  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   66  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   67  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   68  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+   69  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+   70  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+   71  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+   72  log-error       vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+   73  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+   74  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   75  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   76  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   77  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+   78  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+   79  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+   80  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+   81  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+   82  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+   83  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+   84  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+   85  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+   86  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:608 init:
+   87  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+   88  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+   89  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+   90  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+   91  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+   92  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+   93  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+   94  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+   95  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+   96  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+   97  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+   98  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+   99  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+  100  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+  101  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  102  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  103  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  104  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  105  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+  106  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+  107  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+  108  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+  109  log-error       vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+  110  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+  111  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  112  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  113  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  114  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  115  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+  116  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+  117  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+  118  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+  119  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+  120  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+  121  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+  122  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+  123  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:608 init:
+  124  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+  125  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+  126  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+  127  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+  128  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+  129  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+  130  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+  131  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+  132  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+  133  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+  134  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+  135  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+  136  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+  137  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+  138  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  139  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  140  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  141  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  142  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+  143  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+  144  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+  145  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+  146  log-error       vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+  147  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+  148  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  149  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  150  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  151  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  152  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+  153  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+  154  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+  155  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+  156  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+  157  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+  158  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+  159  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+  160  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:608 init:
+  161  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+  162  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+  163  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+  164  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+  165  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+  166  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+  167  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+  168  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+  169  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+  170  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+  171  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LC3 not implemented
+  172  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:639 init: OPUS codec disabled, updated priority to -1
+  173  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus
+  174  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated Opus codec priority to -1
+  175  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  176  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  177  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  178  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  179  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC SINK
+  180  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC SINK
+  181  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC SINK
+  182  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac_decoder.cc:128 A2DP_VendorLoadDecoderLdac: cannot open LDAC decoder library libldacBT_bco.so: dlopen failed: library "libldacBT_bco.so" not found
+  183  log-error       vis=y                                             -                           system/stack/a2dp/a2dp_vendor_ldac.cc:1416 init: cannot load the decoder
+  184  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: Opus SINK
+  185  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  186  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  187  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  188  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: UNKNOWN CODEC INDEX
+  189  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec LDAC, idx 4
+  190  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX-HD, idx 3
+  191  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec aptX, idx 2
+  192  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec AAC, idx 1
+  193  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:672 init: initialized Source codec SBC, idx 0
+  194  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec Opus SINK, idx 14
+  195  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec AAC SINK, idx 12
+  196  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:680 init: initialized Sink codec SBC SINK, idx 11
+  197  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:608 init:
+  198  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: SBC
+  199  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated SBC codec priority to 1001
+  200  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: AAC
+  201  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated AAC codec priority to 2001
+  202  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX
+  203  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX codec priority to 3001
+  204  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: aptX-HD
+  205  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated aptX-HD codec priority to 4001
+  206  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:116 createCodec: LDAC
+  207  log-info        vis=y                                             -                           system/stack/a2dp/a2dp_codec_config.cc:647 init: updated LDAC codec priority to 5001
+
+globals:
+  sections: 1
+  lines: 207
+  shown: 207
+  tags: 13
+  errors: 5
+  warns: 14
+  counts: 5 entries
+  crashes: 0
+  first: 09-23 18:27:22.203
+  last: 09-23 18:27:22.277
+  trimmed: 0

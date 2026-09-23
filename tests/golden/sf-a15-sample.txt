@@ -1,0 +1,21 @@
+tool: sf
+displays: 1
+nodes: 10
+
+display 0  name=EMU_display_0  size=1080x2424  rot=0  power=On
+    hwc rows: 2
+    1  sf-container    [-10800,-24240][10800,24240]  bounds      vis=n                                             -                           com.android.systemui.wallpapers.ImageWallpaper#64
+    2  sf-container    [0,0][1080,2424]          bounds      vis=n                                             -                           [Gesture Monitor] minus-one#113
+    3  sf-container    [-10800,-24240][10800,24240]  bounds      vis=n                                             -                           884810b ActivityRecordInputSink com.google.android.apps.nexuslauncher/.NexusLauncherActivity#108
+    4  sf-container    [0,0][1080,63]            bounds      vis=n                                             -                           StatusBar#86
+    5  sf-container    [0,2361][1080,2424]       bounds      vis=n                                             -                           Taskbar#101
+    6  sf-container    [-10800,-24240][10800,24240]  bounds      vis=n                                             -                           [Gesture Monitor] edge-swipe#71
+    7  sf-container    [-10800,-24240][10800,24240]  bounds      vis=n                                             -                           [Gesture Monitor] swipe-up#80
+    8  sf-container    [-10800,-24240][10800,24240]  bounds      vis=n                                             -                           IME Handwriting Surface#91
+    9  app             [0,0][1080,2424]          hwc frame   vis=y  focus                                      device                      com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#102
+   10  sf-buffer       [0,0][1080,2424]          hwc frame   vis=y                                             device                      Wallpaper BBQ wrapper#65
+
+globals:
+  build: [sf PRESENT_TIME_OFFSET=0 FORCE_HWC_FOR_RBG_TO_YUV=0 MAX_VIRT_DISPLAY_DIM=0 RUNNING_WITHOUT_SYNC_FRAMEWORK=0 NUM_FRAMEBUFFER_SURFACE_BUFFERS=2]
+  activeLayers: 87
+  frontend: new

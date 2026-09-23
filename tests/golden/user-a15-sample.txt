@@ -1,0 +1,29 @@
+tool: user
+displays: 1
+nodes: 10
+
+display 0  label=users  size=0x0
+    meta: 1 user · 4 types
+    1  user-section    vis=y                                             -                           Users
+    2  user-full       vis=y         ^user:6                             current                     user 0
+    3  user-section    vis=y                                             -                           Device properties
+    4  user-section    vis=y                                             -                           UserVisibilityMediator
+    5  user-section    vis=y                                             -                           Number of listeners for
+    6  user-section    vis=y                                             -                           User types (10 types)
+    7  user-profile    vis=y         ^user:89                            disabled                    profile.COMMUNAL
+    8  user-profile    vis=y         ^user:89                            -                           profile.PRIVATE
+    9  user-full       vis=y         ^user:89                            -                           full.GUEST
+   10  user-profile    vis=y         ^user:89                            -                           profile.MANAGED
+
+globals:
+  current: 0
+  users: 1
+  types: 4
+  maxUsers: 4 (limit reached: false)
+  switchable: true
+  headless: false
+  userVersion: 11
+  bootUser: -10000
+  deviceManaged: false
+  visible: [0]
+  lines: 219
