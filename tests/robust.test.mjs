@@ -568,3 +568,28 @@ test('a window nothing landed on says so rather than showing an empty list', asy
   page.select(bar.hash);
   assert.match(page.detail(), /No finger in the capture came down/);
 });
+
+/* The service reader's own pane. The parse tests say what comes out of an
+   Android 16 dump; this says the page can draw it — a foreground service with
+   its grant and its deadline, and a connection named for the client process
+   the bind record above it gave, not for the service it is on. */
+test('an Android 16 service and its connection are drawn in the pane', async () => {
+  const page = openPage();
+  await page.load(fixture('service-a16-sample.txt'), 'service', 'services.txt');
+
+  const scene = page.docs()[0].found[0].scene;
+  const backup = scene.nodes.find((n) => n.title === 'com.example.backup/UploadService');
+  page.select(backup.hash);
+  const fgs = page.detail();
+  assert.match(fgs, /shortService/, 'the type behind types=0x00000800');
+  assert.match(fgs, /anr at \+3m22s010ms/, 'and the clock it is running against');
+  assert.match(fgs, /proc state btop/, 'what the manager let it start on');
+
+  const conn = scene.nodes.find((n) => n.kind === 'connection'
+    && n.title === 'com.example.wallet');
+  page.select(conn.hash);
+  const bound = page.detail();
+  assert.match(bound, /com\.example\.wallet/, 'the client process that bound');
+  assert.match(bound, /5140/, 'and the pid it was in');
+  assert.match(bound, /BIND_IMPORTANT_BACKGROUND/, 'with the flags it bound under');
+});

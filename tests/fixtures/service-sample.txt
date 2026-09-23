@@ -7,12 +7,16 @@ ACTIVITY MANAGER SERVICES (dumpsys activity services)
     baseDir=/data/app/~~4qP8==/com.example.mail-9Kd2==/base.apk
     dataDir=/data/user/0/com.example.mail
     app=ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}
+    allowWhileInUsePermissionInFgs=true
+    recentCallingPackage=com.example.mail
+    recentCallingUid=10231
+    allowStartForeground=PROC_STATE_TOP
+    startForegroundCount=1
+    infoAllowStartForeground=callerTargetSdkVersion=33; callingUidProcState=TOP
+    isForeground=true foregroundId=42 foregroundNoti=Notification(channel=sync pri=0 contentView=null vibrate=null sound=null defaults=0x0 flags=0x42 color=0x00000000 vis=PRIVATE)
     createTime=-2h5m12s341ms startingBgTimeout=--
     lastActivity=-35s929ms restartTime=-2h5m12s341ms createdFromFg=true
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=12
-    isForeground=true foregroundId=42 foregroundNoti=Notification(channel=sync pri=0 contentView=null vibrate=null sound=null defaults=0x0 flags=0x42 color=0x00000000 vis=PRIVATE)
-    foregroundServiceType=dataSync
-    startForegroundCount=1
     Delivered Starts:
       Start Id: 12
       mIntent=Intent { cmp=com.example.mail/.SyncService }
@@ -22,44 +26,65 @@ ACTIVITY MANAGER SERVICES (dumpsys activity services)
       intent={cmp=com.example.mail/.SyncService}
       binder=android.os.BinderProxy@8d31c44
       requested=true received=true hasBound=true doRebind=false
-      * Client AppBindRecord{5f0aa19 com.example.mail/u0a231}
+      * Client AppBindRecord{5f0aa19 ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}}
         Per-process Connections:
-          ConnectionRecord{a91bd2e u0 CR FGS !VIS com.example.mail/.MailActivity}
+          ConnectionRecord{a91bd2e u0 CR FGS !VIS com.example.mail/.SyncService:@6c2a91f}
     All Connections:
-      ConnectionRecord{a91bd2e u0 CR FGS !VIS com.example.mail/.MailActivity}
+      ConnectionRecord{a91bd2e u0 CR FGS !VIS com.example.mail/.SyncService:@6c2a91f}
   * ServiceRecord{4d0a8b2 u0 com.android.systemui/.SystemUIService}
     intent={cmp=com.android.systemui/.SystemUIService}
     packageName=com.android.systemui
     processName=com.android.systemui
     app=ProcessRecord{7b1cc03 2310:com.android.systemui/u0a144}
+    allowlistManager=true
+    allowWhileInUsePermissionInFgs=false
+    recentCallingPackage=android
+    recentCallingUid=1000
+    allowStartForeground=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=null
     createTime=-4h12m8s006ms startingBgTimeout=--
     lastActivity=-4h12m7s912ms restartTime=-4h12m8s006ms createdFromFg=true
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
-    isForeground=false
     Bindings:
     * IntentBindRecord{1c0b4ee CREATE}:
       intent={cmp=com.android.systemui/.SystemUIService}
       binder=android.os.BinderProxy@30fa1c2
       requested=true received=true hasBound=true doRebind=false
-      * Client AppBindRecord{90ce5d1 android/1000}
+      * Client AppBindRecord{90ce5d1 ProcessRecord{0f4a8e1 1631:system/1000}}
         Per-process Connections:
-          ConnectionRecord{6f2ab09 u0 CR IMPB !VIS system/com.android.server.SystemServer}
+          ConnectionRecord{6f2ab09 u0 CR IMPB !VIS com.android.systemui/.SystemUIService:@1fb0e73}
     All Connections:
-      ConnectionRecord{6f2ab09 u0 CR IMPB !VIS system/com.android.server.SystemServer}
+      ConnectionRecord{6f2ab09 u0 CR IMPB !VIS com.android.systemui/.SystemUIService:@1fb0e73}
   * ServiceRecord{88ce1ff u0 com.example.player/.PlaybackService}
     intent={cmp=com.example.player/.PlaybackService}
     packageName=com.example.player
     processName=com.example.player
     app=ProcessRecord{2a91fe7 8802:com.example.player/u0a240}
+    allowWhileInUsePermissionInFgs=true
+    recentCallingPackage=com.example.player
+    recentCallingUid=10240
+    allowStartForeground=PROC_STATE_TOP
+    startForegroundCount=2
+    infoAllowStartForeground=callerTargetSdkVersion=33; callingUidProcState=TOP
+    isForeground=true foregroundId=7 foregroundNoti=Notification(channel=playback pri=1 vis=PUBLIC)
     createTime=-12m2s775ms startingBgTimeout=--
     lastActivity=-12m1s004ms restartTime=-12m2s775ms createdFromFg=false
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=3
-    isForeground=true foregroundId=7 foregroundNoti=Notification(channel=playback pri=1 vis=PUBLIC)
-    foregroundServiceType=mediaPlayback
-    startForegroundCount=2
+    Bindings:
+    * IntentBindRecord{b0c9a55 CREATE}:
+      intent={cmp=com.example.player/.PlaybackService}
+      binder=android.os.BinderProxy@7de2c01
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{2c8bb71 ProcessRecord{2a91fe7 8802:com.example.player/u0a240}}
+        Per-process Connections:
+          ConnectionRecord{b40e7c8 u0 CR !VIS com.example.player/.PlaybackService:@9a01e4c}
+      * Client AppBindRecord{7ff0d3a ProcessRecord{55c1b09 3120:com.android.bluetooth/1002}}
+        Per-process Connections:
+          ConnectionRecord{c72fa13 u0 CR IMPB !VIS com.example.player/.PlaybackService:@d3b7712}
     All Connections:
-      ConnectionRecord{b40e7c8 u0 CR !VIS com.example.player/.PlayerActivity}
-      ConnectionRecord{c72fa13 u0 CR IMPB !VIS com.android.bluetooth/.avrcp.AvrcpService}
+      ConnectionRecord{b40e7c8 u0 CR !VIS com.example.player/.PlaybackService:@9a01e4c}
+      ConnectionRecord{c72fa13 u0 CR IMPB !VIS com.example.player/.PlaybackService:@d3b7712}
 
   User 10 active services:
   * ServiceRecord{51b7d40 u10 com.example.work/.PolicyService}
@@ -67,31 +92,54 @@ ACTIVITY MANAGER SERVICES (dumpsys activity services)
     packageName=com.example.work
     processName=com.example.work
     app=ProcessRecord{c02fb18 9914:com.example.work/u10a231}
+    allowWhileInUsePermissionInFgs=false
+    recentCallingPackage=com.example.work
+    recentCallingUid=1010231
+    allowStartForeground=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=null
     createTime=-55m4s118ms startingBgTimeout=--
     lastActivity=-55m3s902ms restartTime=-55m4s118ms createdFromFg=false
-    startRequested=false delayedStop=false stopIfKilled=false callStart=false lastStartId=0
-    isForeground=false
+    Bindings:
+    * IntentBindRecord{3d71f08 CREATE}:
+      intent={cmp=com.example.work/.PolicyService}
+      binder=android.os.BinderProxy@44c9e10
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{6ab2e40 ProcessRecord{c02fb18 9914:com.example.work/u10a231}}
+        Per-process Connections:
+          ConnectionRecord{d81ce09 u10 CR IMPB !VIS com.example.work/.PolicyService:@f0a1b2c}
     All Connections:
-      ConnectionRecord{d81ce09 u10 CR IMPB !VIS com.example.work/.AdminReceiver}
+      ConnectionRecord{d81ce09 u10 CR IMPB !VIS com.example.work/.PolicyService:@f0a1b2c}
 
   Pending services:
-  * ServiceRecord{9f3ba04 u0 com.example.updater/.CheckService}
+  * Pending ServiceRecord{9f3ba04 u0 com.example.updater/.CheckService}
     intent={cmp=com.example.updater/.CheckService}
     packageName=com.example.updater
     processName=com.example.updater
     app=null
+    allowWhileInUsePermissionInFgs=false
+    recentCallingPackage=com.example.updater
+    recentCallingUid=10255
+    allowStartForeground=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=null
     createTime=-2s114ms startingBgTimeout=+8s
+    lastActivity=-2s114ms restartTime=-2s114ms createdFromFg=false
     startRequested=true delayedStop=false stopIfKilled=false callStart=false lastStartId=1
-    isForeground=false
 
   Restarting services:
-  * ServiceRecord{3ab99c1 u0 com.example.sensor/.PollService}
+  * Restarting ServiceRecord{3ab99c1 u0 com.example.sensor/.PollService}
     intent={cmp=com.example.sensor/.PollService}
     packageName=com.example.sensor
     processName=com.example.sensor
     app=null
+    allowWhileInUsePermissionInFgs=false
+    recentCallingPackage=com.example.sensor
+    recentCallingUid=10262
+    allowStartForeground=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=null
     createTime=-18m41s221ms startingBgTimeout=--
     lastActivity=-8s330ms restartTime=-8s330ms createdFromFg=false
-    restartCount=3 restartDelay=+20s nextRestartTime=+11s960ms
+    restartCount=3 restartDelay=+20s nextRestartTime=+11s960ms crashCount=1
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=9
-    isForeground=false

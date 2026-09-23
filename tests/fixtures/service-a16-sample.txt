@@ -1,82 +1,223 @@
 ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  Last ANR service:
+ServiceRecord{93d1c07 u0 com.example.legacy/.SlowService}
+    intent={cmp=com.example.legacy/.SlowService}
+    packageName=com.example.legacy
+    processName=com.example.legacy
+    app=ProcessRecord{a71e004 9021:com.example.legacy/u0a209}
+
   User 0 active services:
-  * ServiceRecord{7fd2b81 u0 com.example.fit/.WorkoutService}
+  * ServiceRecord{7fd2b81 u0 com.example.fit/.WorkoutService c:com.example.fit}
     intent={cmp=com.example.fit/.WorkoutService}
     packageName=com.example.fit
     processName=com.example.fit
+    targetSdkVersion=36
     permission=android.permission.FOREGROUND_SERVICE_HEALTH
+    baseDir=/data/app/~~7Vq1==/com.example.fit-2Jf9==/base.apk
+    dataDir=/data/user/0/com.example.fit
     app=ProcessRecord{6d4c209 11024:com.example.fit/u0a266}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=PROC_STATE_TOP
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=PROC_STATE_TOP
+    getFgsAllowWiu_new=PROC_STATE_TOP
+    getFgsAllowWiu_forStart=PROC_STATE_TOP
+    getFgsAllowWiu_forCapabilities=PROC_STATE_TOP
+    allowUiJobScheduling=true
+    recentCallingPackage=com.example.fit
+    recentCallingUid=10266
+    mAllowStart_noBinding=PROC_STATE_TOP
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_TOP
+    getFgsAllowStart_new=PROC_STATE_TOP
+    getFgsAllowStart=PROC_STATE_TOP
+    startForegroundCount=1
+    infoAllowStartForeground=callerTargetSdkVersion=36; callingUidProcState=TOP
+    isForeground=true foregroundId=11 types=0x00000108 foregroundNoti=Notification(channel=workout pri=1 vis=PUBLIC)
     createTime=-42m18s004ms startingBgTimeout=--
     lastActivity=-42m17s880ms restartTime=-42m18s004ms createdFromFg=true
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=4
-    isForeground=true foregroundId=11 foregroundNoti=Notification(channel=workout pri=1 vis=PUBLIC)
-    foregroundServiceType=health|location
-    startForegroundCount=1
-    mFgsEnterTime=-42m17s998ms
-    mAllowStartForeground=PROCESS_STATE_TOP mAllowStartForegroundAtEntering=PROCESS_STATE_TOP
-    mAllowWhileInUsePermissionInFgs=true mAllowWhileInUsePermissionInFgsAtEntering=true
-    mFgsHasNotificationPermission=true mFgsNotificationWasDeferred=false mFgsNotificationShown=true
+ startCommandResult=1
+    Bindings:
+    * IntentBindRecord{5d71c30 CREATE}:
+      intent={cmp=com.example.fit/.WorkoutService}
+      binder=android.os.BinderProxy@2b91f04
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{1f9ac52 ProcessRecord{6d4c209 11024:com.example.fit/u0a266}}
+        Per-process Connections:
+          ConnectionRecord{1bd0e77 u0 CR FGS !VIS com.example.fit/.WorkoutService:@c33ab12 flags=0x4000001}
     All Connections:
-      ConnectionRecord{1bd0e77 u0 CR FGS !VIS com.example.fit/.WorkoutActivity}
-  * ServiceRecord{c19a3e6 u0 com.example.backup/.UploadService}
+      ConnectionRecord{1bd0e77 u0 CR FGS !VIS com.example.fit/.WorkoutService:@c33ab12 flags=0x4000001}
+  * ServiceRecord{c19a3e6 u0 com.example.backup/.UploadService c:com.example.backup}
     intent={cmp=com.example.backup/.UploadService}
     packageName=com.example.backup
     processName=com.example.backup
+    targetSdkVersion=36
+    baseDir=/data/app/~~0Lc3==/com.example.backup-8Ba1==/base.apk
+    dataDir=/data/user/0/com.example.backup
     app=ProcessRecord{b8e1044 12770:com.example.backup/u0a271}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=DENIED
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=com.example.backup
+    recentCallingUid=10271
+    mAllowStart_noBinding=PROC_STATE_BTOP
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_BTOP
+    getFgsAllowStart_new=PROC_STATE_BTOP
+    getFgsAllowStart=PROC_STATE_BTOP
+    startForegroundCount=1
+    infoAllowStartForeground=callerTargetSdkVersion=36; callingUidProcState=BOUND_TOP
+    isForeground=true foregroundId=3 types=0x00000800 foregroundNoti=Notification(channel=backup pri=0 vis=PRIVATE)
+    isShortFgs=true startId=2 startForegroundCount=1 startTime=-37s990ms timeout=+2m22s010ms demoteTime=+2m22s010ms anrTime=+3m22s010ms
     createTime=-38s112ms startingBgTimeout=--
     lastActivity=-37s994ms restartTime=-38s112ms createdFromFg=false
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
-    isForeground=true foregroundId=3 foregroundNoti=Notification(channel=backup pri=0 vis=PRIVATE)
-    foregroundServiceType=shortService
-    startForegroundCount=1
-    mFgsEnterTime=-37s990ms
-    Short FGS timeout: -37s990ms; procstate demotion at +2m22s010ms; anr at +3m22s010ms
-    mAllowStartForeground=PROCESS_STATE_BOUND_TOP
-    mAllowWhileInUsePermissionInFgs=false
-    mFgsHasNotificationPermission=true mFgsNotificationWasDeferred=true mFgsNotificationShown=false
+ startCommandResult=1
   * ServiceRecord{2e5b7c0 u0 com.google.android.gms/.chimera.PersistentApiService}
     intent={cmp=com.google.android.gms/.chimera.PersistentApiService}
     packageName=com.google.android.gms
     processName=com.google.android.gms.persistent
+    targetSdkVersion=36
+    baseDir=/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk
+    dataDir=/data/user/0/com.google.android.gms
     app=ProcessRecord{4fa0b31 3812:com.google.android.gms.persistent/u0a103}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=DENIED
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=null
+    recentCallingUid=0
+    mAllowStart_noBinding=DENIED
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=DENIED
+    getFgsAllowStart_new=DENIED
+    getFgsAllowStart=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=null
     createTime=-6h1m44s310ms startingBgTimeout=--
     lastActivity=-2m9s440ms restartTime=-6h1m44s310ms createdFromFg=false
-    startRequested=false delayedStop=false stopIfKilled=false callStart=false lastStartId=0
-    isForeground=false
     Bindings:
     * IntentBindRecord{a3f07b9 CREATE}:
       intent={cmp=com.google.android.gms/.chimera.PersistentApiService}
       binder=android.os.BinderProxy@71c2ed0
       requested=true received=true hasBound=true doRebind=false
-      * Client AppBindRecord{0ba4c17 com.example.maps/u0a288}
+      * Client AppBindRecord{0ba4c17 ProcessRecord{9911aa2 4471:com.example.maps/u0a288}}
         Per-process Connections:
-          ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.example.maps/.MapsActivity}
-      * Client AppBindRecord{7e91d55 com.example.wallet/u0a291}
+          ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.google.android.gms/.chimera.PersistentApiService:@b0c1d2e flags=0x41}
+      * Client AppBindRecord{7e91d55 ProcessRecord{3c70b19 5140:com.example.wallet/u0a291}}
         Per-process Connections:
-          ConnectionRecord{9c3f4a8 u0 CR IMPB !VIS com.example.wallet/.PayService}
+          ConnectionRecord{9c3f4a8 u0 CR IMPB !VIS com.google.android.gms/.chimera.PersistentApiService:@e4f5a61 flags=0x41}
     All Connections:
-      ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.example.maps/.MapsActivity}
-      ConnectionRecord{9c3f4a8 u0 CR IMPB !VIS com.example.wallet/.PayService}
+      ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.google.android.gms/.chimera.PersistentApiService:@b0c1d2e flags=0x41}
+      ConnectionRecord{9c3f4a8 u0 CR IMPB !VIS com.google.android.gms/.chimera.PersistentApiService:@e4f5a61 flags=0x41}
 
   User 10 active services:
-  * ServiceRecord{0a71e39 u10 com.example.mail/.SyncService}
+  * ServiceRecord{0a71e39 u10 com.example.mail/.SyncService c:com.example.mail}
     intent={cmp=com.example.mail/.SyncService}
     packageName=com.example.mail
     processName=com.example.mail
+    targetSdkVersion=35
+    baseDir=/data/app/~~9Kd2==/com.example.mail-4qP8==/base.apk
+    dataDir=/data/user/10/com.example.mail
     app=ProcessRecord{18cc7d2 13390:com.example.mail/u10a231}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=DENIED
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=com.example.mail
+    recentCallingUid=1010231
+    mAllowStart_noBinding=DENIED
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=DENIED
+    getFgsAllowStart_new=DENIED
+    getFgsAllowStart=DENIED
+    startForegroundCount=0
+    infoAllowStartForeground=null
     createTime=-9m1s660ms startingBgTimeout=--
     lastActivity=-9m1s440ms restartTime=-9m1s660ms createdFromFg=false
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
-    isForeground=false
+ startCommandResult=1
+
+  User 0 delayed start services:
+  * Delayed start ServiceRecord{44b0e18 u0 com.example.news/.PrefetchService}
+    intent={cmp=com.example.news/.PrefetchService}
+    packageName=com.example.news
+    processName=com.example.news
+    targetSdkVersion=36
+    app=null
+    delayed=true
+    createTime=-14s009ms startingBgTimeout=--
+    lastActivity=-14s009ms restartTime=-14s009ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=false lastStartId=1
+ startCommandResult=0
+
+  Pending services:
+  * Pending ServiceRecord{9f3ba04 u0 com.example.updater/.CheckService}
+    intent={cmp=com.example.updater/.CheckService}
+    packageName=com.example.updater
+    processName=com.example.updater
+    targetSdkVersion=36
+    app=null
+    createTime=-2s114ms startingBgTimeout=+8s
+    lastActivity=-2s114ms restartTime=-2s114ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=false lastStartId=1
+ startCommandResult=0
 
   Restarting services:
-  * ServiceRecord{6c0d2f4 u0 com.example.sensor/.PollService}
+  * Restarting ServiceRecord{6c0d2f4 u0 com.example.sensor/.PollService}
     intent={cmp=com.example.sensor/.PollService}
     packageName=com.example.sensor
     processName=com.example.sensor
+    targetSdkVersion=34
     app=null
     createTime=-24m3s009ms startingBgTimeout=--
     lastActivity=-11s202ms restartTime=-11s202ms createdFromFg=false
-    restartCount=5 restartDelay=+40s nextRestartTime=+28s798ms
+    restartCount=5 restartDelay=+40s nextRestartTime=+28s798ms crashCount=2
     startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=17
-    isForeground=false
+ startCommandResult=1
+
+  Destroying services:
+  * Destroy ServiceRecord{18fa7c3 u0 com.example.scan/.ScanService}
+    intent={cmp=com.example.scan/.ScanService}
+    packageName=com.example.scan
+    processName=com.example.scan
+    targetSdkVersion=36
+    app=ProcessRecord{7b0c1a9 14022:com.example.scan/u0a294}
+    createTime=-3m18s770ms startingBgTimeout=--
+    lastActivity=-1s330ms restartTime=-3m18s770ms createdFromFg=false
+    destroying=true destroyTime=-1s330ms
+
+  Connection bindings to services:
+  * ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.google.android.gms/.chimera.PersistentApiService:@b0c1d2e flags=0x41}
+    binding=AppBindRecord{0ba4c17 com.google.android.gms/.chimera.PersistentApiService:com.example.maps}
+    conn=android.app.LoadedApk$ServiceDispatcher$InnerConnection@a71c033 flags=0x41

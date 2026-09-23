@@ -1,26 +1,30 @@
 tool: service
 displays: 2
-nodes: 8
+nodes: 11
 
 display 0  name=owner  size=0x0
-    meta: 4 services · 2 foreground
+    meta: 7 services · 2 foreground
     1  svc-foreground  vis=y                                             foreground,short service    com.example.backup/UploadService
     2  svc-foreground  vis=y                                             foreground                  com.example.fit/WorkoutService
-    3  svc-connection  vis=y         ^svc:3                              fgs                         com.example.fit/WorkoutActivity
-    4  svc-restarting  vis=n                                             restarting ×5               com.example.sensor/PollService
-    5  svc-bound       vis=n                                             -                           com.google.android.gms/PersistentApiService
-    6  svc-connection  vis=y         ^svc:37                             -                           com.example.maps/MapsActivity
-    7  svc-connection  vis=y         ^svc:37                             -                           com.example.wallet/PayService
+    3  svc-connection  vis=y         ^svc:10                             fgs                         com.example.fit
+    4  svc-pending     vis=n                                             delayed start               com.example.news/PrefetchService
+    5  svc-dead        vis=n                                             destroying                  com.example.scan/ScanService
+    6  svc-restarting  vis=n                                             restarting ×5               com.example.sensor/PollService
+    7  svc-pending     vis=n                                             pending                     com.example.updater/CheckService
+    8  svc-bound       vis=n                                             -                           com.google.android.gms/PersistentApiService
+    9  svc-connection  vis=y         ^svc:90                             -                           com.example.maps
+   10  svc-connection  vis=y         ^svc:90                             -                           com.example.wallet
 
 display 10  size=0x0
     meta: 1 service · 0 foreground
     1  svc-started     vis=y                                             -                           com.example.mail/SyncService
 
 globals:
-  services: 5
+  services: 8
   foreground: 2
   connections: 3
-  pending: 0
+  pending: 1
   restarting: 1
+  destroying: 1
   users: 2
-  lines: 83
+  lines: 224

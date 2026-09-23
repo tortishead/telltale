@@ -415,22 +415,43 @@ const SVC_FGS_TYPES = {
     a few minutes, demotes it, then ANRs the app if it has not stopped.`,
   specialUse: `A use the platform has no type for, declared with a reason in
     the manifest.`,
+  fileManagement: `Bulk work on the user's files — a move, a copy, a delete
+    the user started.`,
+  mediaProcessing: `Transcoding or otherwise working on media already on the
+    device. Android 15 onwards gives this one a few hours and then stops it.`,
+  manifest: `Every type the manifest declared: the app started the service
+    without naming one, so the platform took the lot.`,
 };
 
-/* What the connection flags the binder prints short actually asked for. */
+/* What the connection flags the binder prints short actually asked for. The
+   spellings are ConnectionRecord's own, in the order it prints them. */
 const SVC_CONN_FLAGS = {
   CR: 'BIND_AUTO_CREATE — the binding starts the service if nothing else has',
-  FGS: 'the client was a foreground service when it bound',
+  DBG: 'BIND_DEBUG_UNBIND',
+  '!FG': 'BIND_NOT_FOREGROUND',
   IMPB: 'BIND_IMPORTANT_BACKGROUND',
-  IMP: 'BIND_IMPORTANT',
+  ABCLT: 'BIND_ABOVE_CLIENT — the client would rather die than lose the service',
+  OOM: 'BIND_ALLOW_OOM_MANAGEMENT',
   WPRI: 'BIND_WAIVE_PRIORITY — the binding does not hold the process up',
-  '!VIS': 'the client is not visible',
-  VIS: 'the client is visible',
-  ADJ: 'BIND_ADJUST_WITH_ACTIVITY',
-  ALLOW_OOM: 'BIND_ALLOW_OOM_MANAGEMENT',
-  NOFG: 'BIND_NOT_FOREGROUND',
-  DEAD: 'the client is gone',
+  IMP: 'BIND_IMPORTANT',
+  WACT: 'BIND_ADJUST_WITH_ACTIVITY',
+  FGSA: 'BIND_FOREGROUND_SERVICE_WHILE_AWAKE',
+  FGS: 'BIND_FOREGROUND_SERVICE — the binding holds the service in the foreground',
+  LACT: 'BIND_TREAT_LIKE_ACTIVITY',
+  SLTA: 'BIND_SCHEDULE_LIKE_TOP_APP',
+  VFGS: 'BIND_TREAT_LIKE_VISIBLE_FOREGROUND_SERVICE',
+  UI: 'BIND_SHOWING_UI',
+  '!VIS': 'BIND_NOT_VISIBLE',
+  '!PRCP': 'BIND_NOT_PERCEPTIBLE',
+  BALF: 'BIND_ALLOW_ACTIVITY_STARTS',
+  CAPS: 'BIND_INCLUDE_CAPABILITIES — the client lends its while-in-use capabilities',
+  '!CPU': 'BIND_ALLOW_FREEZE',
+  DEAD: 'the service is gone',
 };
+
+/* `PROC_STATE_TOP`, `SYSTEM_UID`, `DENIED` — what the manager allowed or
+   refused the foreground start on, read the way it is written. */
+const svcReason = (r) => r.replace(/^REASON_/, '').replace(/_/g, ' ').toLowerCase();
 
 function serviceDetail(n){
   const out = [];
@@ -440,8 +461,14 @@ function serviceDetail(n){
     out.push(`<section class="dgroup"><h3>Inside</h3>${
       n.ancestors.map(a => docLink(a.hash, a.title)).join('')}</section>`);
     out.push(`<section class="dgroup"><h3>Connection</h3>${dl([
-      ['client', c.client ? esc(c.client) : dim('unnamed')],
+      ['client', c.client && c.client.process ? esc(c.client.process)
+        : dim('not named under the service')],
+      c.client && c.client.pid && ['client pid', c.client.pid],
+      c.client && c.client.uid && ['client uid', esc(c.client.uid)],
       ['user', c.userId],
+      c.target && ['on', esc(c.target)],
+      c.binder && ['binder', `<code>${esc(c.binder)}</code>`],
+      c.bindFlags && ['bind flags', `<code>${esc(c.bindFlags)}</code>`],
       ['hash', `<code>${esc(c.hash)}</code>`],
     ])}</section>`);
     out.push(`<section class="dgroup"><h3>Bound with</h3>${
@@ -458,7 +485,7 @@ function serviceDetail(n){
     ['component', esc(s.component)],
     ['package', esc(s.pkg || '—')],
     ['user', s.userId],
-    ['listed under', esc(s.section === 'Active' ? 'active services' : `${s.section.toLowerCase()} services`)],
+    ['listed under', esc(SVC_SECTION_LABEL[s.section] || 'active services')],
     ['at', `line ${s.at}`],
   ])}</section>`);
 
@@ -470,6 +497,9 @@ function serviceDetail(n){
     s.created && ['created', esc(s.created)],
     s.lastActivity && ['last activity', esc(s.lastActivity)],
     s.permission && ['permission', esc(s.permission)],
+    s.targetSdk && ['target sdk', esc(s.targetSdk)],
+    s.calledBy && ['last called by', esc(s.calledBy)],
+    s.destroying === true && ['destroying', s.destroyTime ? esc(s.destroyTime) : 'yes'],
   ])}</section>`);
 
   if(s.foreground || s.fgsTypes.length){
@@ -479,9 +509,11 @@ function serviceDetail(n){
       s.fgsTypes.length && ['types', esc(s.fgsTypes.join(' · '))],
       s.fgsCount && ['times started', esc(s.fgsCount)],
       s.fgsSince && ['since', esc(s.fgsSince)],
-      s.allowedBy && ['allowed by', esc(s.allowedBy.replace(/^PROCESS_STATE_/, '').toLowerCase())],
+      s.allowedBy && ['allowed by', esc(svcReason(s.allowedBy))],
+      s.whileInUseBy && ['while-in-use permissions', esc(svcReason(s.whileInUseBy))],
       s.whileInUse !== null && ['while-in-use permissions', yn(s.whileInUse)],
       s.notificationShown !== null && ['notification shown', yn(s.notificationShown)],
+      s.allowedNote && ['what the manager said', esc(s.allowedNote)],
     ])}</section>`);
 
     /* A short service is the one kind with a clock on it, and the deadline is
@@ -502,6 +534,7 @@ function serviceDetail(n){
     out.push(`<section class="dgroup"><h3>Restarting</h3>${dl([
       s.restartCount && ['times', esc(s.restartCount)],
       s.nextRestart && ['next attempt', esc(s.nextRestart)],
+      s.crashCount && ['crashes', esc(s.crashCount)],
     ])}</section>`);
   }
 

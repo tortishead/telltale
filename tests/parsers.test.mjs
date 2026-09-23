@@ -26,7 +26,7 @@ import {
   parseEventLogDump, eventSplit, eventFields, configChanges, shortComponent,
   parseDisplayManagerDump, dmRect, dmField, dmSize, dmBlocks, dmCutoutBounds, dmDegrees,
   parseActivityDump, actField, actBounds, actTaskHead,
-  parseActivityServicesDump, svcConnection, svcPid,
+  parseActivityServicesDump, svcConnection, svcClient, svcPid, svcFgsTypes,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -713,16 +713,52 @@ test('a text with no task tree in it is not this dump', () => {
 
 /* ---------------- services ---------------- */
 
-test('svcConnection reads the client off the end and the flags off the front', () => {
-  const c = svcConnection('CR FGS !VIS com.example.mail/.MailActivity');
-  assert.equal(c.client, 'com.example.mail/.MailActivity');
+/* A ConnectionRecord names the service the binding is on, the binder the
+   client holds it through and, since Android 14, the raw bind flags. It never
+   names the client — that comes from the bind record it is printed under. */
+test('svcConnection reads the service off the end and the flags off the front', () => {
+  const c = svcConnection('CR FGS !VIS com.example.mail/.SyncService:@6c2a91f flags=0x4000001');
+  assert.equal(c.target, 'com.example.mail/.SyncService');
+  assert.equal(c.binder, '6c2a91f');
+  assert.equal(c.bindFlags, '0x4000001');
   assert.deepEqual(c.flags, ['CR', 'FGS', '!VIS']);
 
-  const system = svcConnection('CR IMPB !VIS system/com.android.server.SystemServer');
-  assert.equal(system.client, 'system/com.android.server.SystemServer');
+  const older = svcConnection('CR IMPB !VIS com.android.systemui/.SystemUIService:@1fb0e73');
+  assert.equal(older.target, 'com.android.systemui/.SystemUIService');
+  assert.equal(older.bindFlags, null, 'a build before the flags were printed still reads');
+
+  const dead = svcConnection('CR !VIS DEAD com.example.work/.PolicyService:@f0a1b2c');
+  assert.deepEqual(dead.flags, ['CR', '!VIS', 'DEAD']);
 
   const bare = svcConnection('CR !VIS');
-  assert.equal(bare.client, null, 'a line naming no client is still a connection');
+  assert.equal(bare.target, null, 'a line naming no service is still a connection');
+});
+
+/* The client is a process record, and the dump prints the whole of it. */
+test('svcClient reads the process out of the bind record', () => {
+  const c = svcClient('ProcessRecord{9911aa2 4471:com.example.maps/u0a288}');
+  assert.equal(c.process, 'com.example.maps');
+  assert.equal(c.pid, 4471);
+  assert.equal(c.uid, 'u0a288');
+
+  const system = svcClient('ProcessRecord{0f4a8e1 1631:system/1000}');
+  assert.equal(system.process, 'system');
+  assert.equal(system.pid, 1631);
+  assert.equal(svcClient(null), null);
+});
+
+/* Android 14 stopped printing the foreground types by name and started
+   printing the bitmask the service was started with. */
+test('svcFgsTypes reads the bits the manager prints', () => {
+  assert.deepEqual(svcFgsTypes('0x00000108'), ['location', 'health']);
+  assert.deepEqual(svcFgsTypes('00000800'), ['shortService'], 'a build printing no 0x');
+  assert.deepEqual(svcFgsTypes('0x40000000'), ['specialUse']);
+  assert.deepEqual(svcFgsTypes('0x00002000'), ['mediaProcessing']);
+  assert.deepEqual(svcFgsTypes('0x00000000'), []);
+  assert.deepEqual(svcFgsTypes('0xFFFFFFFF'), ['manifest'],
+    'every bit set is the manager saying "whatever the manifest declared"');
+  assert.deepEqual(svcFgsTypes('0x00010000'), ['0x10000'],
+    'a bit this reader does not know is still shown');
 });
 
 test('svcPid takes the pid out of the process record', () => {
@@ -742,9 +778,15 @@ test('the service sample is grouped by user, with connections under services', (
   assert.equal(player.kind, 'service');
   assert.equal(player.service.pid, 8802);
   assert.equal(player.subCount, 2);
+  /* A connection row is named for the client process that made the binding,
+     which is what the bind record above it says. */
   assert.deepEqual(
     s.nodes.filter((n) => n.parentHash === player.hash).map((n) => n.title),
-    ['com.example.player/PlayerActivity', 'com.android.bluetooth/AvrcpService']);
+    ['com.example.player', 'com.android.bluetooth']);
+  assert.deepEqual(
+    s.nodes.filter((n) => n.parentHash === player.hash).map((n) => n.connection.target),
+    ['com.example.player/.PlaybackService', 'com.example.player/.PlaybackService'],
+    'and every one of them is on this service');
 });
 
 /* The same connection is printed twice — under the client that made it and
@@ -780,15 +822,68 @@ test('an Android 16 dump reads the foreground type, the deadline and the grant',
   const s = parseActivityServicesDump(read('fixtures/service-a16-sample.txt'));
   const fit = s.nodes.find((n) => n.title === 'com.example.fit/WorkoutService').service;
 
-  assert.deepEqual(fit.fgsTypes, ['health', 'location']);
-  assert.equal(fit.allowedBy, 'PROCESS_STATE_TOP');
-  assert.equal(fit.whileInUse, true);
+  assert.deepEqual(fit.fgsTypes, ['location', 'health'], 'types=0x00000108');
+  assert.equal(fit.allowedBy, 'PROC_STATE_TOP');
+  assert.equal(fit.whileInUseBy, 'PROC_STATE_TOP',
+    'Android 15 replaced the while-in-use boolean with a reason per route');
   assert.equal(fit.foregroundId, '11');
+  assert.equal(fit.targetSdk, '36');
+  assert.equal(fit.calledBy, 'com.example.fit', 'the c: the record head ends with');
 
   const short = s.nodes.find((n) => n.title === 'com.example.backup/UploadService');
   assert.deepEqual(short.service.fgsTypes, ['shortService']);
   assert.match(short.service.shortTimeout, /anr at \+3m22s010ms$/);
   assert.ok(short.badges.some((b) => b[0] === 'short service'));
+});
+
+/* Every list but the active one prints a word between the star and the record,
+   and a reader that wants a bare `* ServiceRecord{` finds none of them. */
+test('the lists the manager keeps its unhappy records under are all read', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-a16-sample.txt'));
+  const section = (title) => s.nodes.find((n) => n.title === title).service.section;
+
+  assert.equal(section('com.example.updater/CheckService'), 'Pending');
+  assert.equal(section('com.example.sensor/PollService'), 'Restarting');
+  assert.equal(section('com.example.scan/ScanService'), 'Destroying');
+  assert.equal(section('com.example.news/PrefetchService'), 'Delayed');
+  assert.equal(s.globals.destroying, 1);
+  assert.equal(s.nodes.find((n) => n.title === 'com.example.scan/ScanService').family, 'svc-dead');
+});
+
+/* `startCommandResult=` is printed with one leading space and no indent of its
+   own. A record collected by indentation ends there — before its bindings. */
+test('the one-space line the manager prints does not cut a record short', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-a16-sample.txt'));
+  const fit = s.nodes.find((n) => n.title === 'com.example.fit/WorkoutService');
+
+  assert.equal(fit.service.startResult, '1');
+  assert.equal(fit.service.conns.length, 1, 'the connections printed after that line');
+  assert.equal(fit.service.bindings, 1);
+});
+
+/* The dump prints one record twice more than it is worth reading: once under
+   `Last ANR service:` without a star, and once per connection from the
+   client's end under `Connection bindings to services:`. */
+test('the sections that print a record again are not read again', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-a16-sample.txt'));
+  assert.equal(s.nodes.some((n) => n.title === 'com.example.legacy/SlowService'), false,
+    'the last ANR service is not an active one');
+  assert.equal(s.globals.connections, 3, 'and no connection is counted from both ends');
+});
+
+/* Tooling that rewrites this dump prints the types by name. Nothing on a
+   device does, but a text that says it is still read. */
+test('a foreground type printed by name is read as well as the bitmask', () => {
+  const s = parseActivityServicesDump([
+    'ACTIVITY MANAGER SERVICES (dumpsys activity services)',
+    '  User 0 active services:',
+    '  * ServiceRecord{ceb7f39 u0 com.example.mail/.SyncService}',
+    '    packageName=com.example.mail',
+    '    app=ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}',
+    '    isForeground=true foregroundId=42 foregroundNoti=Notification(channel=sync)',
+    '    foregroundServiceType=dataSync|mediaPlayback',
+  ].join('\n'));
+  assert.deepEqual(s.nodes[0].service.fgsTypes, ['dataSync', 'mediaPlayback']);
 });
 
 test('a service two processes are bound to lists both of them', () => {
@@ -797,7 +892,9 @@ test('a service two processes are bound to lists both of them', () => {
 
   assert.equal(gms.service.clients, 2, 'two AppBindRecords');
   assert.deepEqual(s.nodes.filter((n) => n.parentHash === gms.hash).map((n) => n.title),
-    ['com.example.maps/MapsActivity', 'com.example.wallet/PayService']);
+    ['com.example.maps', 'com.example.wallet']);
+  assert.deepEqual(s.nodes.filter((n) => n.parentHash === gms.hash)
+    .map((n) => n.connection.client.pid), [4471, 5140]);
   assert.equal(gms.service.startRequested, false,
     'nothing started it; the bindings are the whole of why it is alive');
 });

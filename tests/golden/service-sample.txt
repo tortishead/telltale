@@ -5,19 +5,19 @@ nodes: 11
 display 0  name=owner  size=0x0
     meta: 5 services · 2 foreground
     1  svc-started     vis=y                                             -                           com.android.systemui/SystemUIService
-    2  svc-connection  vis=y         ^svc:30                             -                           system/SystemServer
+    2  svc-connection  vis=y         ^svc:34                             -                           system
     3  svc-foreground  vis=y                                             foreground                  com.example.mail/SyncService
-    4  svc-connection  vis=y         ^svc:3                              fgs                         com.example.mail/MailActivity
+    4  svc-connection  vis=y         ^svc:3                              fgs                         com.example.mail
     5  svc-foreground  vis=y                                             foreground                  com.example.player/PlaybackService
-    6  svc-connection  vis=y         ^svc:49                             -                           com.example.player/PlayerActivity
-    7  svc-connection  vis=y         ^svc:49                             -                           com.android.bluetooth/AvrcpService
+    6  svc-connection  vis=y         ^svc:59                             -                           com.example.player
+    7  svc-connection  vis=y         ^svc:59                             -                           com.android.bluetooth
     8  svc-restarting  vis=n                                             restarting ×3               com.example.sensor/PollService
     9  svc-pending     vis=n                                             pending                     com.example.updater/CheckService
 
 display 10  size=0x0
     meta: 1 service · 0 foreground
     1  svc-bound       vis=n                                             -                           com.example.work/PolicyService
-    2  svc-connection  vis=y         ^svc:65                             -                           com.example.work/AdminReceiver
+    2  svc-connection  vis=y         ^svc:90                             -                           com.example.work
 
 globals:
   services: 6
@@ -25,5 +25,6 @@ globals:
   connections: 5
   pending: 1
   restarting: 1
+  destroying: 0
   users: 2
-  lines: 98
+  lines: 146
