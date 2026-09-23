@@ -1,0 +1,26 @@
+tool: service
+displays: 2
+nodes: 8
+
+display 0  name=owner  size=0x0
+    meta: 4 services · 2 foreground
+    1  svc-foreground  vis=y                                             foreground,short service    com.example.backup/UploadService
+    2  svc-foreground  vis=y                                             foreground                  com.example.fit/WorkoutService
+    3  svc-connection  vis=y         ^svc:3                              fgs                         com.example.fit/WorkoutActivity
+    4  svc-restarting  vis=n                                             restarting ×5               com.example.sensor/PollService
+    5  svc-bound       vis=n                                             -                           com.google.android.gms/PersistentApiService
+    6  svc-connection  vis=y         ^svc:37                             -                           com.example.maps/MapsActivity
+    7  svc-connection  vis=y         ^svc:37                             -                           com.example.wallet/PayService
+
+display 10  size=0x0
+    meta: 1 service · 0 foreground
+    1  svc-started     vis=y                                             -                           com.example.mail/SyncService
+
+globals:
+  services: 5
+  foreground: 2
+  connections: 3
+  pending: 0
+  restarting: 1
+  users: 2
+  lines: 83

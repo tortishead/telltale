@@ -27,6 +27,7 @@ SECTIONS = [
     ('SURFACEFLINGER (dumpsys SurfaceFlinger)',         'sf-sample.txt'),
     ('DISPLAY MANAGER (dumpsys display)',               'display-sample.txt'),
     ('APP ACTIVITIES (dumpsys activity -v all)',         'activity-sample.txt'),
+    ('APP SERVICES (dumpsys activity service all)',      'service-sample.txt'),
     ('PACKAGE MANAGER (dumpsys package)',               'package-sample.txt'),
     ('USERS (dumpsys user)',                            'user-sample.txt'),
     ('OVERLAY MANAGER (dumpsys overlay)',                'overlay-sample.txt'),

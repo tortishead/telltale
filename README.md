@@ -21,6 +21,7 @@ per reader that recognised a section of it.
 | `adb shell dumpsys SurfaceFlinger` | layers | `sf` |
 | `adb shell dumpsys display` | displays | `display` |
 | `adb shell dumpsys activity activities` | tasks and activities | `activity` |
+| `adb shell dumpsys activity services` | services and their clients | `service` |
 | `adb shell dumpsys package` | packages | `package` |
 | `adb pull /data/anr/traces.txt` | threads | `anr` |
 | `adb shell dumpsys user` | users | `user` |

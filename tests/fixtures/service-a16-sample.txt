@@ -1,0 +1,82 @@
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{7fd2b81 u0 com.example.fit/.WorkoutService}
+    intent={cmp=com.example.fit/.WorkoutService}
+    packageName=com.example.fit
+    processName=com.example.fit
+    permission=android.permission.FOREGROUND_SERVICE_HEALTH
+    app=ProcessRecord{6d4c209 11024:com.example.fit/u0a266}
+    createTime=-42m18s004ms startingBgTimeout=--
+    lastActivity=-42m17s880ms restartTime=-42m18s004ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=4
+    isForeground=true foregroundId=11 foregroundNoti=Notification(channel=workout pri=1 vis=PUBLIC)
+    foregroundServiceType=health|location
+    startForegroundCount=1
+    mFgsEnterTime=-42m17s998ms
+    mAllowStartForeground=PROCESS_STATE_TOP mAllowStartForegroundAtEntering=PROCESS_STATE_TOP
+    mAllowWhileInUsePermissionInFgs=true mAllowWhileInUsePermissionInFgsAtEntering=true
+    mFgsHasNotificationPermission=true mFgsNotificationWasDeferred=false mFgsNotificationShown=true
+    All Connections:
+      ConnectionRecord{1bd0e77 u0 CR FGS !VIS com.example.fit/.WorkoutActivity}
+  * ServiceRecord{c19a3e6 u0 com.example.backup/.UploadService}
+    intent={cmp=com.example.backup/.UploadService}
+    packageName=com.example.backup
+    processName=com.example.backup
+    app=ProcessRecord{b8e1044 12770:com.example.backup/u0a271}
+    createTime=-38s112ms startingBgTimeout=--
+    lastActivity=-37s994ms restartTime=-38s112ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=2
+    isForeground=true foregroundId=3 foregroundNoti=Notification(channel=backup pri=0 vis=PRIVATE)
+    foregroundServiceType=shortService
+    startForegroundCount=1
+    mFgsEnterTime=-37s990ms
+    Short FGS timeout: -37s990ms; procstate demotion at +2m22s010ms; anr at +3m22s010ms
+    mAllowStartForeground=PROCESS_STATE_BOUND_TOP
+    mAllowWhileInUsePermissionInFgs=false
+    mFgsHasNotificationPermission=true mFgsNotificationWasDeferred=true mFgsNotificationShown=false
+  * ServiceRecord{2e5b7c0 u0 com.google.android.gms/.chimera.PersistentApiService}
+    intent={cmp=com.google.android.gms/.chimera.PersistentApiService}
+    packageName=com.google.android.gms
+    processName=com.google.android.gms.persistent
+    app=ProcessRecord{4fa0b31 3812:com.google.android.gms.persistent/u0a103}
+    createTime=-6h1m44s310ms startingBgTimeout=--
+    lastActivity=-2m9s440ms restartTime=-6h1m44s310ms createdFromFg=false
+    startRequested=false delayedStop=false stopIfKilled=false callStart=false lastStartId=0
+    isForeground=false
+    Bindings:
+    * IntentBindRecord{a3f07b9 CREATE}:
+      intent={cmp=com.google.android.gms/.chimera.PersistentApiService}
+      binder=android.os.BinderProxy@71c2ed0
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{0ba4c17 com.example.maps/u0a288}
+        Per-process Connections:
+          ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.example.maps/.MapsActivity}
+      * Client AppBindRecord{7e91d55 com.example.wallet/u0a291}
+        Per-process Connections:
+          ConnectionRecord{9c3f4a8 u0 CR IMPB !VIS com.example.wallet/.PayService}
+    All Connections:
+      ConnectionRecord{55a0e12 u0 CR IMPB !VIS com.example.maps/.MapsActivity}
+      ConnectionRecord{9c3f4a8 u0 CR IMPB !VIS com.example.wallet/.PayService}
+
+  User 10 active services:
+  * ServiceRecord{0a71e39 u10 com.example.mail/.SyncService}
+    intent={cmp=com.example.mail/.SyncService}
+    packageName=com.example.mail
+    processName=com.example.mail
+    app=ProcessRecord{18cc7d2 13390:com.example.mail/u10a231}
+    createTime=-9m1s660ms startingBgTimeout=--
+    lastActivity=-9m1s440ms restartTime=-9m1s660ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+    isForeground=false
+
+  Restarting services:
+  * ServiceRecord{6c0d2f4 u0 com.example.sensor/.PollService}
+    intent={cmp=com.example.sensor/.PollService}
+    packageName=com.example.sensor
+    processName=com.example.sensor
+    app=null
+    createTime=-24m3s009ms startingBgTimeout=--
+    lastActivity=-11s202ms restartTime=-11s202ms createdFromFg=false
+    restartCount=5 restartDelay=+40s nextRestartTime=+28s798ms
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=17
+    isForeground=false

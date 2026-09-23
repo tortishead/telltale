@@ -1,0 +1,97 @@
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{ceb7f39 u0 com.example.mail/.SyncService}
+    intent={cmp=com.example.mail/.SyncService}
+    packageName=com.example.mail
+    processName=com.example.mail
+    baseDir=/data/app/~~4qP8==/com.example.mail-9Kd2==/base.apk
+    dataDir=/data/user/0/com.example.mail
+    app=ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}
+    createTime=-2h5m12s341ms startingBgTimeout=--
+    lastActivity=-35s929ms restartTime=-2h5m12s341ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=12
+    isForeground=true foregroundId=42 foregroundNoti=Notification(channel=sync pri=0 contentView=null vibrate=null sound=null defaults=0x0 flags=0x42 color=0x00000000 vis=PRIVATE)
+    foregroundServiceType=dataSync
+    startForegroundCount=1
+    Delivered Starts:
+      Start Id: 12
+      mIntent=Intent { cmp=com.example.mail/.SyncService }
+      deliveryCount=1 doneExecutingCount=1 taskRemoved=false
+    Bindings:
+    * IntentBindRecord{7c1de02 CREATE}:
+      intent={cmp=com.example.mail/.SyncService}
+      binder=android.os.BinderProxy@8d31c44
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{5f0aa19 com.example.mail/u0a231}
+        Per-process Connections:
+          ConnectionRecord{a91bd2e u0 CR FGS !VIS com.example.mail/.MailActivity}
+    All Connections:
+      ConnectionRecord{a91bd2e u0 CR FGS !VIS com.example.mail/.MailActivity}
+  * ServiceRecord{4d0a8b2 u0 com.android.systemui/.SystemUIService}
+    intent={cmp=com.android.systemui/.SystemUIService}
+    packageName=com.android.systemui
+    processName=com.android.systemui
+    app=ProcessRecord{7b1cc03 2310:com.android.systemui/u0a144}
+    createTime=-4h12m8s006ms startingBgTimeout=--
+    lastActivity=-4h12m7s912ms restartTime=-4h12m8s006ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=1
+    isForeground=false
+    Bindings:
+    * IntentBindRecord{1c0b4ee CREATE}:
+      intent={cmp=com.android.systemui/.SystemUIService}
+      binder=android.os.BinderProxy@30fa1c2
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{90ce5d1 android/1000}
+        Per-process Connections:
+          ConnectionRecord{6f2ab09 u0 CR IMPB !VIS system/com.android.server.SystemServer}
+    All Connections:
+      ConnectionRecord{6f2ab09 u0 CR IMPB !VIS system/com.android.server.SystemServer}
+  * ServiceRecord{88ce1ff u0 com.example.player/.PlaybackService}
+    intent={cmp=com.example.player/.PlaybackService}
+    packageName=com.example.player
+    processName=com.example.player
+    app=ProcessRecord{2a91fe7 8802:com.example.player/u0a240}
+    createTime=-12m2s775ms startingBgTimeout=--
+    lastActivity=-12m1s004ms restartTime=-12m2s775ms createdFromFg=false
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=3
+    isForeground=true foregroundId=7 foregroundNoti=Notification(channel=playback pri=1 vis=PUBLIC)
+    foregroundServiceType=mediaPlayback
+    startForegroundCount=2
+    All Connections:
+      ConnectionRecord{b40e7c8 u0 CR !VIS com.example.player/.PlayerActivity}
+      ConnectionRecord{c72fa13 u0 CR IMPB !VIS com.android.bluetooth/.avrcp.AvrcpService}
+
+  User 10 active services:
+  * ServiceRecord{51b7d40 u10 com.example.work/.PolicyService}
+    intent={cmp=com.example.work/.PolicyService}
+    packageName=com.example.work
+    processName=com.example.work
+    app=ProcessRecord{c02fb18 9914:com.example.work/u10a231}
+    createTime=-55m4s118ms startingBgTimeout=--
+    lastActivity=-55m3s902ms restartTime=-55m4s118ms createdFromFg=false
+    startRequested=false delayedStop=false stopIfKilled=false callStart=false lastStartId=0
+    isForeground=false
+    All Connections:
+      ConnectionRecord{d81ce09 u10 CR IMPB !VIS com.example.work/.AdminReceiver}
+
+  Pending services:
+  * ServiceRecord{9f3ba04 u0 com.example.updater/.CheckService}
+    intent={cmp=com.example.updater/.CheckService}
+    packageName=com.example.updater
+    processName=com.example.updater
+    app=null
+    createTime=-2s114ms startingBgTimeout=+8s
+    startRequested=true delayedStop=false stopIfKilled=false callStart=false lastStartId=1
+    isForeground=false
+
+  Restarting services:
+  * ServiceRecord{3ab99c1 u0 com.example.sensor/.PollService}
+    intent={cmp=com.example.sensor/.PollService}
+    packageName=com.example.sensor
+    processName=com.example.sensor
+    app=null
+    createTime=-18m41s221ms startingBgTimeout=--
+    lastActivity=-8s330ms restartTime=-8s330ms createdFromFg=false
+    restartCount=3 restartDelay=+20s nextRestartTime=+11s960ms
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=9
+    isForeground=false

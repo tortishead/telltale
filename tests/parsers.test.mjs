@@ -26,6 +26,7 @@ import {
   parseEventLogDump, eventSplit, eventFields, configChanges, shortComponent,
   parseDisplayManagerDump, dmRect, dmField, dmSize, dmBlocks, dmCutoutBounds, dmDegrees,
   parseActivityDump, actField, actBounds, actTaskHead,
+  parseActivityServicesDump, svcConnection, svcPid,
 } from '../tools/parse-layer.mjs';
 
 const dir = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -708,6 +709,117 @@ test('a text with no task tree in it is not this dump', () => {
   assert.equal(parseActivityDump('').ok, false);
   assert.equal(parseActivityDump(read('fixtures/window-sample.txt')).ok, false);
   assert.equal(parseActivityDump('ACTIVITY MANAGER SERVICES (dumpsys activity services)').ok, false);
+});
+
+/* ---------------- services ---------------- */
+
+test('svcConnection reads the client off the end and the flags off the front', () => {
+  const c = svcConnection('CR FGS !VIS com.example.mail/.MailActivity');
+  assert.equal(c.client, 'com.example.mail/.MailActivity');
+  assert.deepEqual(c.flags, ['CR', 'FGS', '!VIS']);
+
+  const system = svcConnection('CR IMPB !VIS system/com.android.server.SystemServer');
+  assert.equal(system.client, 'system/com.android.server.SystemServer');
+
+  const bare = svcConnection('CR !VIS');
+  assert.equal(bare.client, null, 'a line naming no client is still a connection');
+});
+
+test('svcPid takes the pid out of the process record', () => {
+  assert.equal(svcPid('ProcessRecord{31fa7b8 7714:com.example.mail/u0a231}'), 7714);
+  assert.equal(svcPid(null), null);
+  assert.equal(svcPid('null'), null);
+});
+
+test('the service sample is grouped by user, with connections under services', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-sample.txt'));
+  assert.ok(s.ok);
+  assert.deepEqual(s.displays.map((d) => d.id), [0, 10], 'one group per Android user');
+  assert.equal(s.globals.services, 6);
+  assert.equal(s.globals.connections, 5);
+
+  const player = s.nodes.find((n) => n.title === 'com.example.player/PlaybackService');
+  assert.equal(player.kind, 'service');
+  assert.equal(player.service.pid, 8802);
+  assert.equal(player.subCount, 2);
+  assert.deepEqual(
+    s.nodes.filter((n) => n.parentHash === player.hash).map((n) => n.title),
+    ['com.example.player/PlayerActivity', 'com.android.bluetooth/AvrcpService']);
+});
+
+/* The same connection is printed twice — under the client that made it and
+   again under `All Connections:` — and counting it twice would double every
+   client a bound service has. */
+test('a connection printed under both its client and the service is one row', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-sample.txt'));
+  const mail = s.nodes.find((n) => n.title === 'com.example.mail/SyncService');
+  assert.equal(mail.service.conns.length, 1);
+  assert.equal(mail.service.bindings, 1, 'and the bind record it was made through is counted');
+});
+
+test('a service is coloured and badged by the state it is in, not the heading', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-sample.txt'));
+  const by = (title) => s.nodes.find((n) => n.title === title);
+
+  assert.equal(by('com.example.mail/SyncService').family, 'svc-foreground');
+  assert.equal(by('com.android.systemui/SystemUIService').family, 'svc-started');
+  assert.equal(by('com.example.work/PolicyService').family, 'svc-bound',
+    'started=false, and alive because something is bound to it');
+
+  const restarting = by('com.example.sensor/PollService');
+  assert.equal(restarting.family, 'svc-restarting');
+  assert.deepEqual(restarting.badges.map((b) => b[0]), ['restarting ×3']);
+  assert.equal(restarting.service.nextRestart, '+11s960ms');
+  assert.equal(by('com.example.updater/CheckService').family, 'svc-pending');
+});
+
+/* A foreground service is the one thing an app can run indefinitely, so what
+   it declared and what the platform allowed it on are the fields worth
+   reading — and a short service has a clock on it. */
+test('an Android 16 dump reads the foreground type, the deadline and the grant', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-a16-sample.txt'));
+  const fit = s.nodes.find((n) => n.title === 'com.example.fit/WorkoutService').service;
+
+  assert.deepEqual(fit.fgsTypes, ['health', 'location']);
+  assert.equal(fit.allowedBy, 'PROCESS_STATE_TOP');
+  assert.equal(fit.whileInUse, true);
+  assert.equal(fit.foregroundId, '11');
+
+  const short = s.nodes.find((n) => n.title === 'com.example.backup/UploadService');
+  assert.deepEqual(short.service.fgsTypes, ['shortService']);
+  assert.match(short.service.shortTimeout, /anr at \+3m22s010ms$/);
+  assert.ok(short.badges.some((b) => b[0] === 'short service'));
+});
+
+test('a service two processes are bound to lists both of them', () => {
+  const s = parseActivityServicesDump(read('fixtures/service-a16-sample.txt'));
+  const gms = s.nodes.find((n) => n.title.startsWith('com.google.android.gms/'));
+
+  assert.equal(gms.service.clients, 2, 'two AppBindRecords');
+  assert.deepEqual(s.nodes.filter((n) => n.parentHash === gms.hash).map((n) => n.title),
+    ['com.example.maps/MapsActivity', 'com.example.wallet/PayService']);
+  assert.equal(gms.service.startRequested, false,
+    'nothing started it; the bindings are the whole of why it is alive');
+});
+
+/* The services are one of half a dozen `ACTIVITY MANAGER ...` sections, and
+   the task tree is usually the one printed just before them. Neither reader
+   may take the other's text. */
+test('the services and the activities readers keep to their own sections', () => {
+  const both = `${read('fixtures/activity-sample.txt')}\n${read('fixtures/service-sample.txt')}`;
+
+  const svc = parseActivityServicesDump(both);
+  const alone = parseActivityServicesDump(read('fixtures/service-sample.txt'));
+  assert.deepEqual(svc.nodes.map((n) => n.title), alone.nodes.map((n) => n.title));
+
+  const act = parseActivityDump(both);
+  assert.equal(act.globals.lines, parseActivityDump(read('fixtures/activity-sample.txt')).globals.lines);
+});
+
+test('a text with no service records in it is not this dump', () => {
+  assert.equal(parseActivityServicesDump('').ok, false);
+  assert.equal(parseActivityServicesDump(read('fixtures/activity-sample.txt')).ok, false);
+  assert.equal(parseActivityServicesDump(read('fixtures/window-sample.txt')).ok, false);
 });
 
 /* ---------------- packages ---------------- */

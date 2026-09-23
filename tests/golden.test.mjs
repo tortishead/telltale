@@ -37,6 +37,11 @@ const CASES = [
      in desktop windowing, and every rect printed as `Rect(l, t - r, b)`
      rather than `[l,t][r,b]`. */
   { name: 'activity-a16-sample', parse: 'parseActivityDump' },
+  { name: 'service-sample', parse: 'parseActivityServicesDump' },
+  /* The same reader on an Android 16 dump, where a foreground service states
+     the type it declared, a short one states the deadline it is running
+     against, and the manager prints what let it start. */
+  { name: 'service-a16-sample', parse: 'parseActivityServicesDump' },
   { name: 'package-sample', parse: 'parsePackageDump' },
   { name: 'anr-sample',     parse: 'parseAnrDump' },
   { name: 'anr-native-sample', parse: 'parseAnrDump' },
@@ -92,6 +97,7 @@ const OWN = {
   parsePackageDump: ['package-sample'],
   parseDisplayManagerDump: ['display-sample', 'display-a16-sample'],
   parseActivityDump: ['activity-sample', 'activity-a16-sample'],
+  parseActivityServicesDump: ['service-sample', 'service-a16-sample'],
   parseAnrDump: ['anr-sample', 'anr-native-sample'],
   parseOverlayDump: ['overlay-sample'],
   parseBinderCallsStatsDump: ['binder-sample'],

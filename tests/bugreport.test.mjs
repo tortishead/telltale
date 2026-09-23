@@ -30,8 +30,8 @@ const NAME = 'bugreport-panther-UQ1A.240105.004-2026-09-21-11-04-02.txt';
    because the fixture carries a car_service dump; a bugreport off a phone
    would open with one tab fewer, which is the point of the list being derived
    from what is in the file rather than hard-coded. */
-const EXPECTED = ['window', 'sf', 'display', 'activity', 'package', 'anr', 'car', 'user',
-                  'props', 'overlay', 'binder', 'input', 'inputdev', 'events', 'logcat'];
+const EXPECTED = ['window', 'sf', 'display', 'activity', 'service', 'package', 'anr', 'car',
+                  'user', 'props', 'overlay', 'binder', 'input', 'inputdev', 'events', 'logcat'];
 
 test('the zip is opened to the file dumpstate named, not to the biggest one', async () => {
   const page = openPage();
@@ -104,6 +104,7 @@ test('a reader inside a bugreport finds what it finds on its own', async () => {
     ['props', 'props-sample.txt'],
     ['display', 'display-sample.txt'],
     ['activity', 'activity-sample.txt'],
+    ['service', 'service-sample.txt'],
   ]) {
     const tool = page.TOOLS.find((t) => t.id === id);
     const alone = tool.parse(readFileSync(dir(`fixtures/${fixture}`), 'utf8'));
