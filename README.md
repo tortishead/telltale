@@ -98,11 +98,12 @@ is case-insensitive whether or not you write `i`.
 ## Host it
 
 Copy `index.html` into a repository and turn on GitHub Pages. It opens from
-`file://` just as well. The header carries the build the page was stamped at,
-which is what to quote in a bug report about Telltale itself:
+`file://` just as well. The header carries the day the copy was stamped and
+which stamp of that day it is — `build 2026.09.23.2` — which is what to quote
+in a bug report about Telltale itself. Every run is a new revision:
 
 ```
-python3 tools/stamp-build.py     # before publishing a copy
+python3 tools/stamp-build.py     # once per copy you publish
 ```
 
 ## Tests
