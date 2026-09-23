@@ -86,6 +86,25 @@ return {
     document.getElementById('findBox').value = q === undefined ? '' : q;
     goToHit(hit);
   },
+  /* The spine: what a node is keyed by, and what else on the desk is keyed by
+     the same thing. Both are the page's own functions, taking the node and the
+     group it sits on the way the details pane hands them over. */
+  ids: (node, display) => nodeIds(node, display),
+  join: (node, display) => spineJoin(nodeIds(node, display), node),
+  /* The chips as the pane drew them, and what opening one does to the card:
+     the walk of the desk happens in openSpine and nowhere before it. */
+  chips: () => spineShown,
+  openSpine: (i) => openSpine(i),
+  finding: () => ({ id: findId, flat: findFlat, groups: findId ? spineHits(findId, spineOf) : null }),
+  goToNode: (doc, displayId, hash) => goToNode(doc, displayId, hash),
+  /* One surface as the three readers of it describe it: the readings put side
+     by side, and what the pane makes of them. */
+  /* Shutting a section of the pane, the way clicking its heading does. */
+  shut: (key, v) => setShut(key, v),
+  sides: (node, display) => surfaceRow(surfaceSides(display.id, currentDoc()), surfaceKey(node)),
+  findings: (node, display) =>
+    surfaceFindings(surfaceRow(surfaceSides(display.id, currentDoc()), surfaceKey(node)),
+                    surfaceKey(node)),
   /* A trace's playhead at a moment: what every stroke on screen has drawn by
      then, and where each finger is. This is what the sheet writes into the SVG
      sixty times a second, taken before it is written. */

@@ -224,14 +224,18 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
 <input type="file" id="file" accept=".txt,.log,.dump,.out,.zip,text/plain,application/zip" hidden>
 
 <div class="find" id="find" hidden>
-  <div class="find-card" role="dialog" aria-modal="true" aria-label="Search this workspace">
-    <div class="filter-row">
+  <div class="find-card" id="findCard" tabindex="-1" role="dialog" aria-modal="true"
+       aria-label="Search this workspace">
+    <div class="filter-row" id="findRow">
       <input class="find-box" id="findBox" type="search" spellcheck="false" autocomplete="off"
              placeholder="Search every dump in this workspace"
              aria-label="Search every dump in this workspace">
       <button class="tab re-btn" id="findRe" type="button" aria-pressed="false"
               title="Read what is typed as a regular expression">.*</button>
     </div>
+    <!-- Opened on an identifier rather than on a query, the box has nothing to
+         do and its place is taken by what is being asked. -->
+    <p class="find-what" id="findWhat" hidden></p>
     <div class="find-results" id="findResults" role="listbox" aria-label="Matches"></div>
     <div class="find-foot" id="findFoot"></div>
   </div>
@@ -275,7 +279,23 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
 
      Every reader is deliberately tolerant. Android's text dumps have no
      stability guarantee and drift between releases, so they harvest
-     generically and only special-case what is needed in order to draw. -->
+     generically and only special-case what is needed in order to draw.
+
+     js/spine.js joins them. Every reader on the desk is keyed by the same
+     identifiers — a pid, a uid, a package, a task, a window token, a layer —
+     so it reads those off a node, puts them in the details pane as chips, and
+     walks every other node open for the one that is picked. The walk goes in
+     the search card, which was already the right shape for it. It names no
+     reader: what it knows is the field names the parsers already carry and the
+     shapes a dump writes an identifier in.
+
+     js/surface.js is the same join made narrow. Three of the readers describe
+     the same thing on screen from three sides — the window the policy laid
+     out, the layer it was composited as, the window the dispatcher hit-tests —
+     and they disagree often enough that the disagreement is usually the bug.
+     It puts the three readings in one table and says where they differ. The
+     three say so themselves with `surface: true` in their TOOLS entry; this
+     file names none of them. -->
 <script src="js/parse/dialect.js"></script>
 <script src="js/parse/common.js"></script>
 <script src="js/parse/window.js"></script>
@@ -313,6 +333,8 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
 <script src="js/detail/input-devices.js"></script>
 <script src="js/detail/touch-trace.js"></script>
 <script src="js/detail/logcat.js"></script>
+<script src="js/spine.js"></script>
+<script src="js/surface.js"></script>
 <script src="js/tools.js"></script>
 <script src="js/events.js"></script>
 </body>

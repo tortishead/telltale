@@ -97,6 +97,48 @@ Either box takes a regular expression. Press the **`.*`** beside it, or write
 the pattern between slashes: `/^am_(crash|anr)/`, `/\bpid 1631\b/i`. Matching
 is case-insensitive whether or not you write `i`.
 
+## Follow one thing across the readers
+
+Every reader is keyed by the same handful of identifiers — a pid, a uid, a
+package, a task, a window token, a layer — and no two dumps spell one the same
+way. Picking anything ends its details pane with **Elsewhere on this desk**:
+one chip per identifier the thing being read carries. Pick a chip and the
+search card opens on it, listing every row in the workspace that is the same
+pid, the same package, the same token — grouped by the tab it came out of, `↑`
+`↓` to walk and `⏎` to open, like any other result.
+
+The chips cost nothing to draw, so they are there on every selection; the desk
+is only walked for the chip you pick. An identifier that is on nothing else is
+still a chip, because it is still what the thing is called.
+
+`10143` and `u0a143` are one uid. A process called `com.example.app:sync` is
+the package `com.example.app`. An ANR states its process once at the top, so
+every thread in it is on that process's spine — and the package dump for the
+app that hung is one click away.
+
+## One window, three dumps
+
+`dumpsys window` says where the policy put a window. SurfaceFlinger says what
+was composited — the alpha it was drawn at, where the layer really is, what it
+is stacked against. `dumpsys input` says what the dispatcher will hit-test, in
+its own z order and with its own idea of the frame. Most of "why is my window
+not there" is two of those three disagreeing.
+
+Pick a window, a layer or an input window with more than one of those readers
+on the desk and the pane puts the readings in one table, marks the rows that
+differ, and says what the difference means:
+
+* the policy believes it is showing and the layer was drawn at `alpha=0`
+* the frame the dispatcher hit-tests is not the frame the layer was drawn at
+* a window is above this one in the dispatcher's order and below it in
+  SurfaceFlinger's
+
+A bugreport gives all three for free. Pasted one at a time they join just the
+same, and a desk holding two bugreports keeps each file's readings to itself.
+
+This section and the one above it fold. Shut one and it stays shut, across
+selections and across sessions.
+
 ## Host it
 
 Copy `index.html`, `css/` and `js/` into a repository and turn on GitHub Pages.

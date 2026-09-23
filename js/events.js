@@ -131,6 +131,19 @@ $('sheet').addEventListener('click', (e) => {
     S.attr = S.attr === row.dataset.attr ? null : row.dataset.attr;
     return void (renderDoc(), renderDetail());
   }
+  /* A chip of the spine opens the search card on that identifier. The desk is
+     walked there rather than here: drawing the chip cost nothing, and which of
+     them is worth a walk is the reader's to say. */
+  const chip = e.target.closest('button[data-spine]');
+  if(chip) return void openSpine(+chip.dataset.spine);
+  /* A row that says which dump it lives in is in another one as often as in
+     this one, so it is gone to rather than selected. Tested before the plain
+     row below it: both are buttons naming a hash. */
+  const far = e.target.closest('button[data-doc]');
+  if(far){
+    const doc = S.docs.find(d => d.id === +far.dataset.doc);
+    return void goToNode(doc, +far.dataset.disp, far.dataset.hash);
+  }
   const b = e.target.closest('button[data-hash]');
   if(b) select(b.dataset.hash);
 });
@@ -496,9 +509,50 @@ $('detail').addEventListener('click', (e) => {
     S.region = S.region === i ? null : i;
     return void (renderPlan(), renderDetail());
   }
+  /* A chip of the spine opens the search card on that identifier. The desk is
+     walked there rather than here: drawing the chip cost nothing, and which of
+     them is worth a walk is the reader's to say. */
+  const chip = e.target.closest('button[data-spine]');
+  if(chip) return void openSpine(+chip.dataset.spine);
+  /* A row that says which dump it lives in is in another one as often as in
+     this one, so it is gone to rather than selected. Tested before the plain
+     row below it: both are buttons naming a hash. */
+  const far = e.target.closest('button[data-doc]');
+  if(far){
+    const doc = S.docs.find(d => d.id === +far.dataset.doc);
+    return void goToNode(doc, +far.dataset.disp, far.dataset.hash);
+  }
   const b = e.target.closest('button[data-hash]');
   if(b) select(b.dataset.hash);
 });
+/* Which sections of the details pane are shut, kept the way the theme and the
+   pane widths are kept: it is a preference about the page rather than anything
+   about a dump, so it outlives both the tab and the browser. */
+const SHUT_KEY = 'telltale.shut';
+const shutGroups = new Set(readShut());
+
+function readShut(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(SHUT_KEY) || '[]');
+    return Array.isArray(saved) ? saved.filter(k => typeof k === 'string') : [];
+  } catch(e){ return []; }
+}
+
+function setShut(key, shut){
+  if(shut) shutGroups.add(key); else shutGroups.delete(key);
+  try {
+    if(shutGroups.size) localStorage.setItem(SHUT_KEY, JSON.stringify([...shutGroups]));
+    else localStorage.removeItem(SHUT_KEY);
+  } catch(e){}
+}
+
+/* Shutting a section is remembered: the pane is rebuilt from nothing on every
+   selection, so a fold that was not written down would spring open on the next
+   click. `toggle` does not bubble, hence the capture. */
+$('detail').addEventListener('toggle', (e) => {
+  const fold = e.target && e.target.dataset && e.target.dataset.fold;
+  if(fold) setShut(fold, !e.target.open);
+}, true);
 /* The row is a button, so the keys a button answers to work on it. */
 $('detail').addEventListener('keydown', (e) => {
   if(e.key !== 'Enter' && e.key !== ' ') return;
@@ -645,15 +699,7 @@ $('findRe').addEventListener('click', () => {
   renderFind();
   $('findBox').focus();
 });
-$('findBox').addEventListener('keydown', (e) => {
-  if(e.key === 'ArrowDown'){ e.preventDefault(); moveFind(1); }
-  else if(e.key === 'ArrowUp'){ e.preventDefault(); moveFind(-1); }
-  else if(e.key === 'Enter'){
-    e.preventDefault();
-    const hit = findFlat[findAt];
-    if(hit) goToHit(hit);
-  }
-});
+
 $('findResults').addEventListener('click', (e) => {
   const b = e.target.closest('.find-hit');
   if(!b) return;
@@ -669,7 +715,17 @@ document.addEventListener('keydown', (e) => {
   /* While the card is up it owns the keyboard: nothing below it should be
      stepping tabs or clearing selections under a search. */
   if(!$('find').hidden){
+    /* The keys are handled here rather than on the box because the box is not
+       always there: opened on an identifier the card has nothing to type into,
+       and the arrows have to go on working. */
     if(e.key === 'Escape'){ e.preventDefault(); closeFind(); }
+    else if(e.key === 'ArrowDown'){ e.preventDefault(); moveFind(1); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); moveFind(-1); }
+    else if(e.key === 'Enter'){
+      e.preventDefault();
+      const hit = findFlat[findAt];
+      if(hit) goToHit(hit);
+    }
     return;
   }
   if((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === 'k' || e.key === 'K')){

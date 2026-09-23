@@ -1,4 +1,27 @@
 /* ---------------- render: the details pane ---------------- */
+
+/* A section of the pane that can be shut. The two sections that join the
+   readers to each other — what else on the desk is this thing, and what the
+   other readers of this window said about it — are long, and they are under
+   whatever the reader itself had to say, which is what someone reading one
+   dump came for. So they fold.
+
+   It is a <details>, the way the framework frames in an ANR fold: opening one
+   needs no script and printing shows what is open. What does need script is
+   remembering it, because the pane is rebuilt from nothing on every selection
+   and a section that sprang open again on the next click would be worse than
+   one that never shut. Which sections are shut is a page-wide preference and
+   is kept where the theme and the pane widths are kept, in js/events.js: it is
+   about how much of the pane you want spent on this, not about any one dump.
+
+   `key` is what is remembered, so it stays the same while the heading changes:
+   the same section is headed window, layer or input window depending on which
+   reader is open, and shutting it once shuts it for all three. */
+function foldGroup(key, heading, body){
+  return `<details class="dgroup" data-fold="${esc(key)}"${shutGroups.has(key) ? '' : ' open'}>
+    <summary>${heading}</summary>${body}</details>`;
+}
+
 /* The pane is the one place a tool gets to speak for itself; everything around
    it — the raw block, the copy button, the prompt when nothing is picked — is
    the same whichever dump is open. */
@@ -17,6 +40,18 @@ function drawDetail(){
      did to the thing being read goes with everything else about it. */
   const onIt = picked ? '' : gevOnNode(n);
   if(onIt) out.push(onIt);
+  /* And what the rest of the desk has to say about the same process, package
+     or token. It goes after the reader's own sections and before the raw
+     block, because it is about this node rather than part of reading it — and
+     it is the one section no reader writes, so it is added here rather than
+     eighteen times over. */
+  /* Where three readers describe the same thing on screen, what the other two
+     said about it goes first: it is about this node rather than about the desk,
+     and a disagreement between them is usually why the node is being read. */
+  const sides = picked ? '' : surfaceCard(n, currentDisplay());
+  if(sides) out.push(sides);
+  const spine = picked ? '' : spineChips(n, currentDisplay());
+  if(spine) out.push(spine);
   const raw = picked ? picked.raw : n.raw;
   if(raw) out.push(`<section class="dgroup"><h3>Raw block</h3>
     <button class="btn btn-quiet" id="btnCopy" type="button" style="margin-bottom:7px">Copy raw block</button>

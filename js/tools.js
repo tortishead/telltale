@@ -9,6 +9,12 @@ const TOOLS = [
     id: 'window',
     name: 'Windows',
     layout: 'spatial',
+    /* One of the three readers whose nodes are the same thing seen from a
+       different side: a window the policy laid out, the layer it was composited
+       as, the window the dispatcher hit-tests. js/surface.js joins them by
+       name and diffs what they each say, and it knows which readers those are
+       only from this. */
+    surface: true,
     noun: 'window', nouns: 'windows', groupNoun: 'display',
     show: 'all',            // a window dump is all windows and little else
     filterHint: 'Filter by title, package or type',
@@ -23,6 +29,7 @@ const TOOLS = [
     id: 'sf',
     name: 'SurfaceFlinger',
     layout: 'spatial',
+    surface: true,
     noun: 'layer', nouns: 'layers', groupNoun: 'display',
     show: 'framed',         // the rest is scaffolding; one click brings it back
     filterHint: 'Filter by layer name, class or composition',
@@ -420,6 +427,7 @@ const TOOLS = [
        walks it. It is the window layout again, seen from the only place that
        decides where a touch goes. */
     layout: 'spatial',
+    surface: true,
     noun: 'window', nouns: 'windows', groupNoun: 'display',
     show: 'touchable',    // the question is where a touch goes, not what is up
     filterHint: 'Filter by window, application, uid or config',
@@ -701,6 +709,12 @@ const FIND_PER_GROUP = 25;   // hits listed per reader per display
 let findFlat = [];           // every listed hit, in the order they are drawn
 let findAt = 0;              // which one the keyboard is on
 let findRegex = false;       // whether the box is read as a pattern
+/* The card lists two kinds of thing and is one card either way. `findId` is
+   which: null and it is listing what matches what was typed, an identifier and
+   it is listing what the spine says is that same thing. The results are the
+   same shape, so everything below this line — the groups, the keys, going to
+   one — is written once. */
+let findId = null;
 
 function findHits(q){
   const needle = q.trim().toLowerCase();
@@ -744,13 +758,13 @@ function findSrc(g){
 }
 
 function renderFind(){
-  const res = findHits($('findBox').value);
+  const res = findId ? spineHits(findId, spineOf) : findHits($('findBox').value);
   findFlat = res.flat;
   if(findAt >= findFlat.length) findAt = 0;
   const box = $('findResults'), foot = $('findFoot');
   const keys = '↑↓ to move · ⏎ to open · esc to close';
 
-  if(!res.needle){
+  if(!findId && !res.needle){
     const n = S.docs.length;
     box.innerHTML = `<p class="find-empty">Type to search every dump in <b>${
       esc(currentSpace().name)}</b>.</p>`;
@@ -759,11 +773,15 @@ function renderFind(){
     return;
   }
   if(!findFlat.length){
-    box.innerHTML = res.bad
+    box.innerHTML = findId
+      ? `<p class="find-empty">Nothing else on this desk is <b>${
+          esc(SPINE_SHOW[findId.kind](findId.value))}</b>.</p>`
+      : res.bad
       ? `<p class="find-empty">That is not a regular expression: ${esc(res.bad.error)}</p>`
       : `<p class="find-empty">Nothing in this workspace matches <b>${
           esc(res.needle)}</b>.</p>`;
-    foot.hidden = true;
+    foot.hidden = false;
+    foot.textContent = keys;
     return;
   }
 
@@ -803,7 +821,10 @@ function moveFind(step){
 function openFind(){
   if(!S.docs.length) return;
   findAt = 0;
+  findId = null;
   $('find').hidden = false;
+  $('findRow').hidden = false;
+  $('findWhat').hidden = true;
   const box = $('findBox');
   /* Whatever the open dump is already filtered by is the likeliest thing to
      want across the rest of them. */
@@ -813,25 +834,61 @@ function openFind(){
   box.select();
 }
 
-function closeFind(){ $('find').hidden = true; }
+/* The same card, opened on an identifier instead of on a query. There is
+   nothing to type, so the box goes away and its place is taken by what is
+   being asked: everything on the desk that is this pid, this package, this
+   token. This is where the desk is walked — not on the selection that drew the
+   chip. */
+function openSpine(i){
+  const id = spineShown[i];
+  if(!id || !S.docs.length) return;
+  findAt = 0;
+  findId = id;
+  $('find').hidden = false;
+  $('findRow').hidden = true;
+  const what = $('findWhat');
+  what.hidden = false;
+  what.innerHTML = `Everything on this desk that is <b>${
+    esc(SPINE_SHOW[id.kind](id.value))}</b>`;
+  renderFind();
+  $('findCard').focus();
+}
 
-/* Picking a result is four moves in the order they have to happen: open the
-   dump, switch it to the reader that found the hit — which starts that reader
-   over, so the display and the filter can only be set after it — then select
-   the node. The query is left on as the dump's own filter, so what was found
-   is what is on screen rather than one row in two hundred. */
-function goToHit(hit){
-  const q = $('findBox').value.trim();
-  closeFind();
-  if(hit.doc.id !== S.docId) openDoc(hit.doc);
-  S.displayId = hit.display.id;
-  S.filter = q;
+function closeFind(){
+  $('find').hidden = true;
+  findId = null;
+}
+
+/* Going to a row in another dump is four moves in the order they have to
+   happen: open the dump, switch it to the reader that holds the row — which
+   starts that reader over, so the display and the filter can only be set after
+   it — then select the node. The filter is whatever the way in wants left in
+   the box: the desk-wide search leaves its query, so what was found is what is
+   on screen rather than one row in two hundred, and the spine leaves nothing,
+   because the row it is sending you to was reached by what it is rather than
+   by what it reads like. */
+function goToNode(doc, displayId, hash, filter, asRegex){
+  if(!doc) return;
+  if(doc.id !== S.docId) openDoc(doc);
+  S.displayId = displayId;
+  S.filter = filter || '';
   /* A query that was read as a pattern has to keep being read as one, or the
      tab lands showing nothing with the thing that was found typed into it. */
-  S.regex = findRegex;
+  S.regex = !!asRegex;
   syncUi();
-  select(hit.node.hash);
-  revealRow(hit.node.hash);
+  select(hash);
+  revealRow(hash);
+}
+
+/* A hit found by what it reads like leaves the query on as the tab's filter,
+   so what was found is what is on screen. A hit found by what it *is* leaves
+   nothing: the identifier it was found by is not a word in the row, and typing
+   it into the box would land the tab showing nothing. */
+function goToHit(hit){
+  const q = findId ? '' : $('findBox').value.trim();
+  const re = findId ? false : findRegex;
+  closeFind();
+  goToNode(hit.doc, hit.display.id, hit.node.hash, q, re);
 }
 
 /* A row can be found and still be below the fold — or, in a windowed list, not
