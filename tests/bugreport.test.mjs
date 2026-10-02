@@ -312,23 +312,20 @@ test('the .* switch reads the box as a pattern without the slashes', async () =>
   assert.equal(m.ok, false, 'and a pattern that will not compile still says so');
 });
 
-/* A log is read by narrowing it to a tag, finding the line, and then taking
-   the filter off to see what was happening around that line. The taking-off is
-   a new list — every other line is back — and the reader has not moved, so the
-   pane comes back around the line they picked rather than at line one.
+/* A log is read down, and narrowing it is answered underneath rather than by
+   rebuilding it, so the log does not move about under what is typed into the
+   box. That is the whole of what the split buys, and it is worth a test.
 
    The pane is given a height here, because the whole of this fixture fits in
    the stub DOM's 600 and a list that fits is a list with nowhere to scroll. */
-test('clearing a filter leaves the pane on the line that was selected', async () => {
+test('typing into the box does not move the log under the typing', async () => {
   const page = openPage();
   await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
   const pane = page.els.get('stackScroll'), list = page.els.get('wlist');
   pane.clientHeight = 110;
   /* A browser clamps a scrollTop to the content the pane has at the moment it
-     is written, which is the whole of why this is worth a test: the rows have
-     to be in before the move is made, or the move lands at the end of the list
-     that is going. The stub lays nothing out, so the clamp is stood in for
-     here, off the heights the page itself just drew. */
+     is written, which is worth standing in for here: the stub lays nothing
+     out, so the clamp is worked off the heights the page itself just drew. */
   let top = 0;
   Object.defineProperty(pane, 'scrollTop', {
     get: () => top,
@@ -341,47 +338,184 @@ test('clearing a filter leaves the pane on the line that was selected', async ()
     },
   });
 
-  page.narrow('activitymanager');
-  assert.equal(page.rowWindow().nodes, 6, 'the list is the six lines of that tag');
+  const all = page.S.data.displays[0].nodes;
+  /* Read down to a line in the middle, the way anyone reads a log. */
+  page.pick(all[14].hash);
+  const put = page.scrolled();
+  assert.ok(put > 0, 'the line is below the fold of a pane this tall');
 
-  const line = page.filter('activitymanager').at(-1);
-  page.select(line.hash);
-
-  page.narrow('');
-  const whole = page.rowWindow();
-  assert.ok(whole.nodes > 6, 'the whole log is listed again');
-
-  const i = page.filter('').findIndex((n) => n.hash === line.hash);
-  assert.ok(i > 0, 'and the line that was picked is somewhere down it');
-  assert.equal(whole.anchor, i, 'the window is anchored on that line');
-
-  /* Centred in the pane, and clamped to the end of the log the way a scroll
-     is. */
-  const h = whole.rowH, view = pane.clientHeight;
-  const want = Math.min(Math.max(0, whole.nodes * h - view),
-                        Math.max(0, Math.round(i * h - (view - h) / 2)));
-  assert.ok(want > 0, 'the line is below the fold of a pane this tall');
-  assert.equal(page.scrolled(), want, 'and the pane is scrolled to it');
-  assert.ok(whole.from <= i && i < whole.to, 'so the row is one of the ones drawn');
+  for(const q of ['a', 'ac', 'act', 'activitymanager', 'act', '']){
+    page.narrow(q);
+    assert.equal(page.rowWindow().nodes, all.length, `the whole log through "${q}"`);
+    assert.equal(page.scrolled(), put, `and the pane has not moved through "${q}"`);
+  }
+  assert.equal(page.S.selected, all[14].hash, 'nor has the selection');
 });
 
-/* A list arrived at with nothing picked is a list read from the top. The one
-   with something picked that the filter does not match is not that case: the
-   list pins the selection on rather than drop it, so it is the first row and
-   the top is where it is. */
-test('a list with nothing picked in it starts at the top', async () => {
+/* A log opened with nothing picked in it is a log read from the top. */
+test('a log with nothing picked in it starts at the top', async () => {
   const page = openPage();
   await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
   page.els.get('stackScroll').clientHeight = 110;
 
-  page.narrow('activitymanager');
   assert.equal(page.rowWindow().anchor, -1, 'nothing is picked');
   assert.equal(page.scrolled(), 0);
 
-  page.select(page.filter('activitymanager').at(-1).hash);
   page.narrow('surfacecontrol');
-  assert.equal(page.rowWindow().anchor, 0, 'a selection the filter drops is pinned on top');
-  assert.equal(page.scrolled(), 0);
+  assert.equal(page.scrolled(), 0, 'and searching it does not move it either');
+  assert.equal(page.results().hits.length, 1, 'what was found is listed underneath');
+});
+
+/* ---------- a log, and what the box found in it ---------- */
+
+/* Narrowing a log answers which lines matched and loses what they were printed
+   among, which is most of what a log line means. So narrowing one does not
+   take lines out of it: the log stays whole, what matched is listed under it,
+   and picking one of those goes to that line in the log itself. */
+test('narrowing a log lists what was found under it and leaves the log whole', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  const all = page.S.data.displays[0].nodes;
+
+  assert.equal(page.results().on, false, 'nothing is being looked for, so there is nothing to list');
+  assert.equal(page.rowsIn().length, all.length);
+
+  page.narrow('androidruntime');
+  const rows = page.rowsIn();
+  assert.equal(rows.length, all.length, 'the log is still the whole log');
+  assert.deepEqual(rows.filter((r) => r.match).map((r) => r.at), [12, 13, 14, 15, 16],
+    'with the lines that matched marked in it');
+
+  const found = page.results();
+  assert.equal(found.on, true);
+  assert.equal(found.hits.length, 5);
+  assert.equal(found.drawn, 5, 'and listed under it');
+  assert.match(found.what, /5 of 20 lines/);
+
+  /* The line before the stack trace is the reason it was taken, and it is
+     still on screen — which is the whole point of leaving the log whole. */
+  assert.ok(rows.some((r) => !r.match && r.node.entry.tag === 'SurfaceFlinger'));
+
+  page.narrow('');
+  assert.equal(page.results().on, false, 'and clearing the box puts the list away');
+});
+
+/* The two ways of narrowing are not the same kind of thing. `*:E` is not a
+   search for the errors, it is the log being asked for — so the level buttons
+   change the log in the pane, and nothing is listed underneath. */
+test('the level buttons change the log itself, and list nothing under it', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  const all = page.S.data.displays[0].nodes;
+
+  page.show('errors');
+  const rows = page.rowsIn();
+  assert.ok(rows.length < all.length, 'the log in the pane is the errors');
+  assert.ok(rows.every((r) => r.node.level.rank >= 4));
+  assert.deepEqual(rows.filter((r) => r.match), [], 'and nothing in it is a search hit');
+  assert.equal(page.results().on, false, 'because nothing is being searched for');
+
+  page.show('all');
+  assert.equal(page.rowsIn().length, all.length, 'and all puts the whole log back');
+});
+
+/* The box searches the log that the buttons left, not the buffer behind it: a
+   query typed under `error+` is a question about the errors. */
+test('the box searches the log the level buttons left', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+
+  page.narrow('activitymanager');
+  assert.equal(page.results().hits.length, 6, 'six lines of that tag in the whole log');
+
+  page.show('errors');
+  const found = page.results();
+  assert.equal(found.hits.length, 2, 'two of them are errors');
+  assert.ok(found.hits.every((n) => n.level.rank >= 4 && n.tag === 'ActivityManager'));
+  assert.match(found.what, /2 of 9 lines/, 'counted against the log on screen, not the buffer');
+
+  /* The log above is the errors, with the ones the box found marked in it. */
+  const rows = page.rowsIn();
+  assert.ok(rows.every((r) => r.node.level.rank >= 4));
+  assert.equal(rows.filter((r) => r.match).length, 2);
+});
+
+/* Picking one of the lines that were found is picking that line in the log:
+   the same selection, and the log scrolled onto where the line actually sits,
+   which is the whole reason the two lists are not one. */
+test('picking what was found goes to that line in the log', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  const all = page.S.data.displays[0].nodes;
+  /* A pane shorter than the log, or there is nowhere for it to be scrolled. */
+  page.els.get('stackScroll').clientHeight = 110;
+
+  page.narrow('watchdogtest');
+  const hit = page.results().hits[0];
+  assert.equal(hit.hash, all.at(-1).hash, 'the fatal line at the end of the log');
+
+  page.pick(hit.hash);
+  assert.equal(page.S.selected, hit.hash, 'it is the selection');
+
+  const win = page.rowWindow();
+  assert.equal(win.nodes, all.length, 'the log above is still the whole log');
+  const i = all.length - 1;
+  assert.ok(win.from <= i && i < win.to, 'and the row for that line is one of the ones drawn');
+  assert.ok(page.scrolled() > 0, 'which took scrolling the log down to it');
+});
+
+/* The rows in the results list are log lines and look exactly like the rows
+   above them, because they are the same lines. So what tells the two lists
+   apart is the head, and the head says what the list is and what was asked
+   for — a box left over from the last question being the usual reason a log
+   looks wrong, and the box being at the other end of the pane. */
+test('the list of what was found says so, and says what was asked for', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  const lit = () => page.els.get('filter').classList.contains('is-finding');
+
+  assert.equal(lit(), false, 'an empty box is not searching for anything');
+
+  page.narrow('androidruntime');
+  assert.equal(page.results().query, 'androidruntime', 'the head says what was asked for');
+  assert.equal(lit(), true, 'and the box is lit as the thing that asked it');
+
+  page.narrow('');
+  assert.equal(lit(), false, 'cleared, it is a box again');
+});
+
+/* A pattern that will not compile is said in the head of the list rather than
+   by listing nothing and leaving the reader to wonder. */
+test('a pattern that will not compile says so where the results would be', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+
+  page.narrow('/[unclosed/');
+  const found = page.results();
+  assert.equal(found.on, true);
+  assert.equal(found.drawn, 0);
+  assert.equal(page.els.get('filter').classList.contains('is-finding'), false,
+    'a box that cannot be read is not lit as one that found anything');
+  assert.match(found.what, /not a regular expression/);
+  assert.ok(found.hint, 'and says what is wrong with it');
+  assert.equal(page.rowsIn().length, page.S.data.displays[0].nodes.length,
+    'the log is no less readable for the box holding nonsense');
+});
+
+/* The event buffer is read the same way, which is the other half of why the
+   split belongs to the reader rather than to the log alone. */
+test('the event buffer is narrowed the same way the log is', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'events', 'events.txt');
+
+  page.narrow('am_crash');
+  const found = page.results();
+  assert.equal(found.on, true);
+  assert.equal(found.hits.length, 1);
+  assert.equal(page.rowsIn().length, page.S.data.displays[0].nodes.length,
+    'the buffer above it is the whole buffer');
+  assert.deepEqual(page.rowsIn().filter((r) => r.match).map((r) => r.node.entry.tag),
+    ['am_crash']);
 });
 
 /* ---------- the desk-wide search ---------- */

@@ -124,7 +124,12 @@ function closeDoc(id){
    duplicated, so every handler on them comes along. */
 function placePanes(list){
   const host = list ? $('panePlan') : $('paneStack');
-  if($('controls').parentElement !== host) host.append($('controls'), $('stackScroll'));
+  /* All three move together, and the results pane is checked on its own: a
+     reader that lists nothing leaves it hidden, and a hidden element left in
+     the pane the last reader used is one the next one would have to find. */
+  if($('controls').parentElement !== host || $('results').parentElement !== host){
+    host.append($('controls'), $('stackScroll'), $('results'));
+  }
 }
 
 function syncUi(){
@@ -165,6 +170,7 @@ function syncUi(){
   renderDocTabs();
   renderShow();
   renderTabs();
+  renderResults();
   setView(S.view);       // syncs the depth controls and draws the sheet
   renderList();
   renderDetail();

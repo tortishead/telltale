@@ -554,6 +554,9 @@ const TOOLS = [
     noun: 'event', nouns: 'events', groupNoun: 'log', groupNouns: 'logs',
     show: 'all',
     visBadge: false,
+    /* The buffer is read in the order it was written, so what a filter found
+       is worth listing under the buffer rather than in place of it. */
+    split: true,
     filterHint: 'Filter by tag, package, activity or anything in the line, or /regex/',
     /* The buffer is mostly bookkeeping — a uid going idle, a process measured
        — and what it is opened for is one of three things: what the apps did,
@@ -587,6 +590,9 @@ const TOOLS = [
        are a floor on the level rather than a set of rows picked out of it. */
     show: 'all',
     visBadge: false,
+    /* Why a line was printed is almost always in the lines around it, so the
+       log stays whole and what the box found is listed under it. */
+    split: true,
     filterHint: 'Filter by tag, message, pid or tid, or /regex/',
     shows: {
       all:      { label:'all',    test:() => true },
@@ -642,10 +648,11 @@ function paneGuard(into, what, draw){
 }
 
 const renderList = paneGuard('wlist', 'the list', drawList);
+const renderResults = paneGuard('rlist', 'what the filter found', drawResults);
 const renderPlan = paneGuard('sheet', 'the sheet', drawPlan);
 const renderDetail = paneGuard('detail', 'the details', drawDetail);
 
-function renderAll(){ renderList(); renderPlan(); renderDetail(); }
+function renderAll(){ renderList(); renderResults(); renderPlan(); renderDetail(); }
 
 function setView(view){
   S.view = view;
@@ -688,7 +695,7 @@ function select(hash, region){
   S.selected = hash;
   S.region = region === undefined || region === null ? null : +region;
   revealAncestors(hash);
-  renderList(); renderPlan(); renderDetail();
+  renderList(); renderResults(); renderPlan(); renderDetail();
   if(window.matchMedia && window.matchMedia('(max-width:1080px)').matches) document.body.classList.add('show-detail');
 }
 
@@ -877,7 +884,7 @@ function goToNode(doc, displayId, hash, filter, asRegex){
   S.regex = !!asRegex;
   syncUi();
   select(hash);
-  revealRow(hash);
+  revealLine(hash);
 }
 
 /* A hit found by what it reads like leaves the query on as the tab's filter,
@@ -889,6 +896,17 @@ function goToHit(hit){
   const re = findId ? false : findRegex;
   closeFind();
   goToNode(hit.doc, hit.display.id, hit.node.hash, q, re);
+}
+
+/* Going to a line from the list of what was found. The line is put in the
+   middle of the pane rather than just brought over the fold, because what it
+   is being gone to for is what was printed around it — a line scrolled to the
+   bottom edge of the pane has half of that still off the screen. */
+function revealLine(hash){
+  const i = S.tool && S.tool.row ? rowWin.nodes.findIndex(n => n.hash === String(hash)) : -1;
+  if(i < 0) return revealRow(hash);
+  $('stackScroll').scrollTop = rowWinTop(i);
+  paintRowWindow();
 }
 
 /* A row can be found and still be below the fold — or, in a windowed list, not

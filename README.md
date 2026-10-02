@@ -97,6 +97,15 @@ Either box takes a regular expression. Press the **`.*`** beside it, or write
 the pattern between slashes: `/^am_(crash|anr)/`, `/\bpid 1631\b/i`. Matching
 is case-insensitive whether or not you write `i`.
 
+In the two log readers the two ways of narrowing do different things. **info+**,
+**warn+** and **error+** are the log you are asking for, so they change the log
+in the pane. The box is a search over whatever log that leaves: it takes no
+lines out — why a line was printed is almost always in the lines around it — so
+the log stays put with the hits railed in it, what was found is listed under it,
+and picking one of those puts that line in the middle of the log above. Drag the
+strip above the results to resize them, double-click it to go back to the
+default. Long result sets are capped at 2000 and the head says so.
+
 ## Follow one thing across the readers
 
 Every reader is keyed by the same handful of identifiers — a pid, a uid, a

@@ -153,6 +153,47 @@ function renderShow(){
        aria-pressed="${key === S.show}">${label}</button>`).join('');
 }
 
+/* ---------------- render: what the box found ---------------- */
+
+/* What the box found in the log above, listed under it rather than in place of
+   it: picking one goes to that line in the log, where everything printed around
+   it is still there.
+
+   The list is drawn whole rather than windowed, because what it is for is being
+   read down: a query that comes back with ten thousand lines is a query to
+   narrow, not a list to scroll. So it is capped, and the head says so — which
+   is the same bargain the desk-wide search makes with its groups. */
+const RESULTS_CAP = 2000;
+
+function drawResults(){
+  const box = $('results');
+  const on = S.tool && S.tool.split && searching();
+  box.hidden = !on;
+  if(!on) return ($('rlist').innerHTML = '');
+
+  const hits = logHits();
+  const bad = textMatcher(S.filter, S.regex);
+  /* Counted against the log on screen rather than against the whole buffer,
+     because that is the log the query was asked of. */
+  const all = logFloor().length;
+  $('resultsWhat').textContent = bad && !bad.ok ? 'that is not a regular expression'
+    : hits.length ? `${hits.length} of ${all} ${all === 1 ? S.tool.noun : S.tool.nouns}`
+    : `nothing in this ${S.tool.groupNoun || 'group'}`;
+  /* What was searched for, said back. A box left over from the last question
+     is the usual reason a log looks wrong, and it is at the other end of the
+     pane from here. */
+  $('resultsQuery').textContent = String(S.filter || '').trim();
+  $('resultsHint').textContent = bad && !bad.ok ? bad.error
+    : hits.length > RESULTS_CAP ? `first ${RESULTS_CAP} listed · pick one to go to it`
+    : hits.length ? 'pick one to go to it in the log' : '';
+
+  $('rlist').innerHTML = hits.slice(0, RESULTS_CAP).map((w, i) =>
+    `<li class="wrow${i % 2 ? ' is-alt' : ''} ${S.tool.rowClass ? S.tool.rowClass(w) : ''}"
+      role="option" tabindex="0" data-hash="${esc(w.hash)}"
+      aria-posinset="${i + 1}" aria-setsize="${hits.length}"
+      aria-selected="${S.selected === w.hash}">${S.tool.row(w)}</li>`).join('');
+}
+
 /* The line under a row's name. Size and z rank are what a drawn dump puts
    there; a tool with neither says what belongs there instead. The search
    results want the same line under the same name, so it is spelled once. */
@@ -178,9 +219,13 @@ function drawList(){
     const set = shows();
     const where = `in this ${S.tool.groupNoun || 'display'}`;
     const bad = textMatcher(S.filter, S.regex);
-    const why = bad && !bad.ok
+    /* A split reader's box never empties this list — it searches it, and says
+       what it found underneath — so what is left to have emptied it is the
+       level buttons. */
+    const byBox = !S.tool.split && S.filter.trim();
+    const why = bad && !bad.ok && byBox
       ? `That is not a regular expression: ${esc(bad.error)}`
-      : S.filter.trim() ? `No ${S.tool.nouns} match this filter.`
+      : byBox ? `No ${S.tool.nouns} match this filter.`
       : S.show !== 'all' && set[S.show]
         ? `Nothing ${where} is <b>${esc(set[S.show].label)}</b>. Try <b>all</b>.`
       : `No ${S.tool.nouns} ${where}.`;
@@ -191,7 +236,7 @@ function drawList(){
      are the generic row, and a log line is none of those. Everything around
      the contents — which row is picked, which keys move between them — is the
      same either way, so only the inside changes. */
-  if(S.tool.row) return renderRowWindow(items.map(i => i.node));
+  if(S.tool.row) return renderRowWindow(items);
 
   list.innerHTML = items.map(({ node: w, depth, context, kids, open, hiding }) => {
     const meta = rowMeta(S.tool, w);

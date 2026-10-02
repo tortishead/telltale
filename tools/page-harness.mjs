@@ -27,7 +27,22 @@ function stubEl(id){
        the height stays zero and the page falls back to its own. */
     scrollTop:0, scrollLeft:0, clientHeight:0, clientWidth:0,
     style:{ setProperty(){}, removeProperty(){}, getPropertyValue(){ return ''; } },
-    classList:{ add(){}, remove(){}, toggle(){}, contains(){ return false; } },
+    /* A real one, not a sink: the page says what a box or a row is by putting
+       a class on it, and a stub that forgets them is a stub that cannot be
+       asked what the page decided. */
+    classList: (() => {
+      const set = new Set();
+      return {
+        add: (...n) => n.forEach(c => set.add(c)),
+        remove: (...n) => n.forEach(c => set.delete(c)),
+        contains: (c) => set.has(c),
+        toggle(c, force){
+          const on = force === undefined ? !set.has(c) : !!force;
+          if(on) set.add(c); else set.delete(c);
+          return on;
+        },
+      };
+    })(),
     setAttribute(){}, removeAttribute(){}, getAttribute(){ return null; },
     addEventListener(){}, removeEventListener(){}, append(){}, appendChild(){},
     focus(){}, blur(){}, click(){}, remove(){}, scrollIntoView(){},
@@ -122,7 +137,35 @@ return {
      the redraw it then asks for — which is where a windowed list decides where
      to put the scroll. The other two read that scroll, and the window it was
      worked out for, back off the page. */
-  narrow: (q) => { S.filter = q === undefined ? '' : q; renderList(); },
+  narrow: (q) => {
+    S.filter = q === undefined ? '' : q;
+    syncFilterBox(); renderList(); renderResults();
+  },
+  /* The level floor the way its buttons leave it: the other way a log is
+     narrowed, and the one a filter is not typed into. */
+  show: (key) => { S.show = key; renderList(); renderResults(); },
+  /* The two lists a log is read in: the log itself, whole and in its own
+     order, and what the box found under it. The first is what the list pane
+     holds — each row the node and what the listing made of it, which is what
+     the rails are drawn off — and the second is the page's own results list,
+     head and all. */
+  rowsIn: () => listItems(),
+  results: () => ({
+    on: !document.getElementById('results').hidden,
+    tall: document.getElementById('app').style.getPropertyValue('--h-results'),
+    what: document.getElementById('resultsWhat').textContent,
+    query: document.getElementById('resultsQuery').textContent,
+    hint: document.getElementById('resultsHint').textContent,
+    hits: logHits(),
+    drawn: (document.getElementById('rlist').innerHTML.match(/class="wrow/g) || []).length,
+  }),
+  /* Picking one of them, the way clicking it does: the selection, and the log
+     above moved onto the line. */
+  pick: (hash) => { select(hash); revealLine(hash); },
+  /* How tall the results list is, the way its own strip leaves it: dragged to
+     a height, nudged by the keyboard, and put back to the default. */
+  sizeResults: (px) => { setResultsHeight(px); return resultsHeight(); },
+  resetResults: () => { resetResultsHeight(); },
   scrolled: () => document.getElementById('stackScroll').scrollTop,
   rowWindow: () => ({ ...rowWin, nodes:rowWin.nodes.length }),
   error: () => { const e = document.getElementById('err'); return e.hidden ? null : e.textContent; },

@@ -56,6 +56,43 @@ function visibleNodes(){
   return currentDisplay().nodes.filter(keep);
 }
 
+/* ---- a log, and what a search found in it ---- */
+
+/* The two ways of narrowing a log are not the same kind of thing, so they are
+   answered in different places.
+
+   The level floor is a view of the log: `*:E` is not a search for the errors,
+   it is the log you asked to be shown. So it narrows the log itself, and the
+   log in the pane becomes that log.
+
+   The box is a search over whatever log that leaves. What it finds is listed
+   underneath rather than cut out of the log, because a line's reason is almost
+   always in the lines around it — and the log above stays exactly where it was
+   while the query is typed. Picking one of the results goes to that line in the
+   log, with everything printed around it still there.
+
+   Only a list read in the dump's own order is worth splitting this way, which
+   is why it is reached through `tool.split`: a tree has no "around it", and a
+   filter over one is better answered by the rows themselves. */
+function logFloor(){
+  const d = currentDisplay();
+  const set = shows();
+  if(S.show === 'all' || !set[S.show]) return d.nodes;
+  return d.nodes.filter(set[S.show].test);
+}
+
+const searching = () => !!String(S.filter || '').trim();
+
+/* What the box found, which is what the results list holds. It searches the
+   log as it is being shown rather than the whole display: a query typed under
+   `error+` is a question about the errors, which is the log that is on screen
+   to ask it of. */
+function logHits(){
+  if(!searching()) return [];
+  const m = textMatcher(S.filter, S.regex);
+  return m && m.ok ? logFloor().filter(n => m.test(n.search)) : [];
+}
+
 /* The rows the stack pane shows. Where a parser knows what is parented to
    what, the layers that were asked for are joined by the layers they hang
    from: a SurfaceFlinger dump is a tree, and five drawn layers on their own
@@ -63,6 +100,16 @@ function visibleNodes(){
    come back marked as context, so a result still reads as a result. */
 function listItems(){
   const d = currentDisplay();
+
+  /* A split reader's list is the log the level buttons asked for, in the dump's
+     own order, and nothing the box does takes a line out of it. The lines the
+     box found are marked, so that they can be found in the log by eye as well
+     as by the list under it. */
+  if(S.tool.split){
+    const hit = new Set(logHits().map(n => n.hash));
+    return logFloor().map((node, at) => ({ node, depth:0, at, match:hit.has(node.hash) }));
+  }
+
   let rows = visibleNodes();
 
   /* A selection reached from somewhere other than this list — a step in the
@@ -70,6 +117,7 @@ function listItems(){
      than let the pane look as though nothing happened. */
   const sel = S.selected && d.nodes.find(n => n.hash === S.selected);
   if(sel && !rows.includes(sel)) rows = [sel, ...rows];
+
   if(!rows.length || !d.nodes.some(n => n.parentHash)) {
     return rows.map(node => ({ node, depth:0, context:false }));
   }

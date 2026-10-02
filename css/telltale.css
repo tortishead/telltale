@@ -9,6 +9,15 @@
   --ink:#131a24;
   --ink-2:#1b2531;
   --ink-3:#222e3c;
+  /* The row you picked. It used to be the pressed grey, which is a shade off
+     the hover grey, which is a shade off the paper — three greys deep, the
+     selection was something you had to look for. So it is its own colour and
+     its own hue: nothing else in the page is steel blue, so the picked row is
+     the picked row at a glance down a long list. --pick-edge is the rail it
+     carries, bright enough to find the row by the margin alone when the pane
+     is scrolled past the colour. */
+  --pick:#2f4b68;
+  --pick-edge:#5fa8e0;
   --rule:#2b3948;
   --rule-soft:#232f3d;
   --paper:#eef1ec;
@@ -20,10 +29,24 @@
   --fg:#ccd6e0;
   --fg-strong:#f0f4f8;
   --redline:#d81e5b;
+  /* An error has its own red, separate from the redline. The redline is a
+     drawing colour — the selected frame, the focus badge, a slider's thumb —
+     and at 12px of monospace on the dark desk it comes to 3.5:1, which is a
+     colour you notice but a message you squint at. This one is lighter and
+     warmer: it reads as a long line of text, it clears 5:1 over its own band,
+     and it is never mistaken for the warn amber beside it. */
+  --err:#ff5c6c;
+  --err-pick:color-mix(in srgb, var(--err) 32%, transparent);
   /* The mark only. Android's green, kept out of --redline so the rest of
      the page — the selected row, the focus badge, workspace one — stays the
      colour it was. */
   --mark:#3ddc84;
+  /* Searching. It marks the box being typed into and the list of what that
+     found, so the two read as one thing and neither reads as more log. Violet
+     because every other colour in a log row is already spoken for: grey is
+     verbose, blue is debug, the mark is info, amber is warn and red is error.
+     Nothing in a log is violet, so nothing in a log is mistaken for this. */
+  --find:#9b8cff;
   /* Where a window actually takes touch, on both sheets. Its own colour, not
      the window's tint and not the redline: the frame is what the node is and
      the region is what it does with it, and the two are read against each
@@ -51,7 +74,9 @@
   color-scheme:light;
   --ink:#e5e8e0;         /* the desk, kept a shade under the paper on it */
   --ink-2:#f4f6f1;       /* raised: top bar, hover, tooltip */
-  --ink-3:#d9dfd2;       /* pressed: buttons, the selected row */
+  --ink-3:#d9dfd2;       /* pressed: buttons */
+  --pick:#bdd4ec;        /* the picked row, the one blue on a green desk */
+  --pick-edge:#1f6b9c;
   --rule:#bcc4b5;
   --rule-soft:#d2d9c9;
   --paper:#ffffff;       /* the sheet, brighter than the desk it sits on */
@@ -63,7 +88,13 @@
   --fg:#2c3a30;
   --fg-strong:#16211a;
   --redline:#c2124f;
+  /* On paper the error red goes the other way: dark enough to hold its
+     contrast through the deepest band a picked crash line gets, rather than
+     lighter, which is what fails there. */
+  --err:#8c0029;
+  --err-pick:color-mix(in srgb, var(--err) 26%, transparent);
   --mark:#0f9d58;       /* taken down to hold on the light bar */
+  --find:#5b4bc4;       /* the same violet, dark enough to read on paper */
   --touch:#3aa86a;      /* the same green, dark enough to read on paper */
   --trace:#00c21a;      /* still the brightest thing on the sheet, on paper */
   --placeholder:#8b968c;
@@ -156,6 +187,13 @@ main{
   padding:5px 8px; border-radius:2px;
 }
 .filter::placeholder{color:var(--placeholder)}
+/* A box with a search in it is lit in the search colour, which is the colour
+   of the list of what it found: what was typed and what came back are one
+   thing, at opposite ends of the pane, and this is the thread between them. */
+.filter.is-finding{
+  border-color:var(--find);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--find) 45%, transparent);
+}
 /* The box and the switch that says how to read it. `.*` is what the switch is
    called everywhere else a log is searched, so it is what it is called here. */
 .filter-row{display:flex; gap:6px; align-items:stretch}
@@ -400,7 +438,7 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 }
 .doc-row:hover{background:var(--ink-2)}
 .doc-row[aria-selected="true"]{
-  background:var(--ink-3); border-left-color:var(--wsp-accent, var(--redline));
+  background:var(--pick); border-left-color:var(--wsp-accent, var(--pick-edge));
 }
 .doc-key{color:var(--dim); overflow-wrap:anywhere}
 .doc-row[aria-selected="true"] .doc-key{color:var(--fg-strong)}
@@ -477,12 +515,12 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .log-info    .lg-lv{color:var(--mark)}
 .wlist.is-log .log-warn    .lg-lv{color:var(--amber)}
 .wlist.is-log .log-error   .lg-lv,
-.wlist.is-log .log-fatal   .lg-lv{color:var(--redline)}
+.wlist.is-log .log-fatal   .lg-lv{color:var(--err)}
 .wlist.is-log .log-verbose .lg-msg,
 .wlist.is-log .log-debug   .lg-msg{color:var(--dim)}
 .wlist.is-log .log-warn    .lg-msg{color:var(--amber)}
 .wlist.is-log .log-error   .lg-msg,
-.wlist.is-log .log-fatal   .lg-msg{color:var(--redline)}
+.wlist.is-log .log-fatal   .lg-msg{color:var(--err)}
 /* An error is banded as well as coloured: scanning a log is looking for the
    errors in it, and a wash behind the whole line is what finds them without
    reading the level column. It is faint enough to sit under the crash band,
@@ -491,19 +529,31 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .log-error,
 .wlist.is-log .log-error.is-alt,
 .wlist.is-log .log-fatal,
-.wlist.is-log .log-fatal.is-alt{background-color:color-mix(in srgb, var(--redline) 8%, transparent)}
+.wlist.is-log .log-fatal.is-alt{background-color:color-mix(in srgb, var(--err) 12%, transparent)}
 /* The line a crash starts at is the one line in a log worth finding from
    across the room. */
 .wlist.is-log .is-crash,
-.wlist.is-log .is-crash.is-alt{background:color-mix(in srgb, var(--redline) 16%, transparent)}
-.wlist.is-log .is-crash .lg-msg{color:var(--redline); font-weight:700}
+.wlist.is-log .is-crash.is-alt{background:color-mix(in srgb, var(--err) 20%, transparent)}
+.wlist.is-log .is-crash .lg-msg{color:var(--err); font-weight:700}
 .wlist.is-log .wrow[aria-selected="true"],
-.wlist.is-log .wrow.is-alt[aria-selected="true"]{background-color:var(--ink-3)}
-/* A picked error stays an error. The pressed grey is the right colour for a
-   picked row of anything else, but over the red band it reads as the level
-   changing under the click — and in the light theme the grey is a green one,
-   which is the one thing an error line must not look like. So the pick is the
-   same band taken up instead. */
+.wlist.is-log .wrow.is-alt[aria-selected="true"]{background-color:var(--pick)}
+/* The picked line is read as well as found: the dimmed levels go back up to
+   the body colour under it, so the row you are on is never the faintest one
+   on the screen. */
+.wlist.is-log .wrow[aria-selected="true"] .lg-when,
+.wlist.is-log .wrow[aria-selected="true"] .lg-who,
+.wlist.is-log .wrow[aria-selected="true"] .ev-when,
+.wlist.is-log .wrow[aria-selected="true"] .ev-who{color:var(--fg)}
+.wlist.is-log .log-verbose[aria-selected="true"] .lg-msg,
+.wlist.is-log .log-debug[aria-selected="true"] .lg-msg,
+.wlist.is-log .ev-other[aria-selected="true"] .ev-what{color:var(--fg-strong)}
+/* A picked error stays an error: the pick blue would read as the level
+   changing under the click, so the pick is the row's own band taken up — far
+   enough past the crash band to be told from it, and no further, because the
+   band is the floor the message is read off. Red on deep red is where that
+   goes wrong, which is why the message goes up to the body's brightest
+   instead of staying the error colour: the band and the level letter are what
+   say error, and nothing has to be read off them. */
 .wlist.is-log .log-error[aria-selected="true"],
 .wlist.is-log .log-error.is-alt[aria-selected="true"],
 .wlist.is-log .log-fatal[aria-selected="true"],
@@ -512,7 +562,20 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .is-crash.is-alt[aria-selected="true"],
 .wlist.is-log .ev-trouble[aria-selected="true"],
 .wlist.is-log .ev-trouble.is-alt[aria-selected="true"]{
-  background-color:color-mix(in srgb, var(--redline) 28%, transparent);
+  background-color:var(--err-pick);
+}
+.wlist.is-log .log-error[aria-selected="true"] .lg-msg,
+.wlist.is-log .log-fatal[aria-selected="true"] .lg-msg,
+.wlist.is-log .is-crash[aria-selected="true"] .lg-msg,
+.wlist.is-log .ev-trouble[aria-selected="true"] .ev-what{color:var(--fg-strong)}
+/* The letter is the one thing left saying error on a picked row, so it is
+   taken toward the body's brightest far enough to hold on the deeper band
+   while staying in the red — which is up in the dark theme and down in the
+   light one, and the same declaration either way. */
+.wlist.is-log .log-error[aria-selected="true"] .lg-lv,
+.wlist.is-log .log-fatal[aria-selected="true"] .lg-lv,
+.wlist.is-log .ev-trouble[aria-selected="true"] .ev-mark{
+  color:color-mix(in srgb, var(--err) 60%, var(--fg-strong));
 }
 /* ---------- the event log, which is the same columns read differently ----- */
 /* The event reader borrows the log's grid: when it happened, who it was about,
@@ -528,10 +591,82 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .ev-activity .ev-mark{color:#6fa8c8}
 .wlist.is-log .ev-system   .ev-mark{color:var(--amber)}
 .wlist.is-log .ev-trouble  .ev-mark,
-.wlist.is-log .ev-trouble  .ev-what{color:var(--redline); font-weight:700}
+.wlist.is-log .ev-trouble  .ev-what{color:var(--err); font-weight:700}
 .wlist.is-log .ev-other    .ev-what{color:var(--dim)}
 .wlist.is-log .ev-trouble,
-.wlist.is-log .ev-trouble.is-alt{background:color-mix(in srgb, var(--redline) 16%, transparent)}
+.wlist.is-log .ev-trouble.is-alt{background:color-mix(in srgb, var(--err) 20%, transparent)}
+/* ---------- a log being narrowed ---------- */
+/* The lines the box found are listed under the log rather than in place of it,
+   and marked in the log itself on the rail every row already carries for the
+   selection — so that a log being read down shows where the matches are, and
+   the list underneath says what they were. */
+.wlist.is-log .wrow.is-match{border-left-color:var(--label)}
+/* The picked row's own rail is the brighter one, and it is spelled again here
+   because the match rail above it is the more specific selector. */
+.wlist.is-log .wrow.is-match[aria-selected="true"]{border-left-color:var(--pick-edge)}
+
+/* What the box found, under the log. Left alone it takes what it needs and no
+   more than a third — the log is the thing being read and the results are the
+   way into it — and once it has been dragged it is exactly as tall as it was
+   dragged to. One custom property does both: unset, the height is the content's
+   and the cap is the third; set, it is both the height and the cap. */
+/* A display of its own beats the one `hidden` carries, so a reader with
+   nothing to list under it needs saying twice. */
+.results[hidden]{display:none}
+.results{
+  flex:none; display:flex; flex-direction:column; min-height:0;
+  height:var(--h-results, auto);
+  max-height:var(--h-results, 34%);
+  /* The region is lit down its own edge rather than filled: the rows in it are
+     log lines and have to go on reading as log lines, in the level colours they
+     came with. A rail says where the search begins without touching any of
+     them. */
+  border-left:3px solid var(--find);
+}
+/* And a wash across the whole of it, faint enough to leave the stripe, the
+   error band and the selection on top of it legible, but enough that the eye
+   lands on a different sheet of paper. */
+#resultsScroll{background:color-mix(in srgb, var(--find) 7%, transparent)}
+/* The strip it is dragged by, along its top edge. It is inside the pane so that
+   it comes and goes with it, and it carries the rule that divides the two: a
+   border on the pane as well would be two lines a pixel apart. */
+.gutter-row{
+  flex:none; height:7px; cursor:row-resize; touch-action:none;
+  background:transparent; position:relative; z-index:5;
+}
+.gutter-row::before{
+  content:""; position:absolute; left:0; right:0; top:50%; height:1px;
+  transform:translateY(-50%); background:var(--rule);
+}
+.gutter-row:hover::before,
+.gutter-row.is-drag::before,
+.gutter-row:focus-visible::before{ background:var(--redline); height:2px; }
+/* The head says what the list is before it says how big it is, because the
+   rows under it look exactly like the rows above it — they are the same lines —
+   and what tells the two lists apart has to be here. */
+.results-head{
+  flex:none; display:flex; gap:8px; align-items:baseline; flex-wrap:wrap;
+  padding:6px 12px; border-bottom:1px solid var(--rule);
+  background:color-mix(in srgb, var(--find) 14%, var(--ink-2));
+  font-family:var(--sans); font-size:12px;
+}
+.results-tag{
+  flex:none; color:var(--find); font-weight:600; letter-spacing:.06em;
+  text-transform:uppercase; font-size:10.5px;
+}
+/* The query itself, which is the one thing in the head worth reading twice:
+   what is listed below is what this found, and a stale box is the usual
+   reason a log looks wrong. */
+.results-q{
+  font-family:var(--mono); color:var(--fg-strong);
+  background:var(--ink-3); border-radius:2px; padding:0 5px;
+}
+.results-q:empty{display:none}
+/* The hint is the least of it and goes to the far end, where it is out of the
+   way of the count and gone altogether when the pane is narrow. */
+.results-hint{color:var(--dim); margin-left:auto}
+#resultsScroll{overflow:auto; flex:1; min-height:0}
+
 /* A filter box holding a pattern that will not compile. */
 .filter.is-bad{border-color:var(--redline); color:var(--redline)}
 /* Hover and selection are colour only: the shorthand would take the rails with
@@ -550,7 +685,8 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .twisty.is-open .twisty-arrow{transform:rotate(90deg)}
 .twisty:hover{color:var(--fg-strong); background:var(--ink-3)}
 .twisty-none{display:block}
-.wrow[aria-selected="true"]{background-color:var(--ink-3); border-left-color:var(--redline)}
+.wrow[aria-selected="true"]{background-color:var(--pick); border-left-color:var(--pick-edge)}
+.wrow[aria-selected="true"] .wmeta{color:var(--fg)}
 /* Aligned to the title line rather than centred over the whole two-line row,
    which left it floating in the gap between title and meta. */
 .swatch{width:9px; height:9px; border-radius:1px; margin-top:5px}
@@ -1091,7 +1227,7 @@ body.layout-list main{--w-stack:280px; --w-detail:460px}
   border-left:2px solid transparent;
 }
 .find-hit:hover{background-color:var(--ink-3)}
-.find-hit[aria-selected="true"]{background-color:var(--ink-3); border-left-color:var(--mark)}
+.find-hit[aria-selected="true"]{background-color:var(--pick); border-left-color:var(--pick-edge)}
 .find-title{
   display:block; color:var(--fg-strong);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;

@@ -28,6 +28,32 @@ $('wlist').addEventListener('click', (e) => {
   const row = e.target.closest('.wrow'); if(row) select(row.dataset.hash);
 });
 
+/* Picking one of the lines the box found is picking that line in the log
+   above: the same selection, and the log scrolled to where it actually sits,
+   which is the whole reason the two lists are not one. */
+$('rlist').addEventListener('click', (e) => {
+  if(textSelectedIn($('rlist'))) return;
+  const row = e.target.closest('.wrow'); if(!row) return;
+  select(row.dataset.hash);
+  revealLine(row.dataset.hash);
+});
+$('rlist').addEventListener('keydown', (e) => {
+  const row = e.target.closest('.wrow'); if(!row) return;
+  if(e.key === 'Enter' || e.key === ' '){
+    e.preventDefault();
+    select(row.dataset.hash);
+    revealLine(row.dataset.hash);
+    const back = $('rlist').querySelector(`.wrow[data-hash="${CSS.escape(row.dataset.hash)}"]`);
+    if(back) back.focus();
+    return;
+  }
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    const next = e.key === 'ArrowDown' ? row.nextElementSibling : row.previousElementSibling;
+    if(next && next.classList.contains('wrow')) next.focus();
+  }
+});
+
 /* Copying rows out of the list. A row is a grid of cells, so the browser's own
    copy puts every column on a line of its own and a hundred log lines come off
    the clipboard as five hundred — which is not a log. So the clipboard is
@@ -280,23 +306,27 @@ function syncFilterBox(){
   const box = $('filter');
   const m = textMatcher(S.filter, S.regex);
   box.classList.toggle('is-bad', !!m && !m.ok);
+  /* Lit in the colour of the list it is filling, so the box and what it found
+     read as one thing across the length of the pane. A reader whose box does
+     not fill a list of its own has nothing to be tied to. */
+  box.classList.toggle('is-finding', !!(S.tool && S.tool.split && searching() && m && m.ok));
   box.title = m && !m.ok ? m.error : '';
   $('filterRe').setAttribute('aria-pressed', String(!!S.regex));
 }
 $('filter').addEventListener('input', (e) => {
   S.filter = e.target.value;
   syncFilterBox();
-  renderList(); renderPlan();
+  renderList(); renderResults(); renderPlan();
 });
 $('filterRe').addEventListener('click', () => {
   S.regex = !S.regex;
   syncFilterBox();
-  renderList(); renderPlan();
+  renderList(); renderResults(); renderPlan();
 });
 $('optShow').addEventListener('click', (e) => {
   const b = e.target.closest('[data-show]'); if(!b) return;
   S.show = b.dataset.show;
-  renderShow(); renderList(); renderPlan();
+  renderShow(); renderList(); renderResults(); renderPlan();
 });
 $('optDim').addEventListener('change', (e) => { S.dim = e.target.checked; renderPlan(); });
 $('viewTabs').addEventListener('click', (e) => {
@@ -498,6 +528,7 @@ $('detail').addEventListener('click', (e) => {
   if(tag){
     S.filter = tag.dataset.logtag;
     $('filter').value = S.filter;
+    syncFilterBox();
     return void renderAll();
   }
   /* A rect's row and the rect on the sheet are the same pick seen from two
@@ -604,6 +635,8 @@ function savePanes(){
     const v = $('app').style.getPropertyValue('--w-' + which);
     if(v) out[which] = Math.round(parseFloat(v));
   }
+  const h = $('app').style.getPropertyValue('--h-results');
+  if(h) out.results = Math.round(parseFloat(h));
   try {
     if(Object.keys(out).length) localStorage.setItem(PANE_KEY, JSON.stringify(out));
     else localStorage.removeItem(PANE_KEY);
@@ -621,6 +654,8 @@ function restorePanes(){
     const n = +saved[which];
     if(n >= PANE_MIN[which]) $('app').style.setProperty('--w-' + which, n + 'px');
   }
+  const h = +saved.results;
+  if(h >= RESULTS_MIN) $('app').style.setProperty('--h-results', h + 'px');
 }
 
 /* A width saved on a wide screen has to fit the window it is opened in. Two
@@ -651,6 +686,64 @@ function setPaneWidth(which, px){
   const w = Math.min(Math.max(px, PANE_MIN[which]), max);
   $('app').style.setProperty('--w-' + which, w + 'px');
   refit();
+}
+
+/* ---- how tall the list of what was found is ---- */
+/* Left alone it is as tall as what it holds, up to the third the stylesheet
+   caps it at. Dragged, it is exactly as tall as it was dragged to — which is
+   what the property holds, and why going back to the default is removing the
+   property rather than writing a number into it. */
+const RESULTS_MIN = 72;
+
+function resultsHeight(){
+  const v = $('app').style.getPropertyValue('--h-results');
+  return parseFloat(v) || $('results').clientHeight;
+}
+
+function setResultsHeight(px){
+  /* The log above has to stay a log. The rest of the pane is the head, the
+     controls and the group strip, so the room is measured off the pane itself
+     rather than off the window. */
+  const pane = $('results').parentElement;
+  const room = pane ? pane.clientHeight : 0;
+  const max = room ? Math.max(RESULTS_MIN, Math.round(room * 0.7)) : 9999;
+  $('app').style.setProperty('--h-results',
+    Math.round(clamp(px, RESULTS_MIN, max)) + 'px');
+}
+
+function resetResultsHeight(){ $('app').style.removeProperty('--h-results'); }
+
+{
+  const el = $('gutterResults');
+  let from = 0, at = 0;
+  el.addEventListener('pointerdown', (e) => {
+    if(e.button !== 0) return;
+    from = e.clientY; at = $('results').clientHeight;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('is-drag');
+    e.preventDefault();
+  });
+  /* Dragging the strip up makes the list taller, so the height goes the other
+     way from the pointer. */
+  el.addEventListener('pointermove', (e) => {
+    if(!el.hasPointerCapture(e.pointerId)) return;
+    setResultsHeight(at - (e.clientY - from));
+  });
+  const stop = (e) => {
+    if(el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    el.classList.remove('is-drag');
+    savePanes();
+  };
+  el.addEventListener('pointerup', stop);
+  el.addEventListener('pointercancel', stop);
+  el.addEventListener('dblclick', () => { resetResultsHeight(); savePanes(); });
+  el.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 66 : 22;      // a line of the log, or three
+    if(e.key === 'ArrowUp')   { e.preventDefault(); setResultsHeight(resultsHeight() + step); }
+    if(e.key === 'ArrowDown') { e.preventDefault(); setResultsHeight(resultsHeight() - step); }
+    if(e.key === 'Home')      { e.preventDefault(); resetResultsHeight(); }
+    if(['ArrowUp','ArrowDown','Home'].includes(e.key)) savePanes();
+  });
 }
 
 for(const [id, which] of [['gutterL','stack'], ['gutterR','detail']]){

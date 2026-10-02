@@ -10,26 +10,40 @@
    This is worth its complexity for exactly one kind of list — one where the
    rows are uniform, tiny and beyond counting — which is why it is reached only
    through `tool.row` and everything else still renders whole. */
-const rowWin = { nodes: [], rowH: 22, key: '', from: 0, to: 0,
+/* `marks` runs alongside `nodes`: what each row is besides a line — for a log
+   being narrowed, whether this is one of the lines that matched. It is a
+   parallel array rather than a flag on the node because it is about this
+   listing of the log and not about the line. */
+const rowWin = { nodes: [], marks: [], rowH: 22, key: '', from: 0, to: 0,
                  pending: false, measured: false, anchor: -1, move: false };
 
 /* Rows either side of the fold, so a flick of the wheel lands on rows that are
    already there rather than on blank paper. */
 const ROW_WIN_PAD = 24;
 
-function renderRowWindow(nodes){
+function renderRowWindow(items){
+  const nodes = items.map(i => i.node);
   rowWin.nodes = nodes;
+  /* A rail on the lines the box found, so that a log being narrowed can be
+     read down as well as through the results under it. Nothing is marked while
+     nothing is being looked for: a rail down every row says nothing. */
+  rowWin.marks = items.some(i => i.match)
+    ? items.map(i => i.match ? ' is-match' : '') : items.map(() => '');
   /* Which list this is. A different one — another buffer, another filter,
      another dump — starts at the top; the same one redrawn (a row was picked)
-     stays where the reader had scrolled it to. */
-  const key = `${S.toolId}|${S.displayId}|${S.show}|${S.filter}|${nodes.length}`;
+     stays where the reader had scrolled it to. A split reader's list follows
+     the level buttons, which are asking for a different log, but not the box,
+     which is searching the one it has — so the log does not move about under
+     what is being typed into it. */
+  const narrowed = S.tool.split ? S.show : `${S.show}|${S.filter}`;
+  const key = `${S.toolId}|${S.displayId}|${narrowed}|${nodes.length}`;
   const fresh = key !== rowWin.key;
   rowWin.key = key;
   if(fresh){
     /* A new list starts at the top, except when the row that was picked is in
-       it. Clearing a filter is that case: the line the reader selected out of
-       the narrowed log is the line they are still reading, so the whole log
-       comes back around it rather than at line one. */
+       it: the line the reader selected out of the last one is the line they
+       are still reading, so the new list opens around it rather than at line
+       one. */
     rowWin.anchor = S.selected ? nodes.findIndex(n => n.hash === S.selected) : -1;
     rowWin.measured = false;
     rowWin.move = true;
@@ -59,7 +73,7 @@ function paintRowWindow(){
   for(let i = from; i < to; i++){
     const w = nodes[i];
     rows.push(`<li class="wrow${i % 2 ? ' is-alt' : ''} ${
-        S.tool.rowClass ? S.tool.rowClass(w) : ''}"
+        S.tool.rowClass ? S.tool.rowClass(w) : ''}${rowWin.marks[i] || ''}"
       role="option" tabindex="0" data-hash="${esc(w.hash)}" data-i="${i}"
       aria-posinset="${i + 1}" aria-setsize="${nodes.length}"
       aria-selected="${S.selected === w.hash}">${S.tool.row(w)}</li>`);
@@ -100,6 +114,19 @@ function paintRowWindow(){
   }
 }
 
+/* How much of the list the pane is over, in rows, clamped to the list itself:
+   a pane taller than the log is still only as much log as there is. Unclamped,
+   a short list reports a fold past its own end and the two handlers below then
+   rebuild the rows on every scroll and every mouse-up — and a rebuild between a
+   mousedown and the click it belongs to throws away the element that was
+   pressed, so the click retargets to their common ancestor and lands on
+   nothing. A row in a short list could not be picked by clicking it. */
+function rowWinSpan(){
+  const box = $('stackScroll'), h = rowWin.rowH, n = rowWin.nodes.length;
+  return { from: Math.min(n, Math.floor(box.scrollTop / h)),
+           to: Math.min(n, Math.ceil((box.scrollTop + (box.clientHeight || 600)) / h)) };
+}
+
 /* A repaint throws the rows away and builds them again, which takes any text
    selection with it. That is nothing while reading and everything while
    dragging a selection across the rows to copy them: a drag that reaches the
@@ -116,9 +143,7 @@ document.addEventListener('mouseup', () => {
      is stale by however far the pane scrolled under it. */
   const sel = window.getSelection();
   if(!S.tool || !S.tool.row || (sel && !sel.isCollapsed)) return;
-  const box = $('stackScroll'), h = rowWin.rowH;
-  const from = Math.floor(box.scrollTop / h);
-  const to = Math.ceil((box.scrollTop + (box.clientHeight || 600)) / h);
+  const { from, to } = rowWinSpan();
   if(from < rowWin.from || to > rowWin.to) paintRowWindow();
 });
 
@@ -129,9 +154,7 @@ $('stackScroll').addEventListener('scroll', () => {
   requestAnimationFrame(() => {
     rowWin.pending = false;
     /* Nothing to do while the fold is still inside the slice that is drawn. */
-    const box = $('stackScroll'), h = rowWin.rowH;
-    const from = Math.floor(box.scrollTop / h);
-    const to = Math.ceil((box.scrollTop + (box.clientHeight || 600)) / h);
+    const { from, to } = rowWinSpan();
     if(from >= rowWin.from && to <= rowWin.to) return;
     paintRowWindow();
   });

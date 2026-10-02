@@ -149,6 +149,23 @@ adb shell dumpsys binder_calls_stats &gt; binder.txt</code>
     <div class="scroll" id="stackScroll">
       <ul class="wlist" id="wlist" role="listbox" aria-label="Window stack, topmost first"></ul>
     </div>
+    <!-- What the box found, under the log rather than in place of it: picking
+         one of these goes to that line in the log above, with everything that
+         was printed around it still there. -->
+    <div class="results" id="results" hidden>
+      <div class="gutter gutter-row" id="gutterResults" role="separator"
+           aria-orientation="horizontal" tabindex="0"
+           aria-label="Resize what the filter found"></div>
+      <div class="results-head">
+        <span class="results-tag">found</span>
+        <b id="resultsWhat"></b>
+        <code class="results-q" id="resultsQuery"></code>
+        <span class="results-hint" id="resultsHint"></span>
+      </div>
+      <div class="scroll" id="resultsScroll">
+        <ul class="wlist is-log" id="rlist" role="listbox" aria-label="What the filter found"></ul>
+      </div>
+    </div>
   </aside>
 
   <div class="gutter" id="gutterL" role="separator" aria-orientation="vertical"
