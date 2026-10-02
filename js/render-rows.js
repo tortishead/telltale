@@ -11,7 +11,7 @@
    rows are uniform, tiny and beyond counting — which is why it is reached only
    through `tool.row` and everything else still renders whole. */
 const rowWin = { nodes: [], rowH: 22, key: '', from: 0, to: 0,
-                 pending: false, measured: false };
+                 pending: false, measured: false, anchor: -1, move: false };
 
 /* Rows either side of the fold, so a flick of the wheel lands on rows that are
    already there rather than on blank paper. */
@@ -25,8 +25,25 @@ function renderRowWindow(nodes){
   const key = `${S.toolId}|${S.displayId}|${S.show}|${S.filter}|${nodes.length}`;
   const fresh = key !== rowWin.key;
   rowWin.key = key;
-  if(fresh){ $('stackScroll').scrollTop = 0; rowWin.measured = false; }
+  if(fresh){
+    /* A new list starts at the top, except when the row that was picked is in
+       it. Clearing a filter is that case: the line the reader selected out of
+       the narrowed log is the line they are still reading, so the whole log
+       comes back around it rather than at line one. */
+    rowWin.anchor = S.selected ? nodes.findIndex(n => n.hash === S.selected) : -1;
+    rowWin.measured = false;
+    rowWin.move = true;
+  }
   paintRowWindow();
+}
+
+/* Where the pane has to be scrolled to for row `i` to sit in the middle of it,
+   clamped to the ends so the first and last rows are not scrolled past. */
+function rowWinTop(i){
+  const box = $('stackScroll'), h = rowWin.rowH;
+  const view = box.clientHeight || 600;
+  const end = Math.max(0, rowWin.nodes.length * h - view);
+  return Math.min(end, Math.max(0, Math.round(i * h - (view - h) / 2)));
 }
 
 function paintRowWindow(){
@@ -60,7 +77,26 @@ function paintRowWindow(){
     rowWin.measured = true;
     const first = list.querySelector('.wrow');
     const got = first ? Math.round(first.getBoundingClientRect().height) : 0;
-    if(got && got !== rowWin.rowH){ rowWin.rowH = got; paintRowWindow(); }
+    /* A height that disagrees with what the spacers were drawn in is worth
+       one more paint, and the move that is still pending is made in the new
+       height rather than the assumed one. */
+    if(got && got !== rowWin.rowH){ rowWin.rowH = got; return paintRowWindow(); }
+  }
+
+  /* Where a new list is put. This can only happen after the rows are in: until
+     they are, the pane is as tall as the list that is going — the spacers are
+     the old one's lengths — and a browser clamps a scrollTop to the content it
+     has, so a move made before the paint lands at the end of the old list
+     instead of on the row. Clearing a filter is where that shows: typing the
+     query away crawls there over one input event per keystroke, and the box's
+     own clear button jumps in one and stops short. */
+  if(rowWin.move){
+    rowWin.move = false;
+    const want = rowWin.anchor < 0 ? 0 : rowWinTop(rowWin.anchor);
+    if(Math.abs(box.scrollTop - want) >= 1){
+      box.scrollTop = want;
+      paintRowWindow();
+    }
   }
 }
 

@@ -483,6 +483,15 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .log-warn    .lg-msg{color:var(--amber)}
 .wlist.is-log .log-error   .lg-msg,
 .wlist.is-log .log-fatal   .lg-msg{color:var(--redline)}
+/* An error is banded as well as coloured: scanning a log is looking for the
+   errors in it, and a wash behind the whole line is what finds them without
+   reading the level column. It is faint enough to sit under the crash band,
+   which is the same colour at more of it, and it is declared after the stripe
+   so it covers both halves of an alternating pair. */
+.wlist.is-log .log-error,
+.wlist.is-log .log-error.is-alt,
+.wlist.is-log .log-fatal,
+.wlist.is-log .log-fatal.is-alt{background-color:color-mix(in srgb, var(--redline) 8%, transparent)}
 /* The line a crash starts at is the one line in a log worth finding from
    across the room. */
 .wlist.is-log .is-crash,
@@ -490,6 +499,21 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .wlist.is-log .is-crash .lg-msg{color:var(--redline); font-weight:700}
 .wlist.is-log .wrow[aria-selected="true"],
 .wlist.is-log .wrow.is-alt[aria-selected="true"]{background-color:var(--ink-3)}
+/* A picked error stays an error. The pressed grey is the right colour for a
+   picked row of anything else, but over the red band it reads as the level
+   changing under the click — and in the light theme the grey is a green one,
+   which is the one thing an error line must not look like. So the pick is the
+   same band taken up instead. */
+.wlist.is-log .log-error[aria-selected="true"],
+.wlist.is-log .log-error.is-alt[aria-selected="true"],
+.wlist.is-log .log-fatal[aria-selected="true"],
+.wlist.is-log .log-fatal.is-alt[aria-selected="true"],
+.wlist.is-log .is-crash[aria-selected="true"],
+.wlist.is-log .is-crash.is-alt[aria-selected="true"],
+.wlist.is-log .ev-trouble[aria-selected="true"],
+.wlist.is-log .ev-trouble.is-alt[aria-selected="true"]{
+  background-color:color-mix(in srgb, var(--redline) 28%, transparent);
+}
 /* ---------- the event log, which is the same columns read differently ----- */
 /* The event reader borrows the log's grid: when it happened, who it was about,
    one character saying what kind of thing it was, the tag the framework wrote,

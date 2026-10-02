@@ -22,6 +22,10 @@ function stubEl(id){
   const el = {
     id, innerHTML:'', textContent:'', value:'', hidden:false, checked:false,
     disabled:false, tagName:'DIV', dataset:{}, children:[], parentElement:null,
+    /* A scroll port, because the page moves one: a windowed list puts the
+       scroll where the row it is anchored on is. Nothing is laid out here, so
+       the height stays zero and the page falls back to its own. */
+    scrollTop:0, scrollLeft:0, clientHeight:0, clientWidth:0,
     style:{ setProperty(){}, removeProperty(){}, getPropertyValue(){ return ''; } },
     classList:{ add(){}, remove(){}, toggle(){}, contains(){ return false; } },
     setAttribute(){}, removeAttribute(){}, getAttribute(){ return null; },
@@ -114,6 +118,13 @@ return {
   attach: (text) => { const bad = gevAttach(text); if(!bad) renderAll(); return bad; },
   detach: () => gevDetach(),
   stage: () => gevStage(),
+  /* The filter the way the box leaves it: the state its listener writes, and
+     the redraw it then asks for — which is where a windowed list decides where
+     to put the scroll. The other two read that scroll, and the window it was
+     worked out for, back off the page. */
+  narrow: (q) => { S.filter = q === undefined ? '' : q; renderList(); },
+  scrolled: () => document.getElementById('stackScroll').scrollTop,
+  rowWindow: () => ({ ...rowWin, nodes:rowWin.nodes.length }),
   error: () => { const e = document.getElementById('err'); return e.hidden ? null : e.textContent; },
   note: () => { const e = document.getElementById('loaderNote'); return e.hidden ? null : e.textContent; },
 };

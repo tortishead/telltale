@@ -312,6 +312,78 @@ test('the .* switch reads the box as a pattern without the slashes', async () =>
   assert.equal(m.ok, false, 'and a pattern that will not compile still says so');
 });
 
+/* A log is read by narrowing it to a tag, finding the line, and then taking
+   the filter off to see what was happening around that line. The taking-off is
+   a new list — every other line is back — and the reader has not moved, so the
+   pane comes back around the line they picked rather than at line one.
+
+   The pane is given a height here, because the whole of this fixture fits in
+   the stub DOM's 600 and a list that fits is a list with nowhere to scroll. */
+test('clearing a filter leaves the pane on the line that was selected', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  const pane = page.els.get('stackScroll'), list = page.els.get('wlist');
+  pane.clientHeight = 110;
+  /* A browser clamps a scrollTop to the content the pane has at the moment it
+     is written, which is the whole of why this is worth a test: the rows have
+     to be in before the move is made, or the move lands at the end of the list
+     that is going. The stub lays nothing out, so the clamp is stood in for
+     here, off the heights the page itself just drew. */
+  let top = 0;
+  Object.defineProperty(pane, 'scrollTop', {
+    get: () => top,
+    set(v){
+      const spacers = [...list.innerHTML.matchAll(/height:(\d+)px/g)]
+        .reduce((sum, m) => sum + +m[1], 0);
+      const rows = (list.innerHTML.match(/class="wrow/g) || []).length;
+      const end = Math.max(0, spacers + rows * 22 - pane.clientHeight);
+      top = Math.max(0, Math.min(v, end));
+    },
+  });
+
+  page.narrow('activitymanager');
+  assert.equal(page.rowWindow().nodes, 6, 'the list is the six lines of that tag');
+
+  const line = page.filter('activitymanager').at(-1);
+  page.select(line.hash);
+
+  page.narrow('');
+  const whole = page.rowWindow();
+  assert.ok(whole.nodes > 6, 'the whole log is listed again');
+
+  const i = page.filter('').findIndex((n) => n.hash === line.hash);
+  assert.ok(i > 0, 'and the line that was picked is somewhere down it');
+  assert.equal(whole.anchor, i, 'the window is anchored on that line');
+
+  /* Centred in the pane, and clamped to the end of the log the way a scroll
+     is. */
+  const h = whole.rowH, view = pane.clientHeight;
+  const want = Math.min(Math.max(0, whole.nodes * h - view),
+                        Math.max(0, Math.round(i * h - (view - h) / 2)));
+  assert.ok(want > 0, 'the line is below the fold of a pane this tall');
+  assert.equal(page.scrolled(), want, 'and the pane is scrolled to it');
+  assert.ok(whole.from <= i && i < whole.to, 'so the row is one of the ones drawn');
+});
+
+/* A list arrived at with nothing picked is a list read from the top. The one
+   with something picked that the filter does not match is not that case: the
+   list pins the selection on rather than drop it, so it is the first row and
+   the top is where it is. */
+test('a list with nothing picked in it starts at the top', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  page.els.get('stackScroll').clientHeight = 110;
+
+  page.narrow('activitymanager');
+  assert.equal(page.rowWindow().anchor, -1, 'nothing is picked');
+  assert.equal(page.scrolled(), 0);
+
+  page.select(page.filter('activitymanager').at(-1).hash);
+  page.narrow('surfacecontrol');
+  assert.equal(page.rowWindow().anchor, 0, 'a selection the filter drops is pinned on top');
+  assert.equal(page.scrolled(), 0);
+});
+
 /* ---------- the desk-wide search ---------- */
 
 /* The filter above the list searches the dump being read; Search in the top
