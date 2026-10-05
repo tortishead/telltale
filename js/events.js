@@ -313,15 +313,41 @@ function syncFilterBox(){
   box.title = m && !m.ok ? m.error : '';
   $('filterRe').setAttribute('aria-pressed', String(!!S.regex));
 }
-$('filter').addEventListener('input', (e) => {
-  S.filter = e.target.value;
-  syncFilterBox();
+/* A split reader's box searches the whole log it is reading, and that log runs
+   to tens of thousands of lines: running the search on every keystroke costs
+   more than the keystroke is worth, and the pane ends up a letter behind the
+   typing. So the box itself takes the letters at once — what it says, how it is
+   lit and what it calls a bad pattern are never delayed — and the search behind
+   it waits for the typing to stop. A reader whose box filters rows instead does
+   the cheap thing to the rows it already has, and stays immediate. */
+const FIND_WAIT = 200;
+let findWait = null;
+function runFilter(){
+  if(findWait !== null){ clearTimeout(findWait); findWait = null; }
   renderList(); renderResults(); renderPlan();
+}
+function waitThenFilter(){
+  if(findWait !== null) clearTimeout(findWait);
+  findWait = setTimeout(runFilter, FIND_WAIT);
+}
+function filterTyped(value){
+  S.filter = value;
+  syncFilterBox();
+  /* Emptying the box is not a query — it puts the log back as it was — so it
+     lands at once, the way taking a filter off always has. */
+  if(S.tool && S.tool.split && searching()) waitThenFilter();
+  else runFilter();
+}
+$('filter').addEventListener('input', (e) => filterTyped(e.target.value));
+/* Enter is the reader saying the query is finished, so it is not held for the
+   rest of the delay. */
+$('filter').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); runFilter(); }
 });
 $('filterRe').addEventListener('click', () => {
   S.regex = !S.regex;
   syncFilterBox();
-  renderList(); renderResults(); renderPlan();
+  runFilter();
 });
 $('optShow').addEventListener('click', (e) => {
   const b = e.target.closest('[data-show]'); if(!b) return;

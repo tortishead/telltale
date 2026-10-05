@@ -104,7 +104,9 @@ lines out — why a line was printed is almost always in the lines around it —
 the log stays put with the hits railed in it, what was found is listed under it,
 and picking one of those puts that line in the middle of the log above. Drag the
 strip above the results to resize them, double-click it to go back to the
-default. Long result sets are capped at 2000 and the head says so.
+default. The search runs when you stop typing rather than on every key, so a
+long log does not stutter a letter behind you; Enter runs it now. Long result
+sets are capped at 2000 and the head says so.
 
 ## Follow one thing across the readers
 

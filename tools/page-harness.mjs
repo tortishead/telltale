@@ -141,6 +141,13 @@ return {
     S.filter = q === undefined ? '' : q;
     syncFilterBox(); renderList(); renderResults();
   },
+  /* The box the way a keystroke leaves it: the page's own listener body, which
+     decides whether the search runs now or waits for the typing to stop. What
+     comes back is whether one is waiting, so a test can tell a deferred search
+     from one that has already run. */
+  typed: (q) => { filterTyped(q === undefined ? '' : q); return findWait !== null; },
+  /* Enter, which is the reader saying the query is finished. */
+  typedDone: () => { runFilter(); return findWait !== null; },
   /* The level floor the way its buttons leave it: the other way a log is
      narrowed, and the one a filter is not typed into. */
   show: (key) => { S.show = key; renderList(); renderResults(); },
@@ -222,6 +229,17 @@ export function openPage(){
     restore();
     return out;
   };
+
+  /* The page defers a log search to a timer, so a timer has to run the way a
+     browser's does: with the page's DOM still up. The page is only installed
+     around calls into it, so the deferred call is put back inside one. */
+  const realTimeout = globalThis.setTimeout, realClear = globalThis.clearTimeout;
+  globals.setTimeout = (fn, ms) => {
+    const t = realTimeout(around(fn), ms);
+    if(t && t.unref) t.unref();
+    return t;
+  };
+  globals.clearTimeout = (t) => realClear(t);
 
   install();
   let page;

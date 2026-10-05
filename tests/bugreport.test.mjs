@@ -484,6 +484,58 @@ test('the list of what was found says so, and says what was asked for', async ()
   assert.equal(lit(), false, 'cleared, it is a box again');
 });
 
+/* A query typed into a log reader is a search over every line of the log, so
+   it waits for the typing to stop rather than running once per keystroke. What
+   does not wait is the box: the letters, and the lighting that says what the
+   box is doing, are there on the keystroke. */
+test('a log search waits for the typing to stop, the box does not', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+  const lit = () => page.els.get('filter').classList.contains('is-finding');
+
+  assert.equal(page.typed('a'), true, 'a letter typed at a log leaves a search waiting');
+  assert.equal(lit(), true, 'the box is lit on that keystroke all the same');
+  assert.equal(page.results().on, false, 'and nothing has been searched yet');
+
+  assert.equal(page.typed('activitymanager'), true, 'the letters after it push the wait out');
+  await new Promise((done) => setTimeout(done, 350));
+
+  const found = page.results();
+  assert.equal(found.on, true, 'the typing stopping is what runs the search');
+  assert.equal(found.hits.length, 6);
+  assert.equal(found.query, 'activitymanager');
+
+  /* Emptying the box puts the log back, which is not a query to wait for. */
+  assert.equal(page.typed(''), false);
+  assert.equal(page.results().on, false, 'and the results are gone at once');
+  assert.equal(lit(), false);
+});
+
+/* Enter is the reader saying the query is finished, and the rest of the delay
+   is then time spent waiting for nothing. */
+test('Enter runs a waiting log search at once', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/logcat-sample.txt'), 'utf8'), 'logcat', 'logcat.txt');
+
+  assert.equal(page.typed('androidruntime'), true, 'the search is waiting');
+  assert.equal(page.typedDone(), false, 'Enter is the end of the wait');
+  assert.equal(page.results().on, true, 'so the search has run');
+  assert.equal(page.results().query, 'androidruntime');
+});
+
+/* The delay is the log's, not the box's: a reader whose box takes rows out of
+   the list is filtering a few hundred of them, and a filter that lagged the
+   typing there would be the page being slow for no reason. */
+test('a reader whose box filters rows answers on the keystroke', async () => {
+  const page = openPage();
+  await page.load(readFileSync(dir('fixtures/window-sample.txt'), 'utf8'), 'window', 'window.txt');
+
+  assert.equal(page.S.tool.split, undefined, 'the window reader does not split its pane');
+  assert.equal(page.typed('statusbar'), false, 'so nothing about it waits');
+  assert.equal(page.rowsIn().length, page.filter('statusbar').length,
+    'and the list is already the rows that match');
+});
+
 /* A pattern that will not compile is said in the head of the list rather than
    by listing nothing and leaving the reader to wonder. */
 test('a pattern that will not compile says so where the results would be', async () => {

@@ -187,6 +187,12 @@ main{
   padding:5px 8px; border-radius:2px;
 }
 .filter::placeholder{color:var(--placeholder)}
+/* A box typed into shows a caret, and the box itself says what the query is
+   doing — lit violet for a search, red for a pattern that will not compile. The
+   page's red focus ring laid over that is a third frame saying nothing, and it
+   is the one closest to the eye while typing. So the box takes focus the way
+   the search card's box does, on its own border rather than an outline. */
+.filter:focus-visible{outline:none; border-color:var(--graphite)}
 /* A box with a search in it is lit in the search colour, which is the colour
    of the list of what it found: what was typed and what came back are one
    thing, at opposite ends of the pane, and this is the thread between them. */
