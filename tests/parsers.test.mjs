@@ -2146,6 +2146,37 @@ test('a crash is found by what the log itself says', () => {
 
 /* The span of a bugreport's logs is not its first and last line: the buffers
    are printed one after another, so the radio log ends before the main log. */
+/* A log line names a pid and nothing else; the process is what the rest of
+   the file says that pid was, and when. */
+test('a line is named for the process its pid was when it was printed', () => {
+  const head = (t, pid, tag, msg) => `09-21 ${t}  1000  ${pid}  ${pid} I ${tag}: ${msg}`;
+  const s = parseLogcatDump([
+    'LABEL   USER    PID   TID  PPID  VSZ  RSS WCHAN ADDR S CMD',
+    'u:r:s:0 system  1631  1631  704  1    1   0     0    S system_server',
+    'u:r:s:0 system  1631  1668  704  1    1   0     0    S Binder:1631_1',
+    'u:r:s:0 u0_a1   5210  5210  704  1    1   0     0    S ndroid.settings',
+    '------ SYSTEM LOG (logcat -v threadtime -v uid -d) ------',
+    head('11:00:00.000', 5210, 'Old', 'printed by whatever 5210 was before'),
+    head('11:02:31.300', 5210, 'Settings', 'an app talks before it is said to have started'),
+    head('11:02:31.402', 1631, 'ActivityManager',
+      'Start proc 5210:com.android.settings/1000 for activity {com.android.settings/.Home}'),
+    head('11:02:32.000', 5210, 'Settings', 'up'),
+    head('11:02:33.000', 4471, 'AndroidRuntime', 'Process: com.example.tracker, PID: 4471'),
+    head('11:02:34.000', 9999, 'Nobody', 'the file never says who this is'),
+    '  ProcessRecord{abc123 5210:com.android.settings/1000}',
+  ].join('\n'));
+  const of = (tag) => s.nodes.filter((n) => n.tag === tag).map((n) => n.entry.process);
+  assert.deepEqual(of('ActivityManager'), ['system_server'], 'ps names the process, not the thread');
+  assert.deepEqual(of('Settings'), ['com.android.settings', 'com.android.settings'],
+    'a start covers the lines the app printed just before it was logged');
+  assert.deepEqual(of('Old'), [null], 'and not the pid it was before');
+  assert.deepEqual(of('AndroidRuntime'), ['com.example.tracker']);
+  assert.deepEqual(of('Nobody'), [null]);
+  assert.equal(s.displays[0].named, 4);
+  assert.ok(s.nodes.find((n) => n.tag === 'Settings').search.includes('com.android.settings'),
+    'and the filter reaches it');
+});
+
 test('the span of the log is worked out from the stamps, not the order', () => {
   const g = parseLogcatDump(read('fixtures/logcat-sample.txt')).globals;
   assert.equal(g.first, '09-21 11:02:30.115', 'the radio log opens it');

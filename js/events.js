@@ -806,6 +806,118 @@ for(const [id, which] of [['gutterL','stack'], ['gutterR','detail']]){
 
 restorePanes();
 
+/* ---- how wide a log's process and tag columns are ---- */
+/* The right edge of either cell is a handle, on any row, in the log and in
+   what the box found under it alike: the columns are the log's, so dragging
+   one moves it in both. Like a pane, a width that was dragged is kept, and a
+   double click on the edge puts it back. */
+const LOGCOL_KEY = 'telltale.logcols';
+const LOGCOLS = { proc:'lg-proc', tag:'lg-tag' };
+const LOGCOL_MIN = 32;
+/* How far either side of the edge the handle reaches: a little into the cell,
+   and most of the gap after it, which is where nothing else is. */
+const LOGCOL_GRAB = [3, 8];
+
+/* The row is the one under the point rather than the event's target: while a
+   drag holds the pointer, every event after it is the list's, the double
+   click that resets the column included. */
+function logColEdge(e){
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const row = under && under.closest('.lg-row');
+  if(!row) return null;
+  for(const [which, cls] of Object.entries(LOGCOLS)){
+    const cell = row.querySelector('.' + cls);
+    if(!cell) continue;
+    const r = cell.getBoundingClientRect();
+    if(e.clientX >= r.right - LOGCOL_GRAB[0] && e.clientX <= r.right + LOGCOL_GRAB[1])
+      return { which, cell, row };
+  }
+  return null;
+}
+
+function showLogColEdge(list, at){
+  list.classList.toggle('is-col-edge', !!at);
+  if(at) list.style.setProperty('--lg-rule',
+    `${Math.round(at.cell.getBoundingClientRect().right - at.row.getBoundingClientRect().left + 3)}px`);
+}
+
+function setLogCol(which, px){
+  if(px === null) $('app').style.removeProperty(`--lg-${which}-w`);
+  else $('app').style.setProperty(`--lg-${which}-w`, Math.round(px) + 'px');
+}
+
+function saveLogCols(){
+  const out = {};
+  for(const which of Object.keys(LOGCOLS)){
+    const v = $('app').style.getPropertyValue(`--lg-${which}-w`);
+    if(v) out[which] = Math.round(parseFloat(v));
+  }
+  try {
+    if(Object.keys(out).length) localStorage.setItem(LOGCOL_KEY, JSON.stringify(out));
+    else localStorage.removeItem(LOGCOL_KEY);
+  } catch(e) {}
+}
+
+{
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LOGCOL_KEY) || 'null'); } catch(e) {}
+  if(saved && typeof saved === 'object'){
+    for(const which of Object.keys(LOGCOLS))
+      if(+saved[which] >= LOGCOL_MIN) setLogCol(which, +saved[which]);
+  }
+}
+
+for(const list of [$('wlist'), $('rlist')]){
+  let drag = null;
+  /* A press on the edge is the start of a resize and never a pick, so the
+     click it ends in — and the two a double click is made of — are not let
+     through to the list's own handler. */
+  let swallow = false;
+  list.addEventListener('click', (e) => {
+    if(swallow){ swallow = false; e.stopImmediatePropagation(); }
+  }, true);
+  list.addEventListener('pointermove', (e) => {
+    if(drag){
+      const w = Math.min(Math.max(drag.w + e.clientX - drag.from, LOGCOL_MIN),
+                         Math.max(LOGCOL_MIN, list.clientWidth * 0.6));
+      setLogCol(drag.which, w);
+      showLogColEdge(list, drag.at);
+      return;
+    }
+    if(e.buttons) return;
+    showLogColEdge(list, logColEdge(e));
+  });
+  list.addEventListener('pointerleave', () => { if(!drag) showLogColEdge(list, null); });
+  list.addEventListener('pointerdown', (e) => {
+    swallow = false;
+    if(e.button !== 0) return;
+    const at = logColEdge(e);
+    if(!at) return;
+    swallow = true;
+    drag = { which: at.which, at, from: e.clientX, w: at.cell.getBoundingClientRect().width };
+    list.setPointerCapture(e.pointerId);
+    /* No text selection starting under the handle, and no mousedown for the
+       row window's own drag-to-select to hold the window still for. */
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  const stop = (e) => {
+    if(!drag) return;
+    if(list.hasPointerCapture(e.pointerId)) list.releasePointerCapture(e.pointerId);
+    drag = null;
+    saveLogCols();
+  };
+  list.addEventListener('pointerup', stop);
+  list.addEventListener('pointercancel', stop);
+  list.addEventListener('dblclick', (e) => {
+    const at = logColEdge(e);
+    if(!at) return;
+    setLogCol(at.which, null);
+    saveLogCols();
+    showLogColEdge(list, logColEdge(e));
+  });
+}
+
 window.addEventListener('resize', refit);
 if(window.ResizeObserver) new ResizeObserver(refit).observe($('sheet'));
 

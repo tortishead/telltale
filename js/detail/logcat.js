@@ -10,22 +10,32 @@ function logCounts(counts){
   return rows.length ? `<div class="chips">${rows.join('')}</div>` : none;
 }
 
-const logWhen = (e) => !e ? null
-  : e.time ? `${esc(e.date)} ${esc(e.time)}` : `[${e.uptime.toFixed(6)}]`;
+const logWhen = (e) => e ? esc(logStamp(e)) : null;
 
-/* One line, in the columns a log reader prints: when, who, what level, which
-   tag, and then the message, which is the only part allowed to be long. The
-   level is its letter, the way logcat itself writes it — a word in every row
-   would push the message off the screen for no gain. */
+/* A tag, a pid or a process in the pane is the narrowing a log reader does
+   next, so it is a button that types itself into the filter box. */
+const logFilterBtn = (value, title, label = value) =>
+  `<button class="btn btn-quiet" type="button" data-logtag="${esc(String(value))}"
+     title="${esc(title)}">${esc(String(label))}</button>`;
+
+/* One line, in the columns a log reader prints: when, who, which process,
+   what level, which tag, and then the message, which is the only part allowed
+   to be long. The level is its letter, the way logcat itself writes it — a
+   word in every row would push the message off the screen for no gain. The
+   process is left out of a log the file names no process for, rather than
+   drawn as an empty column down the whole of it. */
 function logRow(n){
   const e = n.entry;
-  const when = e.time ? e.time : e.uptime !== undefined ? `[${e.uptime.toFixed(3)}]` : '';
+  const when = logWhenCell(e);
   const who = e.pid === null ? '' : `${e.pid}-${e.tid}`;
+  const proc = currentDisplay().named
+    ? `<span class="lg-proc" title="${esc(e.process || '')}">${esc(e.process || '')}</span>` : '';
   /* The column is the clock time, because that is what a log is read against
      and a date on every row would cost the message a fifth of the pane. The
      date is a day or two of a bugreport all the same, so it is on the cell. */
   return `<span class="lg-when" title="${esc(logStamp(e))}">${esc(when)}</span>`
     + `<span class="lg-who">${esc(who)}</span>`
+    + proc
     + `<span class="lg-lv" title="${esc(n.level.name)}">${esc(e.levelChar || '\u00b7')}</span>`
     + `<span class="lg-tag" title="${esc(e.tag)}">${esc(e.tag)}</span>`
     + `<span class="lg-msg">${esc(e.message || e.raw)}</span>`;
@@ -40,11 +50,10 @@ function logDetail(n){
       e.levelChar ? ' ' + dim('(' + e.levelChar + ')') : ''}`],
     /* The tag is how a log is normally narrowed, so it is offered as the
        filter rather than as a link to a row that no longer exists. */
-    ['tag', `<button class="btn btn-quiet" type="button" data-logtag="${esc(e.tag)}"
-       title="List only this tag">${esc(e.tag)}</button>`],
+    ['tag', logFilterBtn(e.tag, 'List only this tag')],
     ['when', logWhen(e)],
-    e.pid !== null && ['pid', `<button class="btn btn-quiet" type="button"
-       data-logtag="${e.pid}" title="List only this process">${e.pid}</button>`],
+    e.pid !== null && ['pid', logFilterBtn(e.pid, 'List only this process')],
+    e.process && ['process', logFilterBtn(e.process, 'List only this process')],
     e.tid !== null && ['tid', `${e.tid}${e.tid === e.pid ? ' ' + dim('· the main thread') : ''}`],
     e.uid && ['uid', esc(e.uid)],
     e.buffer && ['buffer', esc(e.buffer)],
@@ -77,14 +86,12 @@ function logSectionDetail(d){
         ? 'One tag in this log carries a crash.'
         : `${d.crashes.length} tags in this log carry a crash.`}</p>
       <div class="chips">${d.crashes.map(t =>
-        `<button class="btn btn-quiet" type="button" data-logtag="${esc(t)}"
-          title="List only this tag">${esc(t)}</button>`).join('')}</div></section>`);
+        logFilterBtn(t, 'List only this tag')).join('')}</div></section>`);
   }
 
   out.push(`<section class="dgroup"><h3>The whole log</h3>${dl([
     ['sections', g.sections],
-    ['lines read', `${g.lines}${g.trimmed ? ` <span style="color:var(--dim)">· ${
-      g.shown} listed</span>` : ''}`],
+    ['lines read', `${g.lines}${g.trimmed ? ` ${dim('· ' + g.shown + ' listed')}` : ''}`],
     g.trimmed && ['not listed', `${g.trimmed} ${dim('· the log is longer than the reader holds')}`],
     ['tags', g.tags],
     g.errors && ['errors', g.errors],
@@ -151,11 +158,9 @@ function eventDetail(n){
     ['what', esc(n.title)],
     /* The tag is how the buffer is narrowed, so it is offered as the filter
        the way a log reader offers one. */
-    ['tag', `<button class="btn btn-quiet" type="button" data-logtag="${esc(e.tag)}"
-       title="List only this tag">${esc(e.tag)}</button>`],
+    ['tag', logFilterBtn(e.tag, 'List only this tag')],
     ['kind', `<span style="color:${tintFor(n)}">■</span> ${esc(kind.label)}`],
-    n.who && ['about', `<button class="btn btn-quiet" type="button" data-logtag="${esc(n.who)}"
-       title="List everything about this">${esc(n.who)}</button>`],
+    n.who && ['about', logFilterBtn(n.who, 'List everything about this')],
     ['when', logWhen(e)],
     e.pid !== null && ['logged by', `pid ${e.pid}${
       e.tid !== null && e.tid !== e.pid ? ` · tid ${e.tid}` : ''}`],
@@ -198,8 +203,7 @@ function eventDetail(n){
    for. They are in this group by construction — the pane is the group's. */
 const eventLinks = (list) => list.length
   ? `<div class="chips">${list.slice(0, 10).map(x =>
-      `<button class="btn btn-quiet" type="button" data-logtag="${esc(x.who || x.title)}"
-        title="${esc(x.title)}">${esc(trim(x.who || x.title, 34))}</button>`).join('')}${
+      logFilterBtn(x.who || x.title, x.title, trim(x.who || x.title, 34))).join('')}${
       list.length > 10 ? dim(` and ${list.length - 10} more`) : ''}</div>`
   : none;
 

@@ -213,6 +213,10 @@ function drawList(){
   /* A tool that draws its own rows says so here, once, rather than on every
      row: the columns are the list's, not the row's. */
   list.classList.toggle('is-log', S.tool.listClass === 'is-log');
+  if(S.tool.listVars){
+    for(const [k, v] of Object.entries(S.tool.listVars(currentDisplay())))
+      $('app').style.setProperty(k, v);
+  }
   $('treeCtl').hidden = !tree;
 
   if(!items.length){

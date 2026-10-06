@@ -593,7 +593,7 @@ const TOOLS = [
     /* Why a line was printed is almost always in the lines around it, so the
        log stays whole and what the box found is listed under it. */
     split: true,
-    filterHint: 'Filter by tag, message, pid or tid, or /regex/',
+    filterHint: 'Filter by tag, message, process, pid or tid, or /regex/',
     shows: {
       all:      { label:'all',    test:() => true },
       info:     { label:'info+',  test:(n) => n.level.rank >= 2 },
@@ -605,8 +605,12 @@ const TOOLS = [
        every other log reader prints one. That is a row of its own rather than
        a title with a line of meta under it, so the tool draws its own row. */
     row: logRow,
-    rowClass: (n) => 'is-log-row ' + n.level.family + (n.crash ? ' is-crash' : ''),
+    rowClass: (n) => 'is-log-row lg-row ' + n.level.family + (n.crash ? ' is-crash' : '')
+      + (currentDisplay().named ? '' : ' lg-noproc'),
     listClass: 'is-log',
+    /* The stamp and the pid are as wide as the widest in the log, so every
+       column after them starts at the same place on every row. */
+    listVars: (d) => ({ '--lg-when': `${d.whenCh || 12}ch`, '--lg-who': `${d.whoCh || 1}ch` }),
     detect: (t) => (/^-{4,}\s*(?:SYSTEM|EVENT|RADIO|KERNEL|LAST|MAIN|CRASH)\s+LOG/m.test(t) ? 3 : 0)
                  + (/^(?:\d{4}-)?\d{1,2}-\d{1,2}\s+\d{1,2}:\d{2}:\d{2}\.\d{3}\s+(?:\S+\s+)?\d+\s+\d+\s+[VDIWEFSA]\s/m.test(t) ? 3 : 0)
                  + (/^-{4,}\s*beginning of \S+/m.test(t) ? 1 : 0),

@@ -65,7 +65,8 @@ const LOG_NODE = {
   get search() {
     const e = this.entry;
     return `${e.tag} ${e.message} ${e.pid === null ? '' : e.pid}${
-      e.tid === null ? '' : ' ' + e.tid} ${e.level.name}`.toLowerCase();
+      e.tid === null ? '' : ' ' + e.tid} ${e.level.name}${
+      e.process ? ' ' + e.process : ''}`.toLowerCase();
   },
 };
 
@@ -108,6 +109,16 @@ const EVENT_SECTION_RE = /event/i;
    event the framework logs for the same thing. Either one means this tag is
    the reason the log was taken. */
 const LOG_CRASH_RE = /FATAL EXCEPTION|^am_crash|beginning of crash/;
+const logCrash = (e) => LOG_CRASH_RE.test(e.tag) || LOG_CRASH_RE.test(e.message);
+
+/* How many lines each level printed, keyed by the level's name. */
+function logLevelCounts(entries) {
+  const out = {};
+  for (const e of entries) out[e.level.name] = (out[e.level.name] || 0) + 1;
+  return out;
+}
+
+const logPlural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 function logEntry(m, at, buffer) {
   const rest = m[8];
@@ -151,6 +162,114 @@ function logKernelEntry(m, at, buffer) {
   };
 }
 
+/* Which process a pid was. A log line carries the pid and nothing else about
+   who printed it — Android Studio gets the name from the live device, which a
+   bugreport no longer is. The file says it anyway, in the places the platform
+   names a process beside its pid: the line ActivityManager writes as it starts
+   one, the event for the same thing, the process records the activity dump
+   prints, the crash header, the ANR trace and the `ps` table. A start is when a pid became
+   that process, so it holds from then on; the rest only say what the pid was
+   at some point, and are what is left for a pid the log never saw start —
+   the activity dump's record over the rest, because it is the name the
+   framework gave the process, and `ps` under everything, because what it
+   prints for an app is a thread name cut to fifteen characters. It is still
+   the only place system_server and the native daemons are named at all. */
+const LOG_PROC_STARTS = [
+  /\bStart proc (\d+):([^\s/]+)\//,
+  /\bam_proc_start\s*:\s*\[\d+,(\d+),\d+,([^,\]]+)/,
+];
+const LOG_PROC_RECORD_RE = /\bProcessRecord\{[0-9a-f]+ (\d+):([^\s/}]+)\//;
+const LOG_PROC_CRASH_RE = /\bProcess: ([^\s,]+), PID: (\d+)/;
+/* The header of one process in an ANR trace, and the name under it. */
+const LOG_TRACE_PID_RE = /^----- pid (\d+) at /;
+const LOG_TRACE_CMD = 'Cmd line: ';
+/* An app prints its first lines before ActivityManager gets round to saying
+   it started it, so a start counts from a moment before it was logged. A pid
+   is not handed out again inside that. */
+const LOG_PROC_SLACK = 5000;
+
+/* A clock stamp as milliseconds, near enough to order and subtract: the year
+   is left out and a month is 31 days, neither of which a log's span crosses. */
+const logMs = (e) => {
+  if (!e.time) return null;
+  const [mo, d] = e.date.split('-').map(Number);
+  const [h, mi, sec] = e.time.split(':');
+  return ((((mo * 31 + d) * 24 + +h) * 60 + +mi) * 60 + parseFloat(sec)) * 1000;
+};
+
+const LOG_PS_HEAD_RE = /^(?:LABEL\s+)?USER\s+PID\s+(?:TID\s+)?PPID\s.*\s(?:CMD|NAME)\s*$/;
+
+function logProcs() {
+  const starts = new Map(), seen = new Map();
+  const saw = (pid, name, rank) => {
+    const was = seen.get(pid);
+    if (!was || was.rank <= rank) seen.set(pid, { name, rank });
+  };
+  let tracePid = null, ps = null;
+  return {
+    line(line) {
+      if (ps) {
+        const f = line.trim().split(/\s+/);
+        const pid = +f[ps.pid];
+        if (f.length > ps.name && Number.isInteger(pid) && pid > 0) {
+          /* A thread listing names every thread; the process is the one whose
+             tid is its pid. */
+          if (ps.tid < 0 || +f[ps.tid] === pid) saw(pid, f.slice(ps.name).join(' '), 0);
+          return;
+        }
+        ps = null;
+      }
+      if (LOG_PS_HEAD_RE.test(line)) {
+        const h = line.trim().split(/\s+/);
+        ps = { pid: h.indexOf('PID'), tid: h.indexOf('TID'),
+               name: Math.max(h.indexOf('CMD'), h.indexOf('NAME')) };
+        return;
+      }
+      if (tracePid !== null && line.startsWith(LOG_TRACE_CMD)) {
+        saw(tracePid, line.slice(LOG_TRACE_CMD.length).trim(), 1);
+        tracePid = null;
+        return;
+      }
+      const trace = line.match(LOG_TRACE_PID_RE);
+      if (trace) { tracePid = +trace[1]; return; }
+      /* Every one of the shapes has `roc` in it, which is the cheap way past
+         the half a million lines that are none of them. */
+      if (!line.includes('roc')) return;
+      for (const re of LOG_PROC_STARTS) {
+        const m = line.match(re);
+        if (!m) continue;
+        const h = line.match(LOG_HEAD_RE);
+        const at = h ? logMs({ date: h[2], time: h[3] }) : null;
+        if (at === null) { saw(+m[1], m[2], 1); return; }
+        if (!starts.has(+m[1])) starts.set(+m[1], []);
+        starts.get(+m[1]).push({ at: at - LOG_PROC_SLACK, name: m[2] });
+        return;
+      }
+      const rec = line.match(LOG_PROC_RECORD_RE);
+      if (rec) return void saw(+rec[1], rec[2], 2);
+      const crash = line.match(LOG_PROC_CRASH_RE);
+      if (crash) saw(+crash[2], crash[1], 1);
+    },
+    /* The latest start at or before the line. A pid that started only after
+       it was another process then, which the file does not name. */
+    of(e) {
+      if (e.pid === null) return null;
+      const list = starts.get(e.pid);
+      if (!list) return seen.has(e.pid) ? seen.get(e.pid).name : null;
+      const t = logMs(e);
+      let name = null;
+      for (const s of list) if (t !== null && s.at <= t) name = s.name;
+      return name;
+    },
+    done() { for (const list of starts.values()) list.sort((a, b) => a.at - b.at); },
+  };
+}
+
+/* The stamp a row prints: the clock without the date, or the kernel's seconds
+   since boot. */
+const logWhenCell = (e) => e.time ? e.time
+  : e.uptime !== undefined ? `[${e.uptime.toFixed(3)}]` : '';
+
 const logStamp = (e) => e.time
   ? `${e.date} ${e.time}` : e.uptime !== undefined ? `[${e.uptime.toFixed(6)}]` : '';
 
@@ -182,9 +301,11 @@ function parseLogcatDump(input) {
      the event reader next door. Listing it here as well would put the same
      lines on the desk twice, in the reading that is no use. */
   let buffer = null, kernel = false, events = false;
+  const procs = logProcs();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
+    procs.line(line);
 
     const sec = line.match(LOG_SECTION_RE);
     if (sec) {
@@ -215,6 +336,9 @@ function parseLogcatDump(input) {
     }
   }
 
+  procs.done();
+  for (const sec of sections) for (const e of sec.entries) e.process = procs.of(e);
+
   const nodes = [];
   const displays = [];
   const budgets = logBudgets(sections, LOG_MAX_LINES);
@@ -232,14 +356,14 @@ function parseLogcatDump(input) {
       let t = tags.get(e.tag);
       if (!t) { t = { tag: e.tag, lines: 0, crash: false }; tags.set(e.tag, t); }
       t.lines++;
-      if (LOG_CRASH_RE.test(e.tag) || LOG_CRASH_RE.test(e.message)) t.crash = true;
+      if (!t.crash && logCrash(e)) t.crash = true;
     }
 
     const keep = logKeep(sec.entries, budgets[si]);
     kept += keep.length;
 
     for (const e of keep) {
-      const crash = LOG_CRASH_RE.test(e.message) || LOG_CRASH_RE.test(e.tag);
+      const crash = logCrash(e);
       nodes.push(Object.assign(Object.create(LOG_NODE), {
         hash: `log:${id}:line:${e.at}`,
         /* The message is the row, which is why it is the title: it is what the
@@ -267,8 +391,15 @@ function parseLogcatDump(input) {
       }));
     }
 
-    const counts = {};
-    for (const e of sec.entries) counts[e.level.name] = (counts[e.level.name] || 0) + 1;
+    const counts = logLevelCounts(sec.entries);
+    /* The widths the list sets its first columns at, so they line up down the
+       log and a column dragged wider moves the same edge on every row. */
+    let whenCh = 0, whoCh = 0, named = 0;
+    for (const e of keep) {
+      whenCh = Math.max(whenCh, logWhenCell(e).length);
+      if (e.pid !== null) whoCh = Math.max(whoCh, `${e.pid}-${e.tid}`.length);
+      if (e.process) named++;
+    }
     const errors = (counts.error || 0) + (counts.fatal || 0);
     const first = sec.entries[0], last = sec.entries[sec.entries.length - 1];
     displays.push({
@@ -285,9 +416,14 @@ function parseLogcatDump(input) {
       errors,
       buffers: [...sec.buffers],
       first, last,
+      whenCh, whoCh,
+      /* How many lines the file names the process of. None is a log with no
+         process starts in it and nothing else beside it, and the list leaves
+         the column out rather than drawing it empty. */
+      named,
       crashes: [...tags.values()].filter((t) => t.crash).map((t) => t.tag),
-      meta: `${sec.entries.length} line${sec.entries.length === 1 ? '' : 's'} · ${
-        tags.size} tag${tags.size === 1 ? '' : 's'}${errors ? ` · ${errors} error${errors === 1 ? '' : 's'}` : ''}`,
+      meta: [logPlural(sec.entries.length, 'line'), logPlural(tags.size, 'tag'),
+             errors && logPlural(errors, 'error')].filter(Boolean).join(' · '),
     });
   }
 
@@ -300,13 +436,8 @@ function parseLogcatDump(input) {
   const clocked = all.filter((e) => e.time)
     .sort((a, b) => `${a.year || ''}${a.date} ${a.time}`
       .localeCompare(`${b.year || ''}${b.date} ${b.time}`));
-  const counts = {};
-  for (const e of all) counts[e.level.name] = (counts[e.level.name] || 0) + 1;
-
-  const crashTags = new Set();
-  for (const e of all) {
-    if (LOG_CRASH_RE.test(e.tag) || LOG_CRASH_RE.test(e.message)) crashTags.add(e.tag);
-  }
+  const counts = logLevelCounts(all);
+  const crashTags = new Set(displays.flatMap((d) => d.crashes));
 
   const globals = {
     sections: displays.length,

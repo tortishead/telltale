@@ -498,6 +498,29 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
   background-image:none;
 }
 .wlist.is-log .wrow > span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* A logcat line has a sixth column, the process the file says the pid was,
+   and its stamp and pid are set at the widest in the log so the columns after
+   them line up down it. The process and the tag are as wide as they were
+   dragged to: their right edge is a handle on every row, which is where a
+   reader looking at a clipped tag already is. Each gives way to the message
+   before it is clipped below four characters. */
+.wlist.is-log .wrow.lg-row{
+  grid-template-columns:var(--lg-when, max-content) var(--lg-who, max-content)
+    minmax(4ch, var(--lg-proc-w, 20ch)) 1ch minmax(4ch, var(--lg-tag-w, 22ch)) minmax(0,1fr);
+}
+.wlist.is-log .wrow.lg-row.lg-noproc{
+  grid-template-columns:var(--lg-when, max-content) var(--lg-who, max-content)
+    1ch minmax(4ch, var(--lg-tag-w, 22ch)) minmax(0,1fr);
+}
+/* The edge under the pointer, drawn down the whole list as the pane gutters
+   draw theirs. It is a background on each row at the same offset, which is
+   one line because the columns before it are the same width on every row. */
+.wlist.is-log.is-col-edge, .wlist.is-log.is-col-edge .wrow{cursor:col-resize}
+.wlist.is-log.is-col-edge .wrow.lg-row{
+  background-image:linear-gradient(var(--redline), var(--redline));
+  background-size:2px 100%; background-repeat:no-repeat;
+  background-position:var(--lg-rule, -9px) 0;
+}
 /* Every other row is a shade off the paper. Rows this tight run together, and
    a band under alternate ones is what keeps a stamp on the left tied to its
    message on the right across a wide pane. It is the faintest thing on the
@@ -512,6 +535,7 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
 .lg-when{color:var(--dim)}
 .lg-who{color:var(--dim)}
 .lg-lv{font-weight:700; text-align:center}
+.lg-proc{color:var(--dim)}
 .lg-tag{color:var(--label)}
 .lg-msg{color:var(--fg)}
 /* The level colours the letter and the message, and nothing else: a whole row
@@ -548,6 +572,7 @@ body.layout-doc main{--w-stack:340px; --w-detail:380px}
    on the screen. */
 .wlist.is-log .wrow[aria-selected="true"] .lg-when,
 .wlist.is-log .wrow[aria-selected="true"] .lg-who,
+.wlist.is-log .wrow[aria-selected="true"] .lg-proc,
 .wlist.is-log .wrow[aria-selected="true"] .ev-when,
 .wlist.is-log .wrow[aria-selected="true"] .ev-who{color:var(--fg)}
 .wlist.is-log .log-verbose[aria-selected="true"] .lg-msg,
