@@ -1,0 +1,8 @@
+Build configuration: [sf DEBUG=0]
+Visible layers (count = 2)
++ Layer 0x7f8c1e2000 (com.android.systemui.ImageWallpaper)
+  Region transparentRegion (this=0x7f8c1e2290, count=1)
+    [  0,   0,   0,   0]
+      layerStack=   0, z=    21000, pos=(0,0), size=(1080,1920), crop=(   0,   0,1080,1920), finalCrop=(   0,   0,  -1,  -1), isOpaque=1, invalidate=0, alpha=0xff, flags=0x00000002, tr=[1.00, 0.00][0.00, 1.00]
++ Layer 0x7f8c1e3000 (StatusBar)
+      layerStack=   0, z=   181000, pos=(0,0), size=(1080,  63), crop=(   0,   0,1080,  63), isOpaque=0, alpha=0xff, flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]

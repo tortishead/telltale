@@ -234,7 +234,7 @@ async function loadUrl(raw, prefer){
       });
       text = picked.text; from = picked.name;
     } else {
-      text = new TextDecoder().decode(buf);
+      text = decodeDump(buf);
     }
     if(!text.trim()) return fail('That URL returned an empty file.');
     if(from) note(`Read ${from} out of ${label}.`);

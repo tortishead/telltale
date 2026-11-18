@@ -16,6 +16,27 @@
 const ZIP_LOCAL = 0x04034b50, ZIP_CD = 0x02014b50, ZIP_EOCD = 0x06054b50;
 const ZIP_MAX_COMMENT = 0xffff;
 
+/* ---- the bytes a dump comes in -----------------------------------------
+   Most dumps are UTF-8, but not all of them. `adb shell dumpsys SurfaceFlinger
+   > sf.txt` typed into Windows PowerShell writes UTF-16 with a byte order
+   mark, and read as UTF-8 that is every other byte a NUL: no reader
+   recognises a word of it. So the mark is looked for, and failing that the
+   NULs themselves — text that has one in every other byte of its first stretch
+   is UTF-16 whether or not it says so. */
+function decodeDump(bytes){
+  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  if(b.length >= 2 && b[0] === 0xff && b[1] === 0xfe) return new TextDecoder('utf-16le').decode(b.subarray(2));
+  if(b.length >= 2 && b[0] === 0xfe && b[1] === 0xff) return new TextDecoder('utf-16be').decode(b.subarray(2));
+  if(b.length >= 3 && b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf) return new TextDecoder().decode(b.subarray(3));
+  const n = Math.min(b.length, 4096) & ~1;
+  let even = 0, odd = 0;
+  for(let i = 0; i < n; i += 2){ if(b[i] === 0) even++; if(b[i + 1] === 0) odd++; }
+  const half = n / 2;
+  if(half >= 8 && odd > half * 0.6 && even < half * 0.1) return new TextDecoder('utf-16le').decode(b);
+  if(half >= 8 && even > half * 0.6 && odd < half * 0.1) return new TextDecoder('utf-16be').decode(b);
+  return new TextDecoder().decode(b);
+}
+
 const isZip = (bytes) => bytes.length > 3 && bytes[0] === 0x50 && bytes[1] === 0x4b
                       && bytes[2] === 0x03 && bytes[3] === 0x04;
 
@@ -93,7 +114,7 @@ async function zipRead(buf, entry, onBytes){
   if(from + entry.packed > buf.byteLength) throw truncated();
   const bytes = new Uint8Array(buf, from, entry.packed);
 
-  if(entry.method === 0) return new TextDecoder().decode(bytes);
+  if(entry.method === 0) return decodeDump(bytes);
   if(entry.method !== 8) throw new Error(`${entry.name} is packed in a way Telltale cannot read`);
   if(typeof DecompressionStream !== 'function'){
     throw new Error('this browser cannot unzip; unzip the bugreport and drop the txt in instead');
@@ -107,7 +128,7 @@ async function zipRead(buf, entry, onBytes){
       }))
     : new Blob([bytes]).stream();
   const stream = counted.pipeThrough(new DecompressionStream('deflate-raw'));
-  return new Response(stream).text();
+  return decodeDump(await new Response(stream).arrayBuffer());
 }
 
 /* Which entry is the bugreport. dumpstate names it `bugreport-<device>-<build>

@@ -1,0 +1,45 @@
+Build configuration: [sf PRESENT_TIME_OFFSET=0 FORCE_HWC_FOR_RBG_TO_YUV=1 MAX_VIRT_DISPLAY_DIM=4096 RUNNING_WITHOUT_SYNC_FRAMEWORK=0 NUM_FRAMEBUFFER_SURFACE_BUFFERS=3]
+
+Display identification data:
+Display 4630947222266796161 (HWC display 0): port=129 pnpId=QCM screenPartStatus=UNSUPPORTED displayName="DSI_0"
+
+Active Layers - layers with client handles (count = 0)
+
+Composition list (top to bottom)
+
+Input list
+
+Layer Hierarchy
+ ROOT
+Offscreen Hierarchy
+ ROOT
+
+
+Mergeable Hierarchies
+
+
+Display 4630947222266796161 HWC layers (top to bottom):
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Layer name
+           Z |  Window Type |  Comp Type |  Transform |   Disp Frame (LTRB) |          Source Crop (LTRB) |     Frame Rate (Explicit) (Seamlessness) [Focused]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Displays (1 entries)
+Display 4630947222266796161
+    port=129
+    connectionType=Internal
+    name="DSI_0"
+    powerMode=On
+
+Display 4630947222266796161 (physical, "DSI_0")
+   Composition Display State:
+   layerFilter={layerStack=0 toInternalDisplay=true skipScreenshot=false }
+   0 Layers
+
+
+SurfaceFlinger global state:
+FlagManager values: 
+test_flag: in progress (still booting)
+use_adpf_cpu_hint: in progress (still booting)
+TimeStats miniDump:
+Number of layers currently being tracked is 0

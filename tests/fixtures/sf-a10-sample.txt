@@ -1,0 +1,27 @@
+Build configuration: [sf PRESENT_TIME_OFFSET=0]
+Visible layers (count = 3)
+Drawing layers
++ ContainerLayer (Display Root#0)
+      Region TransparentRegion (this=0 count=0)
+      layerStack=   0, z=        0, pos=(0,0), size=(   0,   0), crop=[  0,   0,  -1,  -1], cornerRadius=0.000000, isProtected=0, isTrustedOverlay=0, isOpaque=0, invalidate=0, dataspace=Default, defaultPixelFormat=Unknown/None, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[0.00, 0.00][0.00, 0.00]
+      parent=none
++ BufferQueueLayer (com.android.systemui.ImageWallpaper#0)
+      layerStack=   0, z=    21000, pos=(0,0), size=(1080,2340), crop=[  0,   0,  -1,  -1], isOpaque=1, color=(0.000,0.000,0.000,1.000), flags=0x00000002, tr=[1.00, 0.00][0.00, 1.00]
+      parent=WallpaperWindowToken{abc token=Token{def}}#0
++ BufferQueueLayer (StatusBar#0)
+      layerStack=   0, z=   181000, pos=(0,0), size=(1080,  63), crop=[  0,   0,  -1,  -1], isOpaque=0, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]
+      parent=WindowToken{123 android.os.BinderProxy@1}#0
++ BufferQueueLayer (NavigationBar0#0)
+      layerStack=   0, z=   231000, pos=(0,2214), size=(1080, 126), crop=[  0,   0,  -1,  -1], isOpaque=0, color=(0.000,0.000,0.000,1.000), flags=0x00000000, tr=[1.00, 0.00][0.00, 1.00]
+      parent=WindowToken{456 android.os.BinderProxy@2}#0
+
+Display 19260578202102849 HWC layers:
+-------------------------------------------------------------------------------
+ Layer name
+           Z |  Comp Type |   Disp Frame (LTRB) |          Source Crop (LTRB)
+-------------------------------------------------------------------------------
+ com.android.systemui.ImageWallpaper#0
+       21000 |     DEVICE |    0    0 1080 2340 |    0.0    0.0 1080.0 2340.0
+ StatusBar#0
+      181000 |     DEVICE |    0    0 1080   63 |    0.0    0.0 1080.0   63.0
+-------------------------------------------------------------------------------

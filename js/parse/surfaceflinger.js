@@ -51,6 +51,11 @@
    (organized)` lines a window dump prints in the same shape. */
 const SF_LAYER_HEAD =
   /^(\s*)[-+*]\s+((?:[A-Za-z]\w*\s+)*?)(0x[0-9a-fA-F]+)?\s*\((.+#\d+)\)(?:\s+uid=(\d+))?\s*$/;
+/* Android 7 and before name a layer without the trailing number, so the
+   parentheses alone are not enough to tell it from a window dump's line. The
+   class (`Layer`, `LayerDim`, ...) and the handle after it are. */
+const SF_OLD_HEAD =
+  /^(\s*)\+\s+(Layer\w*)\s+(0x[0-9a-fA-F]+)\s*\((.+)\)\s*$/;
 /* The new frontend's head: no bullet, no class and no parentheses — the
    layer's own id in brackets, the roots it is mirrored from if it is a
    mirror, a `(Secure)` marker if it holds protected content, then the name. */
@@ -91,6 +96,11 @@ function sfHead(line) {
   if (m) {
     return { indent: m[1].length, cls: (m[2] || '').trim() || null, handle: m[3] || null,
              name: m[4].trim(), uid: m[5] === undefined ? null : +m[5],
+             id: null, secure: false, mirrorOf: null };
+  }
+  const o = line.match(SF_OLD_HEAD);
+  if (o) {
+    return { indent: o[1].length, cls: o[2], handle: o[3], name: o[4].trim(), uid: null,
              id: null, secure: false, mirrorOf: null };
   }
   const s = line.match(SF_SNAP_HEAD);
@@ -210,7 +220,7 @@ function sfHwcTables(lines) {
 
 /* The table elides the middle of a long name — `com.foo/com.f[...]Activity#301`
    — so a name that carries the marker is matched on its two ends instead. */
-function sfHwcLookup(tables) {
+function sfHwcLookup(tables, byName) {
   const exact = new Map(), byId = new Map(), elided = [];
   for (const t of tables) {
     for (const row of t.rows) {
@@ -225,7 +235,7 @@ function sfHwcLookup(tables) {
     }
   }
   return (name) => exact.get(name)
-    || byId.get(sfKey(name))
+    || (byName ? null : byId.get(sfKey(name)))
     || (elided.find((e) => name.startsWith(e.head) && name.endsWith(e.tail)) || {}).row
     || null;
 }
@@ -671,12 +681,38 @@ function sfOffDisplay(display, n) {
   };
 }
 
+function sfKeysByName(lines) {
+  const namesFor = new Map();
+  for (const line of lines) {
+    const head = sfHead(line);
+    if (!head) continue;
+    const m = head.name.match(/#(\d+)$/);
+    if (!m) return true;
+    /* A list that elides the middle of a name prints the same layer under a
+       second spelling; that is not two layers sharing a number. */
+    if (head.name.includes('[...]')) continue;
+    if (!namesFor.has(m[1])) namesFor.set(m[1], new Set());
+    namesFor.get(m[1]).add(head.name);
+    if (namesFor.get(m[1]).size > 1) return true;
+  }
+  return false;
+}
+
 function parseSurfaceFlingerDump(input) {
   const text = dumpText(input);
   const lines = text.split('\n');
 
+  /* From Android 12 the number on the end of a layer's name is its sequence
+     number, unique across the dump, and the lists are joined on it. Before
+     that it was a counter kept per name — Android 10 and 11 tag nearly every
+     layer `#0` — and before that most names had no number at all. Joining on
+     it there would fold every layer into one, so a dump where the number does
+     not tell names apart is joined on the whole name instead, or on the
+     handle where an old list prints one. */
+  const byName = sfKeysByName(lines);
+  const keyOf = (head) => byName ? (head.handle || head.name) : sfKey(head.name);
   const tables = sfHwcTables(lines);
-  const hwcFor = sfHwcLookup(tables);
+  const hwcFor = sfHwcLookup(tables, byName);
   const displayBlocks = sfDisplayBlocks(lines, sfDisplayList(lines));
   const stackAt = (line) => {
     const d = displayBlocks.find((x) => line > x.from && line < x.to);
@@ -718,7 +754,7 @@ function parseSurfaceFlingerDump(input) {
       end++;
     }
     while (end > i + 1 && !lines[end - 1].trim()) end--;
-    const key = sfKey(head.name);
+    const key = keyOf(head);
     if (!blocks.has(key)) {
       order.push(key);
       blocks.set(key, []); heads.set(key, []); lists.set(key, new Set());

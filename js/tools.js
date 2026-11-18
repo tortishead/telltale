@@ -35,12 +35,24 @@ const TOOLS = [
     filterHint: 'Filter by layer name, class or composition',
     detect: (t) => (/\bHWC layers\b/.test(t) ? 3 : 0)
                  + (/^\s*[+*]\s+\w*Layer\b.*\(.*#\d+\)/m.test(t) ? 3 : 0)
+                 /* Android 7 and before: no number on the name, a handle instead */
+                 + (/^\s*\+\s+Layer\w*\s+0x[0-9a-fA-F]+\s*\(/m.test(t) ? 3 : 0)
                  /* what the new frontend prints in place of that layer list */
                  + (/^\s*Layer \[\d+\].*#\d+\s*$/m.test(t) ? 3 : 0)
                  + (/^(?:Composition list|Input list|Layer Hierarchy)\b/m.test(t) ? 2 : 0)
                  + (/\blayerStack=/.test(t) ? 1 : 0)
                  + (/\bSurfaceFlinger\b/.test(t) ? 1 : 0),
     parse: parseSurfaceFlingerDump,
+    /* Said when the dump is read and holds no layer to show. */
+    whyEmpty: (t) => {
+      const n = (t.match(/(?:Active Layers[^(\n]*|Visible layers\s*)\(count = (\d+)\)/) || [])[1];
+      const booting = /\bstill booting\b/.test(t);
+      return 'That is a `dumpsys SurfaceFlinger` dump, but it lists no layers'
+        + (n !== undefined ? ` (\`count = ${n}\`)` : '')
+        + ' — the composition, input and HWC lists are all empty, so there is nothing to lay out. '
+        + (booting ? 'The device was still booting when it was taken; ' : 'Nothing was on screen when it was taken; ')
+        + 'capture it again once something is drawn.';
+    },
     detail: sfDetail,
     displayDetail: sfDisplayDetail,
   },

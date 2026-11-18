@@ -593,3 +593,46 @@ test('an Android 16 service and its connection are drawn in the pane', async () 
   assert.match(bound, /5140/, 'and the pid it was in');
   assert.match(bound, /BIND_IMPORTANT_BACKGROUND/, 'with the flags it bound under');
 });
+
+/* ---- SurfaceFlinger dumps the reader used to turn away ------------------ */
+
+test('a SurfaceFlinger dump with no layers says so rather than "nothing recognisable"', async () => {
+  const page = openPage();
+  await page.load(fixture('sf-booting-sample.txt'), null, 'sf.txt');
+  const err = page.error();
+  assert.match(err, /dumpsys SurfaceFlinger. dump, but it lists no layers/);
+  assert.match(err, /count = 0/);
+  assert.match(err, /still booting/);
+  assert.doesNotMatch(err, /Nothing recognisable/);
+});
+
+test('a dump saved as UTF-16 by Windows PowerShell is read', async () => {
+  const text = fixture('sf-sample.txt');
+  const le = new Uint8Array(2 + text.length * 2);
+  le[0] = 0xff; le[1] = 0xfe;
+  for(let i = 0; i < text.length; i++){ le[2 + 2 * i] = text.charCodeAt(i) & 0xff; le[3 + 2 * i] = text.charCodeAt(i) >> 8; }
+  const page = openPage();
+  for(const bytes of [le, le.subarray(2)]){        // with the byte order mark and without
+    const { text: got } = await page.readDump(new File([bytes], 'sf.txt'));
+    assert.equal(got.replace(/^﻿/, ''), text);
+  }
+});
+
+test('Android 10 and 11 layers that all end in #0 stay separate layers', async () => {
+  const page = openPage();
+  await page.load(fixture('sf-a10-sample.txt'), null, 'sf.txt');
+  const nodes = page.docs()[0].found[0].scene.nodes;
+  assert.deepEqual(nodes.map(n => n.title),
+    ['Display Root#0', 'com.android.systemui.ImageWallpaper#0', 'StatusBar#0', 'NavigationBar0#0']);
+  const bar = nodes.find(n => n.title === 'StatusBar#0');
+  assert.deepEqual(bar.frame, { l: 0, t: 0, r: 1080, b: 63 }, 'and each finds its own HWC row');
+  const nav = nodes.find(n => n.title === 'NavigationBar0#0');
+  assert.deepEqual(nav.frame, { l: 0, t: 2214, r: 1080, b: 2340 }, 'not another layer\'s #0 row');
+});
+
+test('Android 7 layers, with no number on the name, are read', async () => {
+  const page = openPage();
+  await page.load(fixture('sf-a7-sample.txt'), null, 'sf.txt');
+  const nodes = page.docs()[0].found[0].scene.nodes;
+  assert.deepEqual(nodes.map(n => n.title), ['com.android.systemui.ImageWallpaper', 'StatusBar']);
+});

@@ -4,7 +4,7 @@ async function readDump(file){
   const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
   if(!isZip(head)){
     progress(`Reading ${file.name}`, null);
-    return { text: await file.text(), label: file.name };
+    return { text: decodeDump(await file.arrayBuffer()), label: file.name };
   }
   progress(`Reading ${file.name}`, null);
   const buf = await file.arrayBuffer();
@@ -45,7 +45,7 @@ async function load(text, prefer, label, from){
 
 async function readInto(text, prefer, label, from){
   const src = String(text === null || text === undefined ? '' : text);
-  const found = [], broke = [];
+  const found = [], broke = [], empty = [];
   for(const [i, tool] of TOOLS.entries()){
     progress(`Reading ${tool.name.toLowerCase()}`, i / (TOOLS.length + 1));
     await nextFrame();
@@ -63,8 +63,15 @@ async function readInto(text, prefer, label, from){
       continue;
     }
     if(scene.ok) found.push({ tool, scene, score });
+    else empty.push(tool);
   }
   if(!found.length){
+    /* A reader that knew the dump and found nothing in it is not the same as
+       no reader knowing it: a SurfaceFlinger dump taken while the device is
+       still booting is a perfectly good dump with no layers in it, and saying
+       "nothing recognisable" about it sends you looking for the wrong fault. */
+    const why = !broke.length && empty.map(t => t.whyEmpty && t.whyEmpty(src)).find(Boolean);
+    if(why) return fail(why);
     return fail(broke.length
       ? 'That looks like a dump Telltale knows, but it could not be read. ' + broke.join('; ')
       : 'Nothing recognisable in that text. Telltale reads `dumpsys window windows`, '
