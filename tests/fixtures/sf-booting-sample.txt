@@ -28,16 +28,44 @@ Displays (1 entries)
 Display 4630947222266796161
     port=129
     connectionType=Internal
+    colorModes=
+        ColorMode::NATIVE
+    deviceProductInfo={name="DSI_0", manufacturerPnpId=QCM, productId=1, manufactureWeek=27, manufactureYear=2006, relativeAddress=[]}
     name="DSI_0"
     powerMode=On
+    optimizationPolicy=optimizeForPerformance
+    renderRate=60.00 Hz
+    activeMode={id=0, hwcId=0, resolution=956x2220, vsyncRate=60.00 Hz, dpi=30.35x125.31, group=0, vrrConfig=N/A, hdrOutputType=SYSTEM}
+    displayModes=
+        {id=0, hwcId=0, resolution=956x2220, vsyncRate=60.00 Hz, dpi=30.35x125.31, group=0, vrrConfig=N/A, hdrOutputType=SYSTEM}
+    enableFrameRateOverride=true
 
 Display 4630947222266796161 (physical, "DSI_0")
    Composition Display State:
+   isEnabled=true isSecure=true usesDeviceComposition=false 
+   usesClientComposition=false flipClientTarget=false reusedClientComposition=false 
    layerFilter={layerStack=0 toInternalDisplay=true skipScreenshot=false }
+   transform (ROT_90) (ROTATE TRANSLATE)
+    0.0000  -1.0000  956.0000
+    1.0000  0.0000  0.0000
+    0.0000  0.0000  1.0000
+   layerStackSpace=ProjectionSpace{bounds=Rect(0, 0, 2220, 956), content=Rect(0, 0, 2220, 956), orientation=ROTATION_0} 
+   framebufferSpace=ProjectionSpace{bounds=Rect(0, 0, 956, 2220), content=Rect(0, 0, 956, 2220), orientation=ROTATION_90} 
+   orientedDisplaySpace=ProjectionSpace{bounds=Rect(0, 0, 2220, 956), content=Rect(0, 0, 2220, 956), orientation=ROTATION_0} 
+   displaySpace=ProjectionSpace{bounds=Rect(0, 0, 956, 2220), content=Rect(0, 0, 956, 2220), orientation=ROTATION_90} 
+   needsFiltering=false 
+   colorMode=NATIVE (0) renderIntent=COLORIMETRIC (0) dataspace=UNKNOWN (0) 
+
+   Composition RenderSurface State:
+   size=[956 2220] ANativeWindow=0xb400007d26019810 (format 1) 
+
    0 Layers
 
 
 SurfaceFlinger global state:
+h/w composer state:
+  h/w composer enabled
+android.hardware.graphics.composer3.IComposer version:4 hash:aba56b3f763c2762a7929fe39b8c6b386b0ccb94
 FlagManager values: 
 test_flag: in progress (still booting)
 use_adpf_cpu_hint: in progress (still booting)

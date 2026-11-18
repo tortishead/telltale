@@ -320,11 +320,15 @@ function sfDisplayList(lines) {
       powerMode: one(/\bpowerMode=(\w+)/),
       res: block.match(/\bresolution=(\d+)x(\d+)/),
       dpi: one(/\bdpi=([\d.]+)/),
+      connection: one(/^\s*connectionType=(\w+)/m),
+      refresh: one(/^\s*renderRate=([\d.]+\s*Hz)/m) || one(/\bactiveMode=\{[^}]*\bvsyncRate=([\d.]+\s*Hz)/),
       virtual: /^\s*Virtual\s+Display/.test(lines[i - (next - 1 - i)] || '') || null,
     });
   }
   return out;
 }
+
+const sfQuarter = (deg) => (deg === null || deg === undefined || +deg % 90 ? null : String((+deg / 90) % 4));
 
 function sfDisplayBlocks(lines, byComposerId) {
   const out = [];
@@ -369,9 +373,17 @@ function sfDisplayBlocks(lines, byComposerId) {
          || pair(/\bframe:\s*\[\s*-?\d+[,\s]+-?\d+[,\s]+(\d+)[,\s]+(\d+)\s*\]/)
          || (listed && listed.res ? { w: +listed.res[1], h: +listed.res[2] } : null),
       dpi: listed && listed.dpi ? Math.round(+listed.dpi) : null,
-      rotation: one(/\borient(?:ation)?=\s*(?:ROTATION_)?(\d)/)
-             || one(/orientation=ROTATION_(\d)/),
+      /* A quarter turn, 0 to 3. The display's own space says it in degrees
+         (`ROTATION_90`), and is the one to read: the layer stack's space is
+         printed first and is unrotated by definition. Older builds print the
+         quarter turn itself as `orient=1`. */
+      rotation: sfQuarter(one(/(?:^|[^A-Za-z])displaySpace=ProjectionSpace\{[^}]*orientation=ROTATION_(\d+)/))
+             ?? sfQuarter(one(/^\s*transform \(ROT_(\d+)\)/m))
+             ?? one(/\borient(?:ation)?=\s*(?:ROTATION_)?(\d)\b/),
       powerMode: (listed && listed.powerMode) || one(/\bpowerMode=(\w+)/),
+      connection: listed ? listed.connection : null,
+      refresh: listed ? listed.refresh : null,
+      colorMode: one(/^\s*colorMode=(\w+)/m),
       secure: sfBool(block, 'isSecure'),
       virtual: sfBool(block, 'isVirtual'),
       enabled: sfBool(block, 'isEnabled'),
@@ -795,7 +807,12 @@ function parseSurfaceFlingerDump(input) {
   /* Through finaliseScene rather than by hand: the shape a parser hands back
      is stated in one place, so an empty reading of this dump is the same kind
      of thing as an empty reading of any other. */
-  if (!keys.length) return finaliseScene('sf', [], [], {});
+  /* No layer at all is still a dump worth opening when it states a display:
+     one taken while the device boots says which panel there is, its size,
+     rotation and power state, and that nothing was being composited on it —
+     which is the answer to the question someone was asking. Only with neither
+     is there nothing to show. */
+  if (!keys.length && !displayBlocks.length) return finaliseScene('sf', [], [], {});
 
   const layers = keys.map((key, i) => {
     const name = names.get(key) || (treeFor.get(key) || {}).name || key;
@@ -854,7 +871,9 @@ function parseSurfaceFlingerDump(input) {
   const one = (re) => { const m = text.match(re); return m ? m[1].trim() : null; };
   const globals = {
     build: one(/^Build configuration:\s*(.+)$/m),
-    hwcVersion: one(/Hardware Composer state \(version ([^)]+)\)/),
+    hwcVersion: one(/Hardware Composer state \(version ([^)]+)\)/)
+      /* AIDL composers say it as the interface and its version instead. */
+      || (text.match(/composer3\.IComposer version:(\d+)/) ? 'AIDL v' + text.match(/composer3\.IComposer version:(\d+)/)[1] : null),
     visibleLayers: one(/Visible layers \(count = (\d+)\)/),
     totalLayers: one(/Total layers \(count = (\d+)\)/),
     /* What Android 15 and up print instead of those two, and what says the
@@ -863,5 +882,7 @@ function parseSurfaceFlingerDump(input) {
     frontend: tree.length || /New Frontend Enabled:\s*true/.test(text) ? 'new' : null,
   };
 
-  return finaliseScene('sf', displays, layers, globals);
+  const scene = finaliseScene('sf', displays, layers, globals);
+  if (!layers.length) scene.ok = displays.length > 0;
+  return scene;
 }

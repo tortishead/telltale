@@ -279,6 +279,9 @@ function emptyNote(shownCount, x, y){
   const at = (msg, dy, cls) =>
     `<text class="pw-label${cls || ''}" x="${x}" y="${y + dy}" text-anchor="middle"
        dominant-baseline="middle">${esc(msg)}</text>`;
+  /* A display the dump lists nothing on is not a filter that hid too much:
+     a dump taken while the device boots has a panel and nothing on it. */
+  if(!currentDisplay().nodes.length) return at(`The dump lists no ${S.tool.nouns} on this display`, 0);
   if(!shownCount) return at(`No ${S.tool.nouns} match this filter`, 0);
 
   /* Nothing has a frame. Name the rects the blocks did carry: that is the

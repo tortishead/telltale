@@ -596,14 +596,28 @@ test('an Android 16 service and its connection are drawn in the pane', async () 
 
 /* ---- SurfaceFlinger dumps the reader used to turn away ------------------ */
 
-test('a SurfaceFlinger dump with no layers says so rather than "nothing recognisable"', async () => {
+test('a SurfaceFlinger dump with no layers still opens on its display', async () => {
   const page = openPage();
   await page.load(fixture('sf-booting-sample.txt'), null, 'sf.txt');
-  const err = page.error();
-  assert.match(err, /dumpsys SurfaceFlinger. dump, but it lists no layers/);
-  assert.match(err, /count = 0/);
-  assert.match(err, /still booting/);
-  assert.doesNotMatch(err, /Nothing recognisable/);
+  assert.equal(page.error(), null);
+  const scene = page.docs()[0].found[0].scene;
+  assert.equal(scene.nodes.length, 0);
+  const [d] = scene.displays;
+  assert.equal(d.name, 'DSI_0');
+  assert.deepEqual(d.size, { w: 956, h: 2220 });
+  assert.equal(d.rotation, '1', 'ROTATION_90 is a quarter turn, not ROTATION_9');
+  assert.equal(d.secure, true);
+  assert.equal(d.refresh, '60.00 Hz');
+  assert.equal(scene.globals.activeLayers, '0');
+  assert.equal(scene.globals.hwcVersion, 'AIDL v4');
+});
+
+test('a SurfaceFlinger dump with no layers and no display says so', async () => {
+  const page = openPage();
+  await page.load('Active Layers - layers with client handles (count = 0)\n\nComposition list (top to bottom)\n\nInput list\n\nLayer Hierarchy\n ROOT\n'
+    + 'SurfaceFlinger global state:\ntest_flag: in progress (still booting)\n', null, 'sf.txt');
+  assert.match(page.error(), /lists no layers/);
+  assert.match(page.error(), /still booting/);
 });
 
 test('a dump saved as UTF-16 by Windows PowerShell is read', async () => {

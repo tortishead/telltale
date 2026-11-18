@@ -147,7 +147,10 @@ function sfDisplayDetail(d){
     d.hwcId && ['hwc display', esc(d.hwcId)],
     d.rotation && ['rotation', `${+d.rotation * 90}° ${dim('(ROTATION_' + d.rotation + ')')}`],
     d.powerMode && ['power mode', SF_POWER[d.powerMode] || esc(d.powerMode)],
-    d.secure && ['secure', yn(d.secure === '1')],
+    d.refresh && ['refresh rate', esc(d.refresh)],
+    d.connection && ['connection', esc(d.connection.toLowerCase())],
+    d.colorMode && ['colour mode', esc(d.colorMode)],
+    d.secure !== null && d.secure !== undefined && ['secure', yn(d.secure)],
     d.virtual === '1' && ['virtual', yn(true)],
   ])}</section>`);
 

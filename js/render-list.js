@@ -227,7 +227,9 @@ function drawList(){
        what it found underneath — so what is left to have emptied it is the
        level buttons. */
     const byBox = !S.tool.split && S.filter.trim();
-    const why = bad && !bad.ok && byBox
+    const none = !(currentDisplay() || { nodes: [] }).nodes.length;
+    const why = none ? `The dump lists no ${S.tool.nouns} ${where}.`
+      : bad && !bad.ok && byBox
       ? `That is not a regular expression: ${esc(bad.error)}`
       : byBox ? `No ${S.tool.nouns} match this filter.`
       : S.show !== 'all' && set[S.show]

@@ -17,5 +17,6 @@ display 0  name=EMU_display_0  size=1080x2424  rot=0  power=On
 
 globals:
   build: [sf PRESENT_TIME_OFFSET=0 FORCE_HWC_FOR_RBG_TO_YUV=0 MAX_VIRT_DISPLAY_DIM=0 RUNNING_WITHOUT_SYNC_FRAMEWORK=0 NUM_FRAMEBUFFER_SURFACE_BUFFERS=2]
+  hwcVersion: AIDL v3
   activeLayers: 87
   frontend: new
